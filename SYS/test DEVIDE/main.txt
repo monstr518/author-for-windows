@@ -1,0 +1,11 @@
+
+Main(){
+	if(A){if(B)1;else goto 7;}else{if(C)goto 7;else 2;}
+	<label:5>
+	E;
+	goto 8;
+	<label:7>
+	N;
+	goto 5;
+	<label:8>
+}

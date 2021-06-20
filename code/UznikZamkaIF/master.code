@@ -1,0 +1,118 @@
+// master.code
+
+#include <code\UznikZamkaIF\module1.txt>
+#include <code\UznikZamkaIF\module2.txt>
+#include <code\UznikZamkaIF\module3.txt>
+#include <code\UznikZamkaIF\module4.txt>
+#include <code\UznikZamkaIF\sustem.txt>
+#include <code\UznikZamkaIF\generators.txt>
+#include <code\UznikZamkaIF\ArhivFunctions\MasterArhivFunctions.txt>
+#include <code\UznikZamkaIF\instruments.txt>
+
+
+
+var MasterUznik(var SYS,var comand,var param1){
+	if(typeof((*SYS))!="map")( *SYS)=((map)0);
+	nabor={"параметры задания","подопытная функция","возвращает значение","список переменных в алгоритме функции","списох входных значений","результат проверки","проверка","взять извесные переменные","сгенерировать входные значения","сгенерировать серию входных значений"};
+	cheng=nabor.indexOf(comand);
+	if(cheng==0){
+		List={1,2,3};
+		if(SYS->analizeCompleate)List+={4,6,5};
+		str="";
+		i=0;
+		for(;i<List.size();++i){
+			if(List[i]==6){if(typeof(SYS->returnValue)=="void")continue;}
+			if(i)str+="\n";
+			str+=nabor[List[i]]+": ";
+			R=MasterUznik(SYS,nabor[List[i]]);
+			if(typeof(R)=="vector")R=R.export();
+			str+=R;
+			};
+		return str;
+		}
+	if(cheng==1){
+		if(isset(param1)){
+			initSYS(SYS,param1);
+			return;
+			}
+		if(!SYS->isset("function"))return "Функция не задана!";
+		startNames=SYS->function.getNamesStart();
+		str="(";
+		i=0;
+		while(i<startNames.size()){
+			if(i)str+=",";
+			str+=startNames[i];
+			++i;
+			}
+		str+=")";
+		return SYS->function.getName()+str;
+		}
+	if(cheng==2){
+		if(isset(param1)){
+			SYS->returnValue=param1;
+			return;
+			}
+		if(!SYS->isset("returnValue"))SYS->returnValue=# ;
+		if(typeof(SYS->returnValue)=="void")return "Функция не возвращает значение.";
+		return SYS->returnValue+" ("+typeof(SYS->returnValue)+")";
+		}
+	if(cheng==3){
+		if(!SYS->isset("AllNamesFunction"))return "Error!";
+		return SYS->AllNamesFunction;
+		}
+	if(cheng==4)return getStartValueList(SYS);
+	if(cheng==5){
+		MasterUznik(SYS,nabor[6]);
+		if(!SYS->isset("returnValue"))SYS->returnValue=# ;
+		result=SYS->proverka==SYS->returnValue;
+		if(!result){
+			tt=typeof(SYS->proverka);
+			if(tt=="int"||tt=="float"||tt=="double")result=((double)SYS->proverka)==((double)SYS->returnValue);
+			}
+		if(result){if(!SYS->proverkaZavershina)return "не завершена";}
+		return result?"пройдена":"не пройдена";
+		}
+	if(cheng==6){
+		if(SYS->isset("proverka"))return SYS->proverka;
+		W=getStartValueList(SYS);
+		SYS->proverkaZavershina=0;
+		SYS->proverka=# ;
+		if(typeof(W)=="string")return SYS->proverka;
+		if(ControlOFF()){
+			SYS->proverka=SYS->function.run1(W);
+			SYS->proverkaZavershina=1;
+			}
+		ClearPsetOFF();
+		return SYS->proverka;
+		}
+	if(cheng==7){
+		if(!SYS->analizeCompleate)return "?";
+		if(SYS->FineData.size()>1)return "неоднозначно";
+		if(SYS->FineData.size()<1)return "нету";
+		return SYS->FineData[0].Izvesno;
+		}
+	if(cheng==8){
+		controllerUstanovkaGeneratora(SYS);
+		if(SYS->isset("FGenerator"))return SYS->FGenerator.run(SYS);
+		return SYS->GeneratorError="в билиотеке нет подходящего генератора.";
+		}
+	if(cheng==9){
+		n=0;
+		if(isset(param1))n=param1;
+		R={};
+		i=0;
+		while(i<n){
+			X=MasterUznik(SYS,nabor[8]);
+			if(SYS->isset("GeneratorError"))break;
+			R.push(X);
+			++i;
+			}
+		return R;
+		}
+	nabor={"задний ход"};
+	cheng=nabor.indexOf(comand);
+	if(cheng==0)Zadanie(SYS);
+}
+
+
+// master.code	:-|

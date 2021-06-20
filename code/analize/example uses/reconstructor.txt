@@ -1,0 +1,37 @@
+//	reconstructor.txt
+
+#include <code\analize\replacerdemo.txt>
+
+
+var f(){
+	n=5;
+	sum=0;
+	if(1)for(i=1;i<=n;++i)sum+=10;
+	if(1)for(i=0;i<=n;++i)sum+=i;
+	if(1){
+		t=100;
+		while(1){
+			t/=2;
+			sum+=t;
+			}
+		}
+	while(1){
+		A=1;
+		B=2;
+		C={5,5};
+		}
+	return sum;
+}
+
+
+
+
+void main(){
+	fun=reconstructor("f");
+	trace(fun.exportText());
+	trace(fun.run());
+	getstring();
+}
+
+
+//	reconstructor.txt	:-|

@@ -1,0 +1,25 @@
+void f1(){
+	x=rozpad({9,4,67,3,28});
+	define();
+	trace(x);
+}
+
+
+
+void main(){
+	var pos=getFunctionRoot("f1");
+	++pos;
+	int n=createNewLaver();
+	int p=createNewProcess(n,pos);
+	runLaver(n);
+	nVariantov=getVariantov(n);
+	m=getValuesInLaver(n,"x");
+	int maxi=0;
+	for(i=1;i<m.size();++i)if(m[maxi]<m[i])maxi=i;
+	for(i=0;i<m.size();++i)if(maxi!=i)LaverOFF(n,i);
+	runLaver(n);
+	deleteLaver(n);
+	getstring();
+}
+
+

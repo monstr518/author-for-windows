@@ -1,0 +1,7 @@
+
+main(){
+	trace("Запуск программы.");
+	Spirit();
+	Spirit();
+	getstring();
+}

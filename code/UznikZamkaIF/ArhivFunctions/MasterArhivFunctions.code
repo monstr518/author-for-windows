@@ -1,0 +1,83 @@
+// MasterArhivFunctions.code
+
+
+
+
+var MasterArhivFunctions(var SYS,var command,var param1){
+	nabor={"функция","имя в архиве"};
+	n=nabor.indexOf(command);
+	if(n==0)UstanovkaFunctiona(SYS,param1);
+	if(n==1){
+		if(!SYS->isset("FinArhiv"))return "нет аналога";
+		return SYS->FinArhiv.getName();
+		}
+}
+
+
+
+int ControlModuleX(var moduleX){
+	m=getThisModule().find(moduleX);
+	if(typeof(m)!="module"){
+		include(moduleX);
+		m=getThisModule().find(moduleX);
+		if(typeof(m)!="module"){
+			m=getThisModule().create(moduleX);
+			return 1;
+			}
+		return 2;
+		}
+	return 3;
+}
+
+
+
+string GeneratorUniqueName2(var AllNames,var n){
+	size=((int)'Z')-((int)'A')+1;
+	if(n<1)n=1;
+	while(1){
+		newName="";
+		i=0;
+		while(i<n){
+			newName+=((char)(rand()%size+((int)'A')));
+			++i;
+			}
+		if(AllNames.indexOf(newName)<0)break;
+		n+=2;
+		}
+	return newName;
+}
+
+
+
+void UstanovkaFunctiona(var SYS,var func){
+	if(typeof(func)=="string")func=getFunction(func);
+	if(typeof(func)!="function")return;
+	if(typeof((*SYS))!="map")( *SYS)=((map)0);
+	SYS->F=func;
+	moduleX="code\\UznikZamkaIF\\ArhivFunctions\\Arhiv.txt";
+	n=ControlModuleX(moduleX);
+	if(n==1)trace("Архив создан.");
+	if(n==2)trace("Архив загружен.");
+	m=getThisModule().find(moduleX);
+	saveok=1;
+	S=m.getAllFunctions();
+	i=0;
+	while(i<S.size()){
+		if(S[i]==func){
+			SYS->FinArhiv=S[i];
+			saveok=0;
+			break;
+			}
+		++i;
+		}
+	if(saveok){
+		UniqueName=GeneratorUniqueName2(m.getAllFunctionNames(),20);
+		func=func.copy();
+		func.setName(UniqueName);
+		SYS->FinArhiv=m.add(func);
+		}
+	m.controlSave();
+}
+
+
+// MasterArhivFunctions.code	:-|

@@ -1,0 +1,19 @@
+//	instruments2.txt
+
+
+
+string getNameA(n){
+	if(n<0)return "0";
+	p=('z'-'a')+1;
+	name="";
+	do{
+		t=n%p;
+		if(n<p && name.length())--t;
+		name=(string)('a'+t)+name;
+		n=(int)(n/p);
+		}while(n);
+	return name;
+}
+
+
+//	instruments2.txt	:-|

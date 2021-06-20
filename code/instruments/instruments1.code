@@ -1,0 +1,78 @@
+// instruments1.code
+
+
+
+
+void ReplaceVars(var* proga,string ho,var na){
+	if(typeof(na)!="program")na=PROGRAM(((string)na));
+	acces={};
+	while(1){
+		p=proga->getRowSize(acces);
+		if(proga->typeof(acces,"name")==ho)proga->typeof(acces,"name",na);
+		if(!p){
+			x=proga->getSub(acces);
+			if(ho==x)proga->setSub(acces,na);
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+}
+
+
+
+void DeleteUnit(var f,var x){
+	s=f->getIDs();
+	i=0;
+	for(;i<s.size();++i)if(f->getCommand(s[i])==x){
+		f->delete(s[i]);
+		return;
+		};;
+}
+
+
+
+var question(var vopros,var formula,var nameVar){
+	namedll="what.dll";
+	if(DLLS.indexOf(namedll)<0){
+		LoadDLL(namedll);
+		SendDLL(namedll,"WAY:"+WAY);
+		}
+	if(vopros=="equality")what="?: get equality for ("+formula+") unknown {"+nameVar+"}";
+	if(vopros=="optimize")what="?: optimize ("+formula+")";
+	if(vopros=="compare"){
+		if(typeof(formula)=="program"){if(formula.typeof()=="="){
+			formula2=PROGRAM("#==#");
+			formula2.setSub({0},formula.getSub({0}));
+			formula2.setSub({1},formula.getSub({1}));
+			formula=formula2;
+			}}
+		what="?: compare ("+formula+")";
+		}
+	if(vopros=="function"){
+		a=formula[1].export();
+		a=nameVar[1]+":"+a.substr(1,a.size()-2)+";";
+		b=formula[0].export();
+		b=nameVar[0]+":"+b.substr(1,b.size()-2)+";";
+		what="?: get code "+nameVar[0]+"=f("+nameVar[1]+") for table: head("+nameVar[1]+","+nameVar[0]+"){"+a+b+"}";
+		}
+	if(vopros=="row"){
+		what="?: get code for row "+formula.export();
+		if(isset(nameVar))what+=" first("+nameVar+")";
+		}
+	SendDLL(namedll,what);
+	R=RecvDLL(namedll);
+	return R;
+}
+
+
+// instruments1.code	:-|

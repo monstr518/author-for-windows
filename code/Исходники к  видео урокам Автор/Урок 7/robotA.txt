@@ -1,0 +1,15 @@
+#include <code\instruments\instruments1.txt>
+
+
+main(){
+	trace("Меня зовут robotA");
+	waymodule=WAY+"\\robotB";
+	include(waymodule+".txt");
+	f=getFunction("main",waymodule).copy();
+	DeleteUnit(&f,PROGRAM("f.run()"));
+	DeleteUnit(&f,PROGRAM("getstring()"));
+	trace("Вызываю robotB:");
+	f.run();
+	uninclude(waymodule);
+	getstring();
+}

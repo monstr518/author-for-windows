@@ -1,0 +1,55 @@
+// Модель игры "Палки". Два игрока. Число палок >0. 
+// Каждий игрок может, за свой ход, забрать {1,2,3} палки.
+// Игрок, на чей ход пришлось 0 палок - выиграл. Другой - проиграл.
+
+
+#include <Estimation.txt>
+
+
+
+void game(igrok,n){
+	do{
+		p=pravilo(n);
+		if(p=="победа"){
+			result=1;
+			break;
+			}
+		e=getEstimations(p,n);
+		i=defineX(e);
+		if(typeof(e[i])!="void"){
+			result=e[i];
+			break;
+			}
+		x=p[i];
+		trace((igrok?"A":"B")+":  "+n+"  -"+x);
+		prevn=n;
+		n-=x;
+		igrok=!igrok;
+		}while(1);
+	if(isset(prevn)){
+		trace((igrok?"A":"B")+":  "+(result?"viner":"luzer"));
+		result=1-result;
+		EstimationF({prevn,x,result});
+		}
+	trace("----------------------------");
+}
+
+
+
+
+void main(){
+	//EstimationF("учится");
+	for(i=1;i<=30;++i)game(rand()%2,i);
+	EstimationF("SaveControl");
+	getstring();
+}
+
+
+/*
+n: {2,3,5,8,6,9,11,12,14}
+x: {1,2,4,4,2,2,4,2,4}
+a: {2,0,2,2,0,0,2,0,2}
+a: {1,2,1,1,2,2,1,2,1}
+*/
+
+

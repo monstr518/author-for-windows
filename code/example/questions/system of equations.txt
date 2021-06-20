@@ -1,0 +1,173 @@
+//
+
+
+//-------------------------------------------------------------------------------------------------------
+void main(){
+	//s="t=n/(S+V);V*t=140;V=2;t2=n/(S+V2);V2*t2=140+28;V2=3;n=?";
+	//s="V/P=14;V/(P+S)=10;t=V/S;t=?";
+	s="2*x+5*y=15;3*x+8*y=-1;x=?";
+	findSystem(s);
+	getstring();
+}
+
+
+
+void findSystem(var SystemString){
+	var m=(map)0;
+	SystemMasiv=split(";",SystemString);
+	trace(SystemMasiv);
+	var namedll="what.dll";
+	LoadDLL(namedll);
+	SendDLL(namedll,"WAY:"+WAY);
+	SendDLL(namedll,"setcout(on)");
+
+	//найти все переменные:
+	Rejoin={};
+	VarsMasivs={};
+	for(i=0;i<SystemMasiv.size();++i){
+		what="?: what var names formul ("+SystemMasiv[i]+")";
+		trace(what);
+		SendDLL(namedll,what);
+		n=Recv1DLL(namedll);
+		VarsMasiv={};
+		for(j=0;j<n;++j)VarsMasiv+=split(",",Recv1DLL(namedll));
+		Rejoin+=VarsMasiv;
+		VarsMasivs+={(vector)(set)VarsMasiv};
+		}
+	Rejoin=(vector)(set)Rejoin;
+	trace(Rejoin);
+	trace(VarsMasivs);
+
+	//найти имя неизвестной переменной:
+	var Name;
+	for(i=0;i<SystemMasiv.size();++i){
+		a=split("=",SystemMasiv[i]);
+		if(a[0]=="?")Name=a[1];
+		if(a[1]=="?")Name=a[0];
+		}
+	trace(Name+"=?");
+	findName(namedll,Name,&m,VarsMasivs,SystemMasiv);
+	trace("---------------------------------------------------------");
+	trace(Name+"="+m[Name]);
+	define();
+	unLoadDLL(namedll);
+}
+
+
+var findName(var namedll,var Name,var*m,var VarsMasivs,var SystemMasiv){
+	if(m->isset(Name))return 1;
+//trace(SystemMasiv);trace(VarsMasivs);
+	//найдёт выражение с одной переменной
+	for(i=0;i<VarsMasivs.size();++i)if(VarsMasivs[i].size()==1)if(VarsMasivs[i][0]==Name){
+		V=findVar(namedll,Name,SystemMasiv[i]);
+		if(V=="")continue;
+		trace(V);
+		(*m)[Name]=V;
+		return 1;
+		}
+
+	//найдёт выражение содержащее неизвестную переменную
+	for(i=0;i<VarsMasivs.size();++i)if(VarsMasivs[i].indexOf(Name)>=0){
+		V=findVar(namedll,Name,SystemMasiv[i]);
+		if(V=="")continue;
+		trace(V);
+		what="?: what var names formul ("+V+")";
+		trace(what);
+		SendDLL(namedll,what);
+		n=Recv1DLL(namedll);
+		VarsMasiv={};
+		for(k=0;k<n;++k)VarsMasiv+=split(",",Recv1DLL(namedll));
+		trace(VarsMasiv.export());
+		n=0;
+		for(k=0;k<VarsMasiv.size();++k){
+			VarsMasivs2=VarsMasivs.erase(i);
+			SystemMasiv2=SystemMasiv.erase(i);
+			if(!findName(namedll,VarsMasiv[k],m,VarsMasivs2,SystemMasiv2))break;
+			++n;
+			}
+		if(!n)continue;
+		if(n<VarsMasiv.size()-1)continue;
+		if(getCompute(namedll,VarsMasiv,m,V,Name))return 1;
+		}
+
+	//найти общие уравнения для неизвестной переменной
+	for(i=0;i<VarsMasivs.size();++i)
+	for(j=i+1;j<VarsMasivs.size();++j){
+		a=VarsMasivs[i].indexOf(Name);
+		b=VarsMasivs[j].indexOf(Name);
+		if(a<0 || b<0)continue;
+		subNames=VarsMasivs[i]*VarsMasivs[j]-{Name};
+		for(int h=0;h<subNames.size();++h){
+			subName=subNames[h];
+			trace("find: "+subName);
+			A=findVar(namedll,subName,SystemMasiv[i]);
+			B=findVar(namedll,subName,SystemMasiv[j]);
+		if(A=="" || B=="")continue;
+		F=A+"="+B;
+		trace(F);
+		F=findVar(namedll,Name,F);
+		if(F=="")continue;
+		trace(F);
+		what="?: what var names formul ("+F+")";
+		trace(what);
+		SendDLL(namedll,what);
+		n=Recv1DLL(namedll);
+		VarsMasiv={};
+		for(k=0;k<n;++k)VarsMasiv+=split(",",Recv1DLL(namedll));
+		trace(VarsMasiv.export());
+		n=0;
+			VarsMasivs2=VarsMasivs;
+			SystemMasiv2=SystemMasiv;
+
+			if(a<0){
+				VarsMasivs2=VarsMasivs2.erase(j);
+				SystemMasiv2=SystemMasiv2.erase(j);
+				}
+			if(b<0){
+				VarsMasivs2=VarsMasivs2.erase(i);
+				SystemMasiv2=SystemMasiv2.erase(i);
+				}
+
+			for(k=0;k<VarsMasiv.size();++k){
+				if(!findName(namedll,VarsMasiv[k],m,VarsMasivs2,SystemMasiv2))break;
+				++n;
+				}
+			if(!n)continue;
+			if(n<VarsMasiv.size()-1)continue;
+			if(getCompute(namedll,VarsMasiv,m,F,Name))return 1;
+			//VarsMasivs2+={Name+"="+F};
+			//SystemMasiv2+={VarsMasiv+{Name}};
+			//findName(namedll,Name,m,VarsMasivs2,SystemMasiv2);
+			}
+		}
+
+	return 0;
+}
+
+
+var getCompute(var namedll,var VarsMasiv,var*m,var F,var Name){
+		str="";//x=1;
+		for(k=0;k<VarsMasiv.size();++k)str+= VarsMasiv[k] + "=" + (*m)[VarsMasiv[k]] + ";";
+		what="?: optimize ("+F+") from {"+str+"}";
+		trace(what);
+		SendDLL(namedll,what);
+		n=Recv1DLL(namedll);
+		if(n<0)return 0;
+		for(k=0;k<n;++k)t=Recv1DLL(namedll);
+		trace(t);
+		(*m)[Name]=t;
+		return 1;
+}
+
+
+var findVar(var namedll,var subName,var equation){
+	var what="?: get equality for ("+equation+") unknown {"+subName+"}";
+	trace(what);
+	SendDLL(namedll,what);
+	n=Recv1DLL(namedll);
+	if(n==0)return "";
+	equation2=split("=",Recv1DLL(namedll));
+	if(equation2[0]!=subName)return "";
+	return equation2[1];
+}
+

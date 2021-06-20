@@ -1,0 +1,23 @@
+
+
+void ControlConditionX(SYS,command,method){
+	if(method=="find"){
+		t=command->typeof();
+		if({"<",">","<=",">=","==","!="}.findOf(t)<0)return;
+		S=inteligentCompareProgs(*command,"#"+t+"#.#(#)");
+		if(S.size()==4){
+			if(t[0]=='<' || t[0]=='>')t[0]=(t[0]=='<'?'>':'<');
+			S={S[1],S[2],S[3],S[0]};
+			P=PROGRAM("#"+t+"#");
+			P.setSub({0},command->getSub({1}));
+			P.setSub({1},command->getSub({0}));
+			*command=P;
+			}else S=inteligentCompareProgs(*command,"#.#(#)"+t+"#");
+		if(S.size()!=4)return;
+		if({"findOf","indexOf"}.findOf((string)S[1])<0)return;
+		command->setSub({0,0,1},PROGRAM("find"));
+		return;
+		}
+
+}
+

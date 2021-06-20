@@ -1,0 +1,402 @@
+// paradigmus.code
+
+#include <code\memorycard\basis.txt>
+#include <code\paradigmus\arhiv.txt>
+
+
+
+var AnalizeParadigma(var p_function){
+	f=findFunctionInArhivParadigm(p_function);
+	if(typeof(f)=="function")return f.copy();
+	f=RunAnalize(p_function);
+	if(typeof(f)=="function")findFunctionInArhivParadigm(p_function,f);
+	return f;
+}
+
+
+
+var RunAnalize(var p_function){
+	f2=p_function->copy();
+	ClearIFOFF(&f2);
+	ClearControlPset(&f2);
+	ReplaceRandomI(&f2);
+	X=CreateOneMemoryCard();
+	pos=p_function->Root();
+	pos=p_function->Next(pos);
+	X.pos=pos;
+	S={X};
+	Pset={"G":((graph)0),"U":{}};
+	for(;!S.empty();S.pop_begin())t=subRunAnalize(p_function,&S,&Pset);
+	LiRang(&Pset,0);
+	ways=getWaysInGraph(&Pset,0);
+	iRandoms={};
+	if(!ways.size())return 0;
+	i=0;
+	for(;i<ways.size();++i){
+		X=CreateOneMemoryCard();
+		pos=p_function->Root();
+		pos=p_function->Next(pos);
+		X.pos=pos;
+		S={X};
+		X=0;
+		for(;!S.empty();S.pop_begin()){
+			t=subRunAnalize(p_function,&S,&Pset,ways[i]);
+			if(t){
+				X=S.begin();
+				break;
+				}
+			}
+		iRandoms.push(X.randomRow);
+		}
+	pos=f2.insertDown(f2.Root());
+	f2.setCommand(pos,PROGRAM("planRandomWays="+iRandoms.export()));
+	pos=f2.insertDown(pos);
+	f2.setCommand(pos,PROGRAM("planRandomWay=planRandomWays[#]"));
+	return f2;
+}
+
+
+
+var subRunAnalize(var p_function,var p_S,var p_Pset,var way){
+	p_memorycard=&(*p_S)[0];
+	pos=p_memorycard->pos;
+	while(pos!=p_function->Root()){
+		ok=0;
+		command=p_function->getCommand(pos);
+		if(typeof(p_memorycard->povtorCommand)=="program"){
+			command=p_memorycard->povtorCommand;
+			p_memorycard->povtorCommand=0;
+			}
+		if(typeof(command)=="program"){
+			if(((string)command)=="OFF")return 0;
+			A=findAllAccessVoidInCommand(command);
+			if(A.size()>0){
+				B=A=A[0];
+				B.pop();
+				subCommand=command.getSub(B);
+				if(subCommand.typeof()=="AccessArray"){
+					nameArray=((string)subCommand.getSub({0}));
+					X=#;
+					isDefinedInMC(p_memorycard,nameArray,&X);
+					if(typeof(X)!="vector"){
+						trace(nameArray+" is not vector !!!");
+						return 0;
+						}
+					command2=command;
+					p_memorycard->pos=pos;
+					i=1;
+					for(;i<X.size();++i){
+						P=PROGRAM(((string)i));
+						command2.setSub(A,P);
+						memorycardNew=(*p_memorycard);
+						memorycardNew.povtorCommand=command2;
+						memorycardNew.randomRow.push(i);
+						p_S->push(memorycardNew);
+						}
+					P=PROGRAM("0");
+					command2.setSub(A,P);
+					p_memorycard->povtorCommand=command2;
+					p_memorycard->randomRow.push(0);
+					}
+				if(subCommand.typeof()=="%"){
+					n=computeCommand(p_memorycard,subCommand.getSub({1}));
+					command2=command;
+					p_memorycard->pos=pos;
+					i=1;
+					for(;i<n;++i){
+						P=PROGRAM(((string)i));
+						command2.setSub(A,P);
+						memorycardNew=(*p_memorycard);
+						memorycardNew.povtorCommand=command2;
+						memorycardNew.randomRow.push(i);
+						p_S->push(memorycardNew);
+						}
+					P=PROGRAM("0");
+					command2.setSub(A,P);
+					p_memorycard->povtorCommand=command2;
+					p_memorycard->randomRow.push(0);
+					}
+				continue;
+				}
+			t=command.typeof();
+			if(t=="="){
+				ok=1;
+				prisvoenieRow(p_memorycard,command);
+				}
+			if(t=="function"){
+				nameF=((string)command.getSub({0}));
+				if(nameF=="trace")ok=1;
+				if(nameF=="ControlPset"){
+					ok=1;
+					Card={};
+					n=command.getRowSize();
+					i=1;
+					for(;i<n;++i){
+						nameX=command.getSub({i});
+						V=#;
+						isDefinedInMC(p_memorycard,nameX,&V);
+						Card.push(V);
+						}
+					if(!isset(way)){if(controlPsetInRunAnalize(p_Pset,Card,pos,&p_memorycard->posPreviorInGraph))return 0;}else {
+						if(p_memorycard->posPreviorInGraph<way.size()){if(Card!=(p_Pset->U)[way[p_memorycard->posPreviorInGraph]-1])return 0;}else return 0;
+						++p_memorycard->posPreviorInGraph;
+						}
+					}
+				}
+			if(t=="if"){
+				ok=1;
+				ConditionX=computeCommand(p_memorycard,command.getSub({0}));
+				if(typeof(ConditionX)!="void")ConditionX=((bool)ConditionX);
+				}
+			if(!ok)computeCommand(p_memorycard,command);
+			}
+		pos=p_function->Next(pos);
+		if(typeof(pos)=="vector");else continue;
+		if(typeof(ConditionX)=="void")return 0;
+		pos=pos[ConditionX?0:1];
+		continue;
+		}
+	if(!isset(way))p_Pset->G.NET(p_memorycard->posPreviorInGraph,0,"",1,0);
+	return 1;
+}
+
+
+
+var controlPsetInRunAnalize(var p_Pset,var Card,var pos,var p_posPreviorInGraph){
+	t=p_Pset->U.find(Card);
+	if(t<0){
+		trace(Card);
+		p_Pset->U.push(Card);
+		n=p_Pset->U.size();
+		p_Pset->G.NET((*p_posPreviorInGraph),0,"",1,n);
+		(*p_posPreviorInGraph)=n;
+		return 0;
+		}
+	++t;
+	p_Pset->G.NET((*p_posPreviorInGraph),0,"",1,t);
+	return 1;
+}
+
+
+
+var prisvoenieRow(var p_memorycard,var command){
+	t=command.typeof();
+	if(t!="="){
+		if(command.getNames(3).empty())return eval(command);
+		return computeCommand(p_memorycard,command);
+		}
+	A=command.getSub({0});
+	command=command.getSub({1});
+	X=prisvoenieRow(p_memorycard,command);
+	if(A.typeof()=="var")setValueInMC(p_memorycard,A,X);
+	if(A.typeof()=="AccessArray"){
+		P=A.getSub({0});
+		V=#;
+		isDefinedInMC(p_memorycard,P,&V);
+		Index=prisvoenieRow(p_memorycard,A.getSub({1}));
+		V[Index]=X;
+		setValueInMC(p_memorycard,P,V);
+		}
+	return X;
+}
+
+
+
+var computeCommand(var p_memorycard,var command){
+	if(command.getNames(3).empty())return eval(command);
+	namesVars=((vector)((set)command.getNames(1)));
+	dontUseThisName=((map)0);
+	i=0;
+	for(;i<namesVars.size();++i){
+		X=#;
+		isDefinedInMC(p_memorycard,namesVars[i],&X);
+		dontUseThisName[namesVars[i]]=X;
+		ReplaceVars(&command,namesVars[i],PROGRAM("dontUseThisName["+namesVars[i].export()+"]"));
+		}
+	R=eval(command);
+	i=0;
+	for(;i<namesVars.size();++i)setValueInMC(p_memorycard,namesVars[i],dontUseThisName[namesVars[i]]);
+	return R;
+}
+
+
+
+void LiRang(var p_Pset,var vidok){
+	if(!isset(vidok))vidok=0;
+	n=p_Pset->U.size()+1;
+	p_Pset->Rangs=reserve(n);
+	if(vidok)trace(p_Pset->G.export());
+	(p_Pset->Rangs)[0]=t=1;
+	for(;p_Pset->Rangs.find(0)>=0;++t){
+		i=0;
+		for(;i<n;++i)if((p_Pset->Rangs)[i]==t){
+			Q=p_Pset->G.getNET(i,0,"",1,#);
+			j=0;
+			for(;j<Q.size();++j){
+				to=Q[j][0];
+				if(!(p_Pset->Rangs)[to])(p_Pset->Rangs)[to]=t+1;
+				}
+			};
+		}
+	if(vidok)trace("Rangs: "+p_Pset->Rangs.export());
+}
+
+
+
+vector getWaysInGraph(var p_Pset,var vidok){
+	if(!isset(vidok))vidok=0;
+	R={};
+	one={};
+	subgetWaysInGraph(p_Pset,0,&one,&R);
+	if(vidok)trace("ways: "+R.export());
+	return R;
+}
+
+
+
+var subgetWaysInGraph(var p_Pset,var n,var p_one,var p_R){
+	ranga=(p_Pset->Rangs)[n];
+	Q=p_Pset->G.getNET(n,0,"",1,#);
+	i=0;
+	for(;i<Q.size();++i){
+		t=Q[i][0];
+		rangb=(p_Pset->Rangs)[t];
+		if(t==0)p_R->push((*p_one));
+		if(ranga>=rangb);else {
+			p_one->push(t);
+			subgetWaysInGraph(p_Pset,t,p_one,p_R);
+			p_one->pop();
+			}
+		}
+}
+
+
+
+vector findAllAccessVoidInCommand(var command){
+	proga=&command;
+	R={};
+	acces={};
+	while(1){
+		p=proga->getRowSize(acces);
+		if(!p){
+			x=proga->getSub(acces);
+			if(typeof(x)=="program"){if(((string)x)=="#")R.push(acces);}
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	R.revers();
+	return R;
+}
+
+
+
+void ReplaceVars(var* proga,string ho,var na){
+	if(typeof(na)!="program")na=PROGRAM(((string)na));
+	acces={};
+	while(1){
+		p=proga->getRowSize(acces);
+		if(proga->typeof(acces,"name")==ho)proga->typeof(acces,"name",na);
+		if(!p){
+			x=proga->getSub(acces);
+			if(ho==x)proga->setSub(acces,na);
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+}
+
+
+
+void ClearIFOFF(var p_function){
+	while(1){
+		ids=p_function->getIDs();
+		t=#;
+		i=0;
+		for(;i<ids.size();++i){
+			command=p_function->getCommand(ids[i]);
+			if(typeof(command)=="program"){if(command.typeof()=="OFF"){
+				t=ids[i];
+				break;
+				}}
+			}
+		if(!isset(t))return;
+		pos=t;
+		while(1){
+			pos=p_function->Up(pos);
+			if(typeof(pos)=="vector"){
+				p_function->delete(t);
+				break;
+				}
+			command=p_function->getCommand(pos);
+			if(typeof(command)=="program");else continue;
+			if(command.typeof()=="if");else continue;
+			p_function->terminateIF(pos);
+			break;
+			}
+		}
+}
+
+
+
+void ClearControlPset(var p_function){
+	ok=1;
+	while(ok){
+		ok=0;
+		ids=p_function->getIDs();
+		i=0;
+		for(;i<ids.size();++i){
+			command=p_function->getCommand(ids[i]);
+			if(typeof(command)!="program");else {if(command.typeof()=="function"){if(((string)command.getSub({0}))=="ControlPset"){
+				ok=1;
+				p_function->delete(ids[i]);
+				break;
+				}}}
+			}
+		}
+}
+
+
+
+void ReplaceRandomI(var p_function){
+	ids=p_function->getIDs();
+	i=0;
+	for(;i<ids.size();++i){
+		command=p_function->getCommand(ids[i]);
+		if(typeof(command)!="program");else {
+			A=findAllAccessVoidInCommand(command);
+			if(!A.size());else {
+				B=A=A[0];
+				B.pop();
+				subCommand=command.getSub(B);
+				if(subCommand.typeof()=="AccessArray"||subCommand.typeof()=="%"){
+					command.setSub(A,PROGRAM("planRandomWay.pop_begin()"));
+					p_function->setCommand(ids[i],command);
+					}
+				}
+			}
+		}
+}
+
+
+// paradigmus.code	:-|

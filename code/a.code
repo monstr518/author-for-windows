@@ -1,0 +1,17 @@
+// a.code
+
+
+
+
+void main(){
+	text=readFile("code\\json1.json");
+	trace(text);
+	result=JSON("parse",text);
+	trace(result.export());
+	result.meLine={"OK","OK2","OK3",{}};
+	text=JSON("stringify",result);
+	trace(text);
+}
+
+
+// a.code	:-|

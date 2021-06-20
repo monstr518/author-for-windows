@@ -1,0 +1,22 @@
+//	reconstructor.txt
+
+
+void main(){
+	if(0)#;else ok=9;
+	f=getFunction(getThisFunctionName());
+	A=B=f.getGraph();
+	n=A.getFree();
+	end=A.getMARKER(#,2,"",2,"End")[0][0];
+	A.deleteMARKER(end);
+	A.MARKER(n,0,"",0,"End");
+	begin=B.getMARKER(#,2,"",2,"Begin")[0][0];
+	B.deleteMARKER(begin);
+	A.addGraph(B,{end,n},{begin,end});
+	//trace(A);
+	f=A.toFunction();
+	trace(f.exportText());
+	getstring();
+}
+
+
+//	reconstructor.txt	:-|

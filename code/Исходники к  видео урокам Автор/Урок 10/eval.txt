@@ -1,0 +1,27 @@
+
+int f(a){
+	a+=100;
+	return a;
+}
+
+
+main(){
+	trace(eval("2+2"));
+/*
+	trace(eval("f(5)"));
+
+	n=15;
+	s="n+21-5";
+	trace(s+"="+eval(s));
+
+	eval(PROGRAM("for(i=0;i<10;++i)trace(i);"));
+
+	trace(eval("rozpad({19,54,23,28});"));
+	define();
+
+	eval("trace(rozpad({19,54,23,28}));define();");
+
+	trace(eval("5+eval(\"100\")"));
+*/
+	getstring();
+}

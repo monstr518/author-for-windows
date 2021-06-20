@@ -1,0 +1,20 @@
+
+void goinstal(params){
+	trace("Вас приветствует инсталятор программы.");
+	trace("Кто я?:");
+	name=getstring();
+	ok=0; // искусственный глюк для демонстрации
+	if(!ok){
+		trace("Инсталляция не сработала попробуйте ещо раз.");
+		trace("Стоит защита от новичка и неопытного юзера :-)");
+		getstring();
+		return 0;
+		}
+	f=getFunction(params[0],params[1]);
+	pos=f.Root();
+	f.delete(f.Next(pos));
+	f.delete(f.Next(pos));
+	pos=f.insertDown(pos);
+	f.setCommand(pos,PROGRAM("name="+name.export()));
+	//return 1;
+}

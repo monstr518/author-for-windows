@@ -1,0 +1,290 @@
+//	replacerdemo.txt
+
+var scanerAlgorithm(p_func,scanFunc){
+	pos=p_func->Root();
+	pos=p_func->Down(pos);
+	listpos={pos};
+	rangpos={p_func->Rang(pos)};
+	while(listpos.size()){
+		rang=rangpos.min();
+		i=rangpos.find(rang);
+		pos=listpos[i];
+		while(1){
+			i=listpos.find(pos);
+			if(i<0)break;
+			rangpos.erase(i);
+			listpos.erase(i);
+			}
+		if(pos==p_func->Root())continue;
+		if(scanFunc.run(p_func,pos))return pos;
+		pos=p_func->Down(pos);
+		if(typeof(pos)=="int")pos={pos};
+		for(i=0;i<pos.size();++i){
+			rang2=p_func->Rang(pos[i]);
+			if(rang>=rang2)continue;
+			listpos.push(pos[i]);
+			rangpos.push(rang2);
+			}
+		}
+	return #;
+}
+
+
+var conditionResult(reserveName518){
+	reserveName518=reserveName518.getSub({0});
+	if(reserveName518.getNames().in("reserveName518"))return #;
+	result=eval(reserveName518);
+	if(isset(result))result=(bool)result;
+	return result;
+}
+
+
+bool isIfConst(p_func,pos){
+	command=p_func->getCommand(pos);
+	if(!command.isIF())return false;
+	if(typeof(conditionResult(command))!="bool")return false;
+	if(!p_func->isBodyIF(pos))return false;
+	return true;
+}
+
+
+int getFreeLabel(p_func){
+	ids=p_func->getIDs();
+	labels={};
+	for(i=0;i<ids.size();++i){
+		command=p_func->getCommand(ids[i]);
+		if(command.typeof()!="Label")continue;
+		labels.push(command.typeof("value"));
+		}
+	newLabel=10;
+	while(labels.in(newLabel))newLabel+=10;
+	return newLabel;
+}
+
+
+
+var getAccessToLabel(p_tree,labelX){
+	n=p_tree->getRowSize();
+	for(i=0;i<n;++i){
+		sub=p_tree->getSub({i});
+		if(sub==labelX)return {i};
+		access=getAccessToLabel(&sub,labelX);
+		if(isset(access))return {i}+access;
+		}
+	return #;
+}
+
+
+
+bool replaceConstCondition(p_func){
+	scanFunc=getFunction("isIfConst");
+	pos=scanerAlgorithm(p_func,scanFunc);
+
+	if(!isset(pos))return 0;
+
+	frrelabel=getFreeLabel(p_func);
+	posnew=p_func->insertUp(pos);
+	labelX=PROGRAM("<label:"+frrelabel+">");
+	p_func->setCommand(posnew,labelX);
+	frrelabel2=getFreeLabel(p_func);
+
+	command=p_func->getCommand(pos);
+	ok=conditionResult(command);
+
+	tree=p_func->export();
+	access=getAccessToLabel(&tree,labelX);
+	access[access.size()-1]=access.end()+1;
+
+	command=tree.getSub(access);
+	command=command.getSub({ok?1:2});
+	if(isset(command))tree.setSub(access,command); else
+		tree.setSub(access,PROGRAM("<label:"+frrelabel2+">"));
+	p_func->import(tree);
+	pos=p_func->getLabel(frrelabel);
+	p_func->delete(pos);
+	if(!isset(command)){
+		pos=p_func->getLabel(frrelabel2);
+		p_func->delete(pos);
+		}
+	return 1;
+}
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+bool isForeverWhile(p_func,pos){
+	command=p_func->getCommand(pos);
+	if(!command.isIF())return false;
+	X=conditionResult(command);
+	if(typeof(X)!="bool")return false;
+	if(!X)return false;
+	pos=p_func->Down(pos,1);
+	command=p_func->getCommand(pos);
+	if(command.typeof()=="+="){
+		A=command.getSub({0});
+		B=command.getSub({1});
+		if(A.typeof()!="var")return false;
+		if(B.typeof()!="var")return false;
+		pos=p_func->Down(pos);
+		command=p_func->getCommand(pos);
+		if(command.typeof()!="/=")return false;
+		if(command.getSub({0})!=B)return false;
+		if((string)command.getSub({1})!="2")return false;
+		return true;
+		}
+	if(command.typeof()=="/="){
+		A=command.getSub({0});
+		if(A.typeof()!="var")return false;
+		if((string)command.getSub({1})!="2")return false;
+		pos=p_func->Down(pos);
+		command=p_func->getCommand(pos);
+		if(command.typeof()!="+=")return false;
+		B=command.getSub({1});
+		if(command.getSub({0}).typeof()!="var")return false;
+		if(B.typeof()!="var")return false;
+		return B==A;
+		}
+	if(command.typeof()=="="){
+		do{
+			if(command.getSub({0}).typeof()!="var")return false;
+			if(command.getSub({1}).getNames().size())return false;
+			rang=p_func->Rang(pos);
+			pos=p_func->Down(pos);
+			if(typeof(pos)!="int")return false;
+			if(p_func->Rang(pos)<=rang)break;
+			command=p_func->getCommand(pos);
+			}while(1);
+		return true;
+		}
+	return false;
+}
+
+
+bool replaceSummDive2A(p_func){
+	scanFunc=getFunction("isForeverWhile");
+	pos=scanerAlgorithm(p_func,scanFunc);
+	if(!isset(pos))return 0;
+	frrelabel=getFreeLabel(p_func);
+	posnew=p_func->insertUpRang(pos);
+	labelX=PROGRAM("<label:"+frrelabel+">");
+	p_func->setCommand(posnew,labelX);
+	tree=p_func->export();
+	access=getAccessToLabel(&tree,labelX);
+	access[access.size()-1]=access.end()+1;
+	command=tree.getSub(access);
+	subCommand=command.getSub({1,0});
+	if(subCommand.typeof()=="+="){
+		newCommand=PROGRAM("#+=2*#");
+		newCommand.setSub({0},subCommand.getSub({0}));
+		newCommand.setSub({1,1},subCommand.getSub({1}));
+		tree.setSub(access,newCommand);
+		}
+	if(subCommand.typeof()=="/="){
+		newCommand=command.getSub({1,1});
+		tree.setSub(access,newCommand);
+		}
+	if(subCommand.typeof()=="="){
+		newCommand=command.getSub({1});
+		tree.setSub(access,newCommand);
+		}
+	p_func->import(tree);
+	pos=p_func->getLabel(frrelabel);
+	p_func->delete(pos);
+	return 1;
+}
+
+
+
+//-------------------------------------------------------------------------------------------------
+bool isSummFor(p_func,pos){
+	command=p_func->getCommand(pos);
+	if(command.typeof()!="=")return false;
+	A=command.getSub({0});
+	if(A.typeof()!="var")return false;
+	if(command.getSub({1}).getNames().size())return false;
+	V=(int)eval(command.getSub({1}));
+	pos=p_func->Down(pos);
+	command=p_func->getCommand(pos);
+	if(!command.isIF())return false;
+	command=command.getSub({0});
+	type=command.typeof();
+	if(type!="<" && type!="<=")return false;
+	if(command.getSub({0})!=A)return false;
+	pos=p_func->Down(pos,1);
+	command=p_func->getCommand(pos);
+	if(command.typeof()!="+=")return false;
+	N=command.getSub({1});
+	if(N==A){
+		if(type!="<=")return false;
+		if(V!=0 && V!=1)return false;
+		}else if(N.getNames().in((string)A))return false;
+	pos=p_func->Down(pos);
+	command=p_func->getCommand(pos);
+	type=command.typeof();
+	if(type!="++#" && type!="#++")return false;
+	if(command.getSub({0})!=A)return false;
+	return true;
+}
+
+
+bool replaceSummRow(p_func){
+	scanFunc=getFunction("isSummFor");
+	pos=scanerAlgorithm(p_func,scanFunc);
+	if(!isset(pos))return 0;
+	posnew=pos;
+	command=p_func->getCommand(pos);
+	A=command.getSub({0});
+	V=(int)eval(command.getSub({1}));
+	pos=p_func->Down(pos);
+	command=p_func->getCommand(pos).getSub({0});
+	type=command.typeof();
+	N=command.getSub({1});
+	pos=p_func->Down(pos,1);
+	command=p_func->getCommand(pos);
+	U=command.getSub({1});
+	if(U==A){
+		F=PROGRAM("#+=(#+1)*#/2");
+		F.setSub({0},command.getSub({0}));
+		F.setSub({1,0,1},N);
+		F.setSub({1,0,0,0},N);
+		}else{
+		if(type=="<=")--V;
+		F=PROGRAM("#+=#*#");
+		F.setSub({0},command.getSub({0}));
+		F.setSub({1,0},U);
+		F.setSub({1,1},N);
+		if(V){
+			U=PROGRAM("#- "+V);
+			U.setSub({0},N);
+			F.setSub({1,1},U);
+			}
+		}
+	frrelabel=getFreeLabel(p_func);
+	labelX=PROGRAM("<label:"+frrelabel+">");
+	p_func->setCommand(posnew,labelX);
+	tree=p_func->export();
+	access=getAccessToLabel(&tree,labelX);
+	access[access.size()-1]=access.end()+1;
+	tree.setSub(access,F);
+	p_func->import(tree);
+	pos=p_func->getLabel(frrelabel);
+	p_func->delete(pos);
+	return 1;
+}
+
+
+
+//-------------------------------------------------------------------------------------------------
+var reconstructor(namefunc){
+	func=getFunction(namefunc);
+	func=func.copy();
+	while(replaceConstCondition(&func));
+	while(replaceSummDive2A(&func));
+	while(replaceSummRow(&func));
+	return func;
+}
+
+
+
+//	replacerdemo.txt	:-|

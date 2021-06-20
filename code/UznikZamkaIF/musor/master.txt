@@ -1,0 +1,183 @@
+
+
+
+void main(){
+	Zadanie("nikras",5); // nikras(?)==5
+
+	getstring();
+}
+
+
+
+void Zadanie(namef,returnValue){
+	SYS={};
+	f=getFunction(namef);
+	n=f.Root();
+	n=f.Up(n);
+	while(n!=f.Root()){
+		comand=f.getComand(n);
+		typeofcomand=comand.typeof();
+		if(typeofcomand=="return"){
+			SYS={};
+			q=comand.getRowSize();
+			if(q==1){
+				x=comand.getSub({0});
+				construction=PROGRAM("#="+returnValue);
+				construction.setSub({0,0},x);
+				AddConstruction(&SYS,construction);
+				}
+			}
+		if(typeofcomand=="="){
+			AddConstruction(&SYS,comand);
+			}
+
+		n=f.Up(n);
+		}
+	trace(SYS.export());
+
+}
+
+
+
+void AddConstruction(SYS,comand){
+	OptimizatorConstruction(&comand);
+	root=comand.typeof();
+	power=comand.getPower();
+	if(root=="=" && power==3){
+		nameX=comand.getSub({0});
+		X=comand.getSub({1});
+		if(nameX.typeof()!="var"){
+			nameX=comand.getSub({1});
+			X=comand.getSub({0});
+			}
+		if(nameX.typeof()=="var" && X.typeof()!="var"){
+			Podstanovka(SYS,nameX,X);
+			return;
+			}
+
+		}
+
+	SYS->push(comand);
+}
+
+
+
+void Podstanovka(SYS,nameX,X){
+	nameX=(string)nameX;
+	for(i=0;i<SYS->size();++i){
+		t=ReplaceVars(&(*SYS)[i],nameX,X);
+		if(t)OptimizatorConstruction(&(*SYS)[i]);
+		}
+}
+
+
+
+void OptimizatorConstruction(construction){
+	root=construction->typeof();
+	if(root=="=" || root=="=="){
+		if(construction->getPower()>3){
+			S=getListAllVar(*construction);
+			if(S.size()==1){
+				nameVar=S[0];
+				P=question("equality",(string)(*construction),nameVar);
+				if(P.size()==1)*construction=PROGRAM(P[0]);
+				}
+			}
+		}
+}
+
+
+
+var question(vopros,formula,nameVar){
+	namedll="what.dll";
+	if(DLLS.indexOf(namedll)<0){
+		LoadDLL(namedll);
+		SendDLL(namedll,"WAY:"+WAY);
+		}
+	if(vopros=="equality")what="?: get equality for ("+formula+") unknown {"+nameVar+"}";
+	if(vopros=="optimize")what="?: optimize ("+formula+")";
+	//trace(what);
+	SendDLL(namedll,what);
+	R=RecvDLL(namedll);
+	//trace(R.export());
+	return R;
+}
+
+
+//Взять список всех переменных
+vector getListAllVar(comand){
+	S=(set){};
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=comand.getRowSize(acces);
+		x=comand.getSub(acces);
+		if(!p){
+			if(x.typeof()=="var"){
+				S.insert((string)x);
+				}
+			}
+		acces.push(p);
+		isf=(x.typeof()=="function");
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf)if(p==1)--p;
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf)if(p==1)--p;
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return (vector)S;
+}
+
+
+
+// заменит в программе все переменные ho на выражение na
+var ReplaceVars(var*proga,string ho,var na){
+	if(typeof(na)!="program")na=PROGRAM((string)na);
+	acces={};
+	ok=0;
+	while(1){
+		p=proga->getRowSize(acces);
+		if(proga->typeof(acces,"name")==ho)proga->typeof(acces,"name",na);
+		if(!p){
+			x=proga->getSub(acces);
+			if(ho==x){
+				proga->setSub(acces,na);
+				ok=1;
+				}
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return ok;
+}
+
+
+
+var nikras(a){
+	t=73;
+	return a+1+2*3-100+t;
+}
+

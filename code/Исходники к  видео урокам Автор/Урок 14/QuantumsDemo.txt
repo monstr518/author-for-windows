@@ -1,0 +1,26 @@
+#include <code\Quantums\Quantums.txt>
+
+
+forSpirit(namefunction){
+	f=getFunction(namefunction);
+	Mahine(f);
+}
+
+
+void main(){
+	Spirit("forSpirit",getThisFunctionName());
+	m=reserve(8);
+
+	m[Quantum("All")]=5;
+	//m[Quantum("Exists")]=7;
+	//m[Quantum("Exists!")]=0;
+	trace(m.export());
+/*
+	i=Quantum("All");
+	t=i+20;
+	m[t]=i+100;
+	trace(m.export());
+*/
+	define();
+	getstring();
+}

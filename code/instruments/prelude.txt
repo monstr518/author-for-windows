@@ -1,0 +1,81 @@
+#include <code\instruments\ExportData.txt>
+
+//"[1 to 10]"
+//"[10 to 0]"
+var arhiv(command){
+	command=command.trim();
+	if(command[0]=='[' && command[command.size()-1]==']'){
+		command=command.substr(1,command.size()-2);
+		m=command.split(" ");
+		if(m.size()==1)return reserve((int)command);
+		a=(int)(m[0]);
+		b=(int)(m[2]);
+		size=a-b;
+		if(a<b)size=b-a;
+		if(m[1]=="to")++size;
+		R=reserve(size);
+		for(i=0;i<size;++i)R[i]=(a<b)?a+i:a-i;
+		return R;
+		}
+}
+
+
+//"t+10" => m{}
+//"i*2+1" => m{}
+var init(command,m){
+	X=PROGRAM(command);
+	names=(set)X.getNames();
+	if(names.size()>1){
+		trace("Error init: "+command.export());
+		return m;
+		}
+	if(names.size()==1)X.replace(names[0],"i");
+	for(i=0;i<m.size();++i)m[i]=eval(X);
+	return m;
+}
+
+
+// "i[0]+10", {{1},{2}} => {11,12}
+var map(command,m){
+	X=PROGRAM(command);
+	names={};
+	if(isset(X))names=(set)X.getNames();
+	if(names.size()>1){
+		trace("Error map: "+command.export());
+		return m;
+		}
+	if(!names.size()){
+		Y=PROGRAM("i"+command);
+		if(isset(Y))X=Y;
+		names=X.getNames();
+		}
+	if(names.size()==1){
+		X.replace(names[0],"t");
+		}
+	for(i=0;i<m.size();++i){
+		t=m[i];
+		m[i]=eval(X);
+		}
+	return m;
+}
+
+
+
+
+var integrate(func,args,poverh){
+	if(typeof(func)=="string")func=getFunction(func);
+	func=func.copy();
+	newNames=names=func.getNamesStart();
+	size={names.size(),args.size()}.min();
+	for(i=0;i<size;++i)if(isset(args[i])){
+		newNames-={names[i]};
+		text=ExportDataSpeed(&args[i]);
+		X=PROGRAM(names[i]+"="+text);
+		pos=func.Root();
+		pos=func.insertDown(pos);
+		func.setCommand(pos,X);
+		}
+	func.setNamesStart(newNames);
+	return func;
+}
+

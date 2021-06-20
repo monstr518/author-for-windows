@@ -1,0 +1,482 @@
+// module2.code
+
+
+
+
+void initSYS(var SYS,var func){
+	( *SYS)+={AllNamesFunction:{},Paraleli:{},Plan:{},activeN:0,analizeCompleate:0};
+	if(typeof(func)=="string")func=getFunction(func);
+	if(typeof(func)!="function"){
+		trace("Нужно указать объект функции или её имя!");
+		return;
+		}
+	tmp=0;
+	MasterArhivFunctions(&tmp,"функция",func);
+	SYS->function=func;
+	SYS->AllNamesFunction=getAllNamesIzFunction(&SYS->function);
+	SYS->Acamulator=((function)0);
+	SYS->runProba=0;
+}
+
+
+
+void Zadanie(var SYS){
+	SYS->AllNames=SYS->AllNamesFunction;
+	SYS->AcamulationIsBegin=0;
+	f= &SYS->function;
+	n=f->Root();
+	SYS->FineData={};
+	SYS->Paraleli.push({Izvesno:((map)0),n:n,prevn:n,vars:{}});
+	while(SYS->Paraleli.size()){
+		SYS->activeN=0;
+		n=SYS->Paraleli[SYS->activeN].n;
+		prevn=SYS->Paraleli[SYS->activeN].prevn;
+		if(prevn!=n){if(n==f->Root()){
+			SYS->FineData.push(SYS->Paraleli[SYS->activeN]);
+			SYS->Paraleli.erase(SYS->activeN);
+			continue;
+			}}
+		comand=f->getCommand(n);
+		ListCommands={};
+		if(typeof(comand)=="program"){
+			ListCommands={comand};
+			getInteriorCommand(&ListCommands);
+			}
+		while(ListCommands.size()){
+			comand=ListCommands.pop();
+			obrabotano=0;
+			typeofcomand=comand.typeof();
+			if(typeofcomand=="return"){
+				q=comand.getRowSize();
+				if(q==1){
+					x=comand.getSub({0});
+					construction=PROGRAM("#="+SYS->returnValue);
+					construction.setSub({0},x);
+					AddConstruction(SYS,construction);
+					}
+				obrabotano=1;
+				}
+			if(typeofcomand=="++."||typeofcomand=="--."||typeofcomand==".++"||typeofcomand==".--"){
+				name=comand.getSub({0});
+				if(name.getPower()==1){if(SYS->Paraleli[SYS->activeN].Izvesno.isset(((string)name))){
+					if(typeofcomand[1]=='+')--SYS->Paraleli[SYS->activeN].Izvesno[((string)name)];
+					if(typeofcomand[1]=='-')++SYS->Paraleli[SYS->activeN].Izvesno[((string)name)];
+					obrabotano=1;
+					continue;
+					}}
+				comand2=PROGRAM("#=#"+typeofcomand[1]+"1");
+				comand2.setSub({0},name);
+				comand2.setSub({1,0},name);
+				comand=comand2;
+				typeofcomand=comand.typeof();
+				}
+			if(typeofcomand=="="){
+				AddConstruction(SYS,comand);
+				obrabotano=1;
+				}
+			if(typeofcomand=="function"){
+				ok=isPrimitiveCommand(&comand);
+				if(ok)ok= !SYS->AcamulationIsBegin;
+				if(ok){
+					if(((string)comand.getSub({0}))=="trace"){
+						trace(eval(comand.getSub({1})));
+						obrabotano=1;
+						}
+					}else {
+					SYS->AcamulationIsBegin=1;
+					obrabotano=2;
+					pos=SYS->Acamulator.Root();
+					pos=SYS->Acamulator.insertUp(pos);
+					SYS->Acamulator.setCommand(pos,comand);
+					}
+				}
+			if(typeofcomand=="OFF"){
+				SYS->Paraleli.erase(SYS->activeN);
+				SYS->activeN= -1;
+				break;
+				}
+			if(typeofcomand=="if"){
+				condition=comand.getSub({0});
+				next=f->Down(n);
+				if(typeof(next)=="vector")next=next[0];
+				needinverse=next!=SYS->Paraleli[SYS->activeN].prevn;
+				if(needinverse)InverseCondition(&condition);
+				AddConstruction(SYS,condition);
+				obrabotano=1;
+				}
+			if(!obrabotano){
+				trace("Необработана команда: "+comand);
+				trace(typeofcomand);
+				}
+			}
+		if(SYS->activeN<0)continue;
+		ControlRunAcamulator(SYS);
+		SYS->Paraleli[SYS->activeN].prevn=n;
+		n=f->Up(n);
+		if(typeof(n)=="int")SYS->Paraleli[SYS->activeN].n=n;else {
+			t=1;
+			for(;t<n.size();++t){
+				SYS->Paraleli.push(SYS->Paraleli[SYS->activeN]);
+				SYS->Paraleli[SYS->Paraleli.size()-1].n=n[t];
+				};
+			SYS->Paraleli[SYS->activeN].n=n[0];
+			}
+		}
+	SYS->analizeCompleate=1;
+}
+
+
+
+void ControlRunAcamulator(var SYS){
+	if(!SYS->runProba)return;
+	SYS->runProba=0;
+	povtor=1;
+	vidomo=0;
+	while(povtor){
+		povtor=0;
+		n=SYS->Acamulator.Root();
+		n=SYS->Acamulator.Down(n);
+		if(n==SYS->Acamulator.Root()){
+			SYS->AcamulationIsBegin=0;
+			return;
+			}
+		command=SYS->Acamulator.getCommand(n);
+		if(typeof(command)!="program"){
+			povtor=1;
+			SYS->Acamulator.delete(n);
+			continue;
+			}
+		names=getListAllVar(command);
+		if(typeof(vidomo)=="int")vidomo=SYS->Paraleli[SYS->activeN].Izvesno.getKeys();
+		if((names-vidomo).size())break;
+		i=0;
+		for(;i<names.size();++i){
+			s=SYS->Paraleli[SYS->activeN].Izvesno[names[i]];
+			if(typeof(s)=="string")s=s.export();
+			ReplaceVars(&command,names[i],s);
+			};
+		eval(command);
+		SYS->Acamulator.delete(n);
+		povtor=1;
+		}
+	trace(SYS->Acamulator.export());
+}
+
+
+
+int getInteriorCommand(var ListCommands,var nCommand,var access){
+	if(!isset(access)){
+		if(ListCommands->size()!=1)return -1;
+		nCommand=0;
+		access={};
+		getInteriorCommand(ListCommands,&nCommand,&access);
+		return;
+		}
+	m={"+=","-=","*=","/="};
+	do{
+		p=0;
+		comand= &(*ListCommands)[(*nCommand)];
+		n=comand->getRowSize((*access));
+		i=n-1;
+		for(;i>=0;--i){
+			access->push(i);
+			p=getInteriorCommand(ListCommands,nCommand,access);
+			access->pop();
+			if(p)break;
+			};
+		comand= &(*ListCommands)[(*nCommand)];
+		sub=comand->getSub((*access));
+		s=sub.typeof();
+		if(s=="++."||s=="--."){
+			sub2=sub.getSub({0});
+			if(sub2.typeof()=="var"){
+				ListCommands->push_begin(sub);
+				++( *nCommand);
+				comand= &(*ListCommands)[(*nCommand)];
+				comand->setSub((*access),sub2);
+				return 1;
+				}
+			Q=PROGRAM("#+1");
+			Q.setSub({0},sub2);
+			comand->setSub((*access),Q);
+			}
+		if(s==".++"||s==".--"){
+			sub2=sub.getSub({0});
+			if(sub2.typeof()=="var"){
+				Q=PROGRAM(s==".++"?"++#":"--#");
+				Q.setSub({0},sub2);
+				ListCommands->push(Q);
+				comand->setSub((*access),sub2);
+				}
+			}
+		if(m.indexOf(s)>=0){
+			sub2=sub.getSub({0});
+			Q=PROGRAM("#=#"+s[0]+"#");
+			Q.setSub({0},sub2);
+			Q.setSub({1,0},sub2);
+			Q.setSub({1,1},sub.getSub({1}));
+			if(access->empty())( *comand)=Q;else {
+				comand->setSub((*access),sub2);
+				ListCommands->insert((*nCommand),Q);
+				++( *nCommand);
+				}
+			}
+		}while(p);
+	return 0;
+}
+
+
+
+bool isPrimitiveCommand(var X,var access,var R){
+	if(!isset(access)){
+		access={};
+		return isPrimitiveCommand(X,&access,0);
+		}
+	t=X->getSub((*access)).typeof();
+	if(t=="var")return R;
+	n=X->getRowSize((*access));
+	i=0;
+	for(;i<n;++i){
+		RR=0;
+		if(!i){if(t=="function")RR=1;}
+		if(i==1){if(t=="."||t=="->")RR=R;}
+		access->push(i);
+		if(!isPrimitiveCommand(X,access,RR))return 0;
+		access->pop();
+		};
+	return 1;
+}
+
+
+
+void ReplacePow(var K,var access){
+	Q=K->getSub(access);
+	if(Q.typeof()=="function"){if("pow"==((string)Q.getSub({0}))){
+		ReplacePow(&Q,{1});
+		ReplacePow(&Q,{2});
+		X=PROGRAM("Match("+"pow".export()+",#,#)");
+		X.setSub({2},Q.getSub({1}));
+		X.setSub({3},Q.getSub({2}));
+		K->setSub(access,X);
+		return;
+		}}
+	n=K->getRowSize(access);
+	i=0;
+	for(;i<n;++i)ReplacePow(K,access+{i});;
+}
+
+
+
+void AddConstruction(var SYS,var comand){
+	OptimizatorConstruction(&comand);
+	root=comand.typeof();
+	if(root=="&&"){
+		AddConstruction(SYS,comand.getSub({0}));
+		AddConstruction(SYS,comand.getSub({1}));
+		return;
+		}
+	if(root=="||"){
+		trace("#:"+comand);
+		SYS->Paraleli[SYS->activeN].vars.push(comand);
+		return;
+		}
+	if({"<",">","<=",">=","==","!="}.findOf(root)>=0){
+		ControlConditionX(SYS,&comand,"find");
+		SYS->Paraleli[SYS->activeN].vars.push(comand);
+		return;
+		}
+	power=comand.getPower(1);
+	if(root=="="&&power==3){
+		nameX=comand.getSub({0});
+		X=comand.getSub({1});
+		if(nameX.typeof()!="var"){
+			nameX=comand.getSub({1});
+			X=comand.getSub({0});
+			}
+		if(nameX.typeof()=="var"&&X.typeof()!="var"){
+			SYS->Paraleli[SYS->activeN].Izvesno[((string)nameX)]=eval(X);
+			SYS->runProba=1;
+			Podstanovka(SYS,((string)nameX));
+			return;
+			}
+		}
+	newName=nameForRename="";
+	if(root=="="){
+		nameX=comand.getSub({0});
+		X=comand.getSub({1});
+		if(nameX.typeof()!="var"){
+			nameX=comand.getSub({1});
+			X=comand.getSub({0});
+			}
+		if(nameX.typeof()=="var"){
+			nameForRename=((string)nameX);
+			newName=GeneratorUniqueName(&SYS->AllNames);
+			comand.setSub({0},PROGRAM(newName));
+			comand.setSub({1},X);
+			}
+		}
+	if(nameForRename.length())RenameNameInSystem(SYS,nameForRename,newName);
+	SYS->Paraleli[SYS->activeN].vars.push(comand);
+}
+
+
+
+void RenameNameInSystem(var SYS,var nameForRename,var newName){
+	table={};
+	i=0;
+	for(;i<SYS->Paraleli[SYS->activeN].vars.size();++i)table.push(getListAllVar(SYS->Paraleli[SYS->activeN].vars[i]));;
+	i=0;
+	for(;i<table.size();++i)if(table[i].indexOf(nameForRename)>=0)ReplaceVars(&SYS->Paraleli[SYS->activeN].vars[i],nameForRename,newName);;
+	S=SYS->Acamulator.getIDs();
+	i=0;
+	for(;i<S.size();++i){
+		command=SYS->Acamulator.getCommand(S[i]);
+		if(typeof(command)!="program")continue;
+		names=getListAllVar(command);
+		if(names.indexOf(nameForRename)<0)continue;
+		ReplaceVars(&command,nameForRename,newName);
+		SYS->Acamulator.setCommand(S[i],command);
+		};
+}
+
+
+
+void Podstanovka(var SYS,var nameY){
+	if(typeof(nameY)!="string")nameY=((string)nameY);
+	povtorno={nameY};
+	while(povtorno.size()){
+		nameY=povtorno.pop_begin();
+		Y=SYS->Paraleli[SYS->activeN].Izvesno[nameY];
+		i=0;
+		for(;i<SYS->Paraleli[SYS->activeN].vars.size();++i){
+			pp= &SYS->Paraleli[SYS->activeN].vars[i];
+			comand=( *pp);
+			ok=ReplaceVars(pp,nameY,Y);
+			if(ok){
+				comand=( *pp);
+				nameX=comand.getSub({0});
+				X=comand.getSub({1});
+				if(nameX.typeof()!="var"){
+					nameX=comand.getSub({1});
+					X=comand.getSub({0});
+					}
+				if(nameX.typeof()=="var"){if(isPrimitiveCommand(&X)){
+					SYS->Paraleli[SYS->activeN].vars.erase(i);
+					--i;
+					nameX=((string)nameX);
+					SYS->Paraleli[SYS->activeN].Izvesno[nameX]=eval(X);
+					SYS->runProba=1;
+					povtorno.push(nameX);
+					continue;
+					}}
+				One=getListAllVar(nameX)+getListAllVar(X);
+				if(One.size()==1){
+					One=One[0];
+					P=question("equality",((string)comand),One);
+					if(P.size()!=1)continue;
+					comand=( *pp)=PROGRAM(P[0]);
+					X=comand.getSub({1});
+					if(X.getPower()==1){
+						SYS->Paraleli[SYS->activeN].vars.erase(i);
+						--i;
+						SYS->Paraleli[SYS->activeN].Izvesno[One]=eval(X);
+						SYS->runProba=1;
+						povtorno.push(One);
+						}
+					}
+				}
+			};
+		}
+}
+
+
+
+void OptimizatorConstruction(var construction){
+	root=construction->typeof();
+	if(root=="=="){
+		A=construction->getSub({0});
+		B=construction->getSub({1});
+		( *construction)=PROGRAM("#=#");
+		construction->setSub({0},A);
+		construction->setSub({1},B);
+		root=="=";
+		}
+	if(root=="="){
+		A=construction->getSub({0});
+		B=construction->getSub({1});
+		power=construction->getPower(1);
+		if(power>=3){
+			S=getListAllVar((*construction));
+			if(!S.size()){
+				P=question("compare",(*construction));
+				if(P.size()==1){
+					if(P[0]=="no")( *construction)=PROGRAM("OFF");
+					if(P[0]=="yes")( *construction)=PROGRAM("1");
+					}
+				return;
+				}
+			A=getListAllVar(A);
+			B=getListAllVar(B);
+			if(S.size()==1&&power>3){if(A.size()+B.size()==1){
+				nameVar=S[0];
+				P=question("equality",((string)( *construction)),nameVar);
+				if(P.size()==1)( *construction)=PROGRAM(P[0]);
+				return;
+				}}
+			if(S.size()>1&&power>3){
+				i=0;
+				for(;i<2;++i){
+					A=construction->getSub({i});
+					if(A.getPower()>1){
+						P=question("optimize",((string)A));
+						if(P.size()==1)construction->setSub({i},PROGRAM(P[0]));
+						}
+					};
+				}
+			}
+		}
+}
+
+
+
+void DominoOptimizeVar(var SYS,var nameVar){
+	i=0;
+	for(;i<SYS->Paraleli[SYS->activeN].vars.size();++i){
+		comand= &SYS->Paraleli[SYS->activeN].vars[i];
+		root=comand->typeof();
+		if(root=="="){
+			ok=0;
+			nameX=comand->getSub({0});
+			X=comand->getSub({1});
+			if(nameX.typeof()!="var"){
+				nameX=comand->getSub({1});
+				X=comand->getSub({0});
+				}
+			if(nameX.typeof()=="var"){if(nameVar==((string)nameX)){
+				ok=1;
+				if(X.getPower()>1){
+					P=question("optimize",((string)X));
+					if(P.size()==1){
+						ok=2;
+						X=PROGRAM(P[0]);
+						}
+					}
+				}}
+			if(ok){
+				comand->setSub({0},nameX);
+				comand->setSub({1},X);
+				if(X.getPower()==1){
+					if(SYS->AllNamesFunction.indexOf(((string)nameX))<0)( *comand)=PROGRAM("1");
+					Podstanovka(SYS,nameX,X);
+					}
+				}
+			}
+		};
+	do{
+		n=SYS->Paraleli[SYS->activeN].vars.indexOf(PROGRAM("1"));
+		if(n>=0)SYS->Paraleli[SYS->activeN].vars.erase(n);
+		}while(n>=0);
+}
+
+
+// module2.code	:-|

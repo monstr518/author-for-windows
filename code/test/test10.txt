@@ -1,0 +1,19 @@
+#include <code\test\test.txt>
+
+X::Y::fff2(){trace("fff2()");}
+X::Y::fff(){trace("OK2");fff2();X::Y::fff2();}
+
+
+f(a){
+	trace(a);
+}
+
+
+int main(){
+	f("OK");
+	code::test::test::main2();
+	X::Y::fff();
+	getstring();
+}
+
+

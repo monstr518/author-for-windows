@@ -1,0 +1,33 @@
+// subject3.code
+
+
+
+
+var Subject(var params){
+	if(params=="help"||params=="interface")return "{input:1,output:2}";
+	if(!(params.find("input")&&params.find("output")))return "see interface";
+	name="x";
+	if(params.find("name"))name=params.name;
+	var Results={};
+	a=params.input;
+	b=params.output;
+	Results+={b};
+	if(a==b){
+		Results+={name};
+		return Results;
+		}
+	if(a== -b)Results+={"-"+name};
+	Results+={((string)(b+a))+"-"+name};
+	if(a<b){
+		Results+={name+"+"+(b-a)};
+		if(a)Results+={name+"*"+((double)b)/a};
+		}
+	if(a>b){
+		Results+={name+"-"+(a-b)};
+		if(b)Results+={name+"/"+((double)a)/b};
+		}
+	return Results;
+}
+
+
+// subject3.code	:-|

@@ -1,0 +1,12 @@
+
+
+void main(){
+	if(ControlOFF()){
+		m=rozpad({1,3,5,7,9,11});
+		if(rand()%10!=1)OFF;
+		trace("Отобрано: "+m);
+		}else trace("Нет отобраных.");
+	ClearPsetOFF();
+	define();
+	getstring();
+}

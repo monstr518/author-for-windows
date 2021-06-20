@@ -1,0 +1,309 @@
+// code/analize/analizeconstants.code
+
+
+
+
+var mebiLogicConstant(var command){
+	if(typeof(command)!="program")return #;
+	t=command.typeof();
+	if(t=="digit")return ((bool)eval(command));
+	if(t=="=="){
+		names=command.getNames(3);
+		if(names.size())return command.getSub({0})==command.getSub({1});
+		return eval(command);
+		}
+	if({"<",">","<=",">="}.in(t)){
+		names=command.getNames(3);
+		if(names.size())return #;
+		return eval(command);
+		}
+	if(t=="||"){
+		X=command.getSub({0});
+		p2=p=mebiLogicConstant(X);
+		if(typeof(p)=="bool"){if(p)return p;}
+		X=command.getSub({1});
+		p=mebiLogicConstant(X);
+		if(typeof(p)=="bool"){
+			if(p)return p;
+			if(isset(p2))return p;
+			}
+		}
+	if(t=="&&"){
+		X=command.getSub({0});
+		p2=p=mebiLogicConstant(X);
+		if(typeof(p)=="bool"){if(!p)return p;}
+		X=command.getSub({1});
+		p=mebiLogicConstant(X);
+		if(typeof(p)=="bool"){
+			if(!p)return p;
+			if(isset(p2))return p;
+			}
+		}
+	if(t=="!#"){
+		a=mebiLogicConstant(command.getSub({0}));
+		if(isset(a))return !a;
+		}
+	return #;
+}
+
+
+
+var findLogicResult(var p_f,var pos){
+	commanda=p_f->getCommand(pos);
+	command=commanda.getSub({0});
+	a=mebiLogicConstant(command);
+	if(isset(a))return a;
+	ff=findVariableInSxem(p_f,pos,command);
+	if(!isset(ff))return #;
+	trace(ff.exportText());
+	X=ff.run();
+	if(commanda.typeof()=="if"){if(isset(X))X=((bool)X);}
+	return X;
+}
+
+
+
+SXEMA: var getUpPosIF(var p_f,var pos){
+	10:if(S.empty());{40,20}
+	20:rang=p_f->Rang(pos);{70}
+	30:if(!isset(pos));{210,50}
+	40:if(!isset(startpos));{80,190}
+	50:S.push(pos);{350}
+	60:return pos;{20}
+	70:pos=p_f->Up(pos);{180}
+	80:return pos;{190}
+	90:izpos=p_f->Down(pos);{160}
+	100:if(p_f->Rang(pos)>=rang);{170,90}
+	110:;{30}
+	120:pos=#;{110}
+	130:S+=pos;{120}
+	140:if(i<pos.size());{220,130}
+	150:i=0;{140}
+	160:if(typeof(izpos)=="int");{20,30}
+	170:return #;{90}
+	180:if(typeof(pos)=="vector");{150,100}
+	190:if(startpos!=pos);{60,20}
+	200:return #;{230}
+	210:;{350}
+	220:if(p_f->Rang(pos[i])>=rang);{200,230}
+	230:++i;{140}
+	240:m=i;{270}
+	250:startpos=pos;{350}
+	260:S={pos};{250}
+	270:++i;{320}
+	280:S=pos;{350}
+	290:if(p_f->Rang(S[i])>p_f->Rang(S[m]));{240,270}
+	300:S-={pos,pos};{10}
+	310:pos=S[m];{300}
+	320:if(i<S.size());{290,310}
+	330:i=1;{320}
+	340:m=0;{330}
+	350:if(1);{340,370}
+	360:if(typeof(pos)=="int");{260,280}
+start:	370:;{360}
+}
+
+
+
+var findWayInBlockIF(var p_f,var prevpos,var sup){
+	if(isset(sup))uppos=getUpPosIF(p_f,sup);else uppos=getUpPosIF(p_f,prevpos);
+	if(!isset(uppos))return #;
+	pos=uppos;
+	while(1){
+		a=findLogicResult(p_f,pos);
+		if(isset(a)){
+			pos=p_f->Down(pos,a);
+			if(pos==prevpos)return uppos;
+			while(1){
+				pos2=pos;
+				pos=p_f->Down(pos);
+				if(typeof(pos)=="vector")break;
+				if(pos==prevpos);else continue;
+				return pos2;
+				continue;
+				}
+			pos=pos2;
+			continue;
+			}
+		return #;
+		}
+}
+
+
+
+var findUpOfWhile(var p_f,var prevpos){
+	rang=p_f->Rang(prevpos);
+	mpos=p_f->Up(prevpos);
+	m={};
+	i=0;
+	for(;i<mpos.size();++i)if(p_f->Rang(mpos[i])<rang)m.push(mpos[i]);
+	pos=m[0];
+	if(m.size()>1)pos=findWayInBlockIF(p_f,prevpos,m);
+	command=p_f->getCommand(prevpos).getSub({0});
+	f=findVariableInSxem(p_f,pos,command,1);
+	if(!isset(f))return #;
+	ok=((bool)f.run());
+	if(ok)pos=#;
+	return pos;
+}
+
+
+
+var findUpOfWhileResult(var p_f,var prevpos){
+	rang=p_f->Rang(prevpos);
+	mpos=p_f->Up(prevpos);
+	m={};
+	i=0;
+	for(;i<mpos.size();++i)if(p_f->Rang(mpos[i])<rang)m.push(mpos[i]);
+	pos=m[0];
+	if(m.size()>1)pos=findWayInBlockIF(p_f,prevpos,m);
+	command=p_f->getCommand(prevpos).getSub({0});
+	f=findVariableInSxem(p_f,pos,command,1);
+	if(!isset(f))return #;
+	return ((bool)f.run());
+}
+
+
+
+var findVariableInSxem(var p_f,var pos,var command,var propusk){
+	names=((set)command.getNames(1));
+	ListProgram={command};
+	while(names.size()){
+		if(!isset(propusk)){
+			prevpos=pos;
+			pos=p_f->Up(pos);
+			if(typeof(pos)=="vector"){
+				pos=findWayInBlockIF(p_f,prevpos);
+				if(!isset(pos)){
+					pos=findUpOfWhile(p_f,prevpos);
+					if(!isset(pos))break;
+					}
+				}
+			propusk=#;
+			}
+		if(p_f->Root()==pos)break;
+		x=p_f->getCommand(pos);
+		t=x.typeof();
+		if(t=="="){
+			name=((string)x.getSub({0}));
+			if(names.in(name)){
+				names.erase(name);
+				names+=((set)x.getSub({1}).getNames(1));
+				ListProgram.push_begin(x);
+				}
+			}
+		if({"++#","--#","#++","#--"}.in(t))ListProgram.push_begin(x);
+		if({"+=","-=","*=","/=","<<=",">>="}.in(t));else continue;
+		name=((string)x.getSub({0}));
+		if(names.in(name));else continue;
+		names+=((set)x.getNames(1));
+		ListProgram.push_begin(x);
+		continue;
+		}
+	if(names.size())return #;
+	End=ListProgram.pop();
+	if(End.typeof()!="return"){
+		E=PROGRAM("return #");
+		E.setSub({0},End);
+		End=E;
+		}
+	ListProgram.push(End);
+	ff=((function)0);
+	i=0;
+	for(;i<ListProgram.size();++i){
+		ff.insertUp(ff.Root());
+		pos=ff.Up(ff.Root());
+		ff.setCommand(pos,ListProgram[i]);
+		}
+	return ff;
+}
+
+
+
+var sborkaComponentovConstant(var p_f,var pos){
+	command=p_f->getCommand(pos);
+	ff=findVariableInSxem(p_f,pos,command);
+	trace(ff.exportText());
+	n=ff.run();
+	trace(n);
+}
+
+
+
+void AnalizeCucle(var p_f){
+	pos=p_f->Root();
+	while(1){
+		prevpos=pos;
+		pos=p_f->Down(pos);
+		if(typeof(pos)=="vector"){
+			pos=findEndPosOfIFs(p_f,prevpos);
+			if(!isset(pos)){
+				scanWhilePrimitive(p_f,prevpos);
+				break;
+				}
+			}
+		command=p_f->getCommand(pos);
+		trace(command);
+		}
+}
+
+
+
+var findEndPosOfIFs(var p_f,var pos){
+	rangup=p_f->Rang(pos);
+	mpos=p_f->Down(pos);
+	while(1){
+		rang=p_f->Rang(mpos[0]);
+		if(rang<=rangup)return #;
+		rang2=p_f->Rang(mpos[1]);
+		if(rang2<=rangup)return #;
+		if(mpos[0]==mpos[1])break;
+		t=1;
+		if(rang<rang2)t=0;
+		pos=mpos[t];
+		pos=p_f->Down(pos);
+		if(typeof(pos)=="vector"){
+			pos=findEndPosOfIFs(p_f,mpos[t]);
+			if(!isset(pos))return #;
+			}
+		mpos[t]=pos;
+		}
+	return mpos[0];
+}
+
+
+
+var scanWhilePrimitive(var p_f,var pos){
+	up=pos;
+	List={};
+	BodyIDs={};
+	mpos=p_f->Down(pos);
+	pos=mpos[0];
+	while(pos!=up){
+		command=p_f->getCommand(pos);
+		List.push(command);
+		BodyIDs.push(pos);
+		pos=p_f->Down(pos);
+		if(typeof(pos)=="vector");else continue;
+		BodyIDs=List={};
+		break;
+		}
+	trace(List);
+	commanda=p_f->getCommand(up).getSub({0});
+	a=mebiLogicConstant(command);
+	if(!isset(a))a=findUpOfWhileResult(p_f,up);
+	if(!isset(a))return 0;
+	if(!a){
+		i=0;
+		for(;i<BodyIDs.size();++i)p_f->delete(BodyIDs[i]);
+		p_f->delete(up);
+		return 1;
+		}
+	NamesVar={};
+	i=0;
+	for(;i<List.size();++i)if(typeof(List[i])=="program")NamesVar+=List[i].getNames(1);
+	trace(NamesVar.export());
+}
+
+
+// code/analize/analizeconstants.code	:-|

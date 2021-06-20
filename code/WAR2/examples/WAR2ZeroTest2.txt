@@ -1,0 +1,101 @@
+// WAR2 тест игры для нулевого уровня развития игроков с обучением
+
+
+void main(){
+	fork("war1",getThisLaverNumber(),0);
+	fork("war1",getThisLaverNumber(),1);
+	BotsNumberLaver={#,#};
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+
+	Send(BotsNumberLaver[0],BotsNumberLaver[1]);
+	Send(BotsNumberLaver[1],BotsNumberLaver[0]);
+
+	nGames=7; // Количество игр
+	for(i=0;i<nGames;++i){
+		Send(BotsNumberLaver[0],"OK",1);
+		Send(BotsNumberLaver[1],"OK",1);
+		numberFirstXod=#?1:0;
+		Send(BotsNumberLaver[0],numberFirstXod==0,1);
+		Send(BotsNumberLaver[1],numberFirstXod==1,1);
+
+		Q=Accept();
+		trace(Q[1]);
+		}
+
+	Send(BotsNumberLaver[0],"Zvit");
+	Send(BotsNumberLaver[1],"Zvit");
+
+	getstring();
+}
+
+
+
+
+void war1(nServer,meNumber){
+	Send(nServer,meNumber,1);
+	nProtivnic=Accept(nServer);
+	X={0,0};
+	while(1){
+		Q=Accept(nServer);
+		if(Q=="Exit")break;
+		if(Q=="Zvit"){
+			final=(X[0]<X[1])?"победителем":"поверженным";
+			if(X[0]==X[1])final="непонятно кем";
+			trace("Я номер "+meNumber+" понял, что хочу быть "+final);
+			break;
+			}
+		winer=ZeroGame(&X,nServer,nProtivnic);
+		if(winer)trace("Победил: "+meNumber);
+		}
+}
+
+
+
+
+void ZeroGame(X,nServer,nProtivnic){
+	meXod=Accept(nServer);
+	status=#?1:0; //1-победитель 0-неудачник
+	if((*X)[0]<(*X)[1])status=1;
+	if((*X)[0]>(*X)[1])status=0;
+	if(meXod){
+		Send(nProtivnic,"!",1);
+		result=Accept(nProtivnic);
+		if(result=="OFF"){
+			++(*X)[status];
+			return 1;
+			}else{
+			--(*X)[status];
+			}
+		return 0;
+		}
+	if(!meXod){
+		messege=Accept(nProtivnic);
+		if(messege=="!"){
+			isOFF=!status;
+			Send(nProtivnic,isOFF?"OFF":".",1);
+			if(isOFF){
+				--(*X)[status];
+				}else{
+				++(*X)[status];
+				}
+			Send(nServer,"Game Over",1);
+			}
+		}
+	return 0;
+}
+
+/*
+Победил: 1
+Game Over
+Game Over
+Game Over
+Game Over
+Game Over
+Game Over
+Game Over
+Я номер 0 понял, что хочу быть победителем
+Я номер 1 понял, что хочу быть победителем
+*/

@@ -1,0 +1,12 @@
+
+void main(){
+	trace("Программа запущена.");
+	if(ControlOFF()){
+		trace("Зашли сюда.");
+		OFF;
+		trace("Сюда недошло.");
+		}
+	ClearPsetOFF();
+	trace("Программа продолжается.");
+	getstring();
+}

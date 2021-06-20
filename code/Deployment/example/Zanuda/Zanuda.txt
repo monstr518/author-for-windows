@@ -1,0 +1,73 @@
+#include "code\Deployment\Deployment.txt"
+
+//----------------------------------------------------------------------------------------------
+void main(){
+	SYS=(map)0;
+	Deployment(&SYS,"стартовое состояние",{1,1,1,0,2,2,2});
+	Deployment(&SYS,"метод текстового описания состояния","XtoString");
+	Deployment(&SYS,"разварачивать до первого конечного состояния");
+	Deployment(&SYS,"признак конечного состояния","gotovo");
+	Deployment(&SYS,"методы изменения состояния",{"pereprignula"});
+	Deployment(&SYS,"подготовка параметров к методам изменения состояния",{"paramsForPereprignula"});
+	Deployment(&SYS,"развернуть систему");
+	Deployment(&SYS,"распечатка системы");
+	trace();
+
+	n=Deployment(&SYS,"взять номер узла с конечным состоянием");
+	ways=Deployment(&SYS,"взять все пути к узлу рекурсией",n);
+	trace("Количество возможных путей: "+ways.size());
+	Deployment(&SYS,"распечатка состояний по заданному пути",ways[0]);
+	trace();
+
+	trace(
+		"На разворачивание системы ушло времени: " +
+		Deployment(&SYS,"сколько времени ушло на разворачивание?")
+		);
+
+	getstring();
+}
+
+
+// Метод для подготовки параметров к методу изменения состояния
+var paramsForPereprignula(S){
+	v={};
+	for(i=0;i<S->size();++i){
+		a=0;
+		if((*S)[i]==1){
+			if(i+1<S->size())if((*S)[i+1]==0)a=1;
+			if(i+2<S->size())if((*S)[i+2]==0)a=2;
+			}
+		if((*S)[i]==2){
+			if(i-1>=0)if((*S)[i-1]==0)a=1;
+			if(i-2>=0)if((*S)[i-2]==0)a=2;
+			}
+		if(a)v.push({i,a});
+		}
+	return v;
+}
+
+
+// методы изменения состояния
+void pereprignula(S,n,a){
+	x=(*S)[n];
+	t=0;
+	if(x==1)t=a;
+	if(x==2)t=-a;
+	(*S)[n]=0;
+	(*S)[n+t]=x;
+}
+
+
+// Вернет 1, когда цель достигнута
+bool gotovo(S){
+	return *S=={2,2,2,0,1,1,1};
+}
+
+
+// Вернёт строку, по которой видно положение жаб.
+string XtoString(S){
+	simvols={" ","A","B"};
+	str="";
+	for(i=0;i<S->size();++i)str+=simvols[(*S)[i]];
+	return str;
+}

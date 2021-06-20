@@ -1,0 +1,283 @@
+// smodule1.code
+
+#include <code\UznikZamkaIF\module1.txt>
+
+
+
+void initSustemEquations(var SYS,var P){
+	if(typeof((*SYS))!="map")( *SYS)=((map)0);
+	sustem={};
+	if(typeof(P)=="string"){
+		P=P.replaceAll(";",",");
+		P=P.split(",");
+		}
+	if(typeof(P)=="vector"){
+		i=0;
+		while(i<P.size()){
+			if(typeof(P[i])=="program")sustem.push(P[i]);
+			if(typeof(P[i])=="string")sustem.push(PROGRAM(P[i]));
+			++i;
+			}
+		}
+	SYS->sustem=sustem;
+}
+
+
+
+void Work(var SYS){
+	SYS->startTime=getTime();
+	SYS->ValuesTable=((map)0);
+	UniqueSystem=SYS->sustem;
+	Nabor={};
+	i=0;
+	while(i<UniqueSystem.size()){
+		Nabor.push(getListAllVar(UniqueSystem[i]));
+		++i;
+		}
+	Result=((map)({}));
+	ids=Nabor.size();
+	podstavka=[0;ids).getN();
+	recurseFindStrategu(Nabor,&Result,&ids,&podstavka);
+	table=((map)0);
+	while(1){
+		K=findKeyForOK(&Result);
+		if(K<0)break;
+		R=progress(&UniqueSystem,&Result,K);
+		table[Result[K].name[0]]=R[0];
+		table[Result[K].name[1]]=R[1];
+		Result.erase(K);
+		sborka(&table,&UniqueSystem,&Nabor);
+		if(service(1,&Nabor).size()==table.getKeys());else continue;
+		SYS->ValuesTable=table;
+		break;
+		}
+	SYS->endTime=getTime();
+}
+
+
+
+var service(var n,var A,var B){
+	if(n==1){
+		Names={};
+		i=0;
+		while(i<A->size()){
+			Names+=(*A)[i];
+			++i;
+			}
+		return ((vector)((set)Names));
+		}
+	return 0;
+}
+
+
+
+void sborka(var table,var UniqueSystem,var Nabor){
+	Keys=table->getKeys();
+	ok=1;
+	while(ok){
+		ok=0;
+		i=0;
+		while(i<Nabor->size()){
+			P=(*Nabor)[i]-Keys;
+			if(P.size()!=1);else {
+				F=sparivatsa(2,(*UniqueSystem)[i],# ,P[0]);
+				if(typeof(F)=="int");else {
+					F=sparivatsa(6,F);
+					W=(*Nabor)[i]-P;
+					t=0;
+					while(t<W.size()){
+						ReplaceVars(&F,W[t],PROGRAM(((string)(*table)[W[t]])));
+						++t;
+						}
+					(*table)[P[0]]=eval("(double)"+F);
+					Keys.push(P[0]);
+					ok=1;
+					}
+				}
+			++i;
+			}
+		}
+}
+
+
+
+string zvitStrategForm1(var form){
+	string s="";
+	K=form->getKeys();
+	i=0;
+	for(;i<K.size();++i){
+		t=(*form)[K[i]];
+		s+=((string)K[i]).rovno(5)+":  ";
+		s+=(typeof(t.name)=="string"?t.name:t.name.explode(",")).rovno(10);
+		s+=((string)t.A).rovno(4)+" "+((string)t.B).rovno(4);
+		if(t.isset("formula"))s+=t.formula;
+		s+="\n";
+		}
+	return s;
+}
+
+
+
+var findKeyForOK(var form){
+	K=form->getKeys();
+	i=0;
+	while(i<K.size()){
+		t=(*form)[K[i]];
+		if(typeof(t.name)=="vector")return K[i];
+		++i;
+		}
+	return -1;
+}
+
+
+
+var progress(var UniqueSystem,var Result,var K,var forName){
+	if(K<UniqueSystem->size()){
+		F=(*UniqueSystem)[K];
+		if(typeof(forName)=="string")F=sparivatsa(2,F,# ,forName);
+		return F;
+		}
+	X= &(*Result)[K];
+	if(!X->isset("formula")){
+		A=progress(UniqueSystem,Result,X->A,X->name);
+		if(typeof(A)=="int")return A;
+		B=progress(UniqueSystem,Result,X->B,X->name);
+		if(typeof(B)=="int")return B;
+		if(typeof(X->name)=="vector")return sparivatsa(1,A,B,X->name);
+		FA=sparivatsa(3,A,# ,X->name);
+		FB=sparivatsa(3,B,# ,X->name);
+		if(typeof(FA)=="int"||typeof(FB)=="int")return 0;
+		s="("+FA+")=("+FB+")";
+		F=PROGRAM(s);
+		X->formula=F;
+		if(typeof(forName)!="vector")F=sparivatsa(2,F,# ,forName);
+		return F;
+		}
+	return X->formula;
+}
+
+
+
+var sparivatsa(var n,var A,var B,var name){
+	if(n==1){
+		X=sparivatsa(5,A,B,name);
+		if(typeof(X)=="int")return 0;
+		fname=name[1-X[1]];
+		if(X[0].typeof()=="AlgoSet"){
+			trace(X[0].getSub({0}));
+			X[0]=X[0].getSub({0});
+			}
+		F=sparivatsa(2,X[0],# ,fname);
+		if(typeof(F)=="int")return 0;
+		F=sparivatsa(6,F);
+		ReplaceVars(&A,fname,F);
+		F2=sparivatsa(2,A,# ,name[X[1]]);
+		F2=sparivatsa(6,F2);
+		Q={eval(F),eval(F2)};
+		if(!X[1])Q.revers();
+		return Q;
+		}
+	if(n==2){
+		ok=0;
+		Q=A.getSub({0});
+		if(Q.typeof()=="var"){if(name==((string)Q))ok=1;}
+		Q=A.getSub({1});
+		if(Q.typeof()=="var"){if(name==((string)Q))ok=1;}
+		if(!ok){
+			P=question("equality",A,name);
+			A=0;
+			if(P.size()==1)A=PROGRAM(P[0]);
+			}
+		return A;
+		}
+	if(n==3){
+		Q=A.getSub({0});
+		if(Q.typeof()=="var"){if(name==((string)Q))return A.getSub({1});}
+		Q=A.getSub({1});
+		if(Q.typeof()=="var"){if(name==((string)Q))return A.getSub({0});}
+		return 0;
+		}
+	if(n==4){
+		A=sparivatsa(2,A,# ,name);
+		B=sparivatsa(2,B,# ,name);
+		FA=sparivatsa(3,A,# ,name);
+		FB=sparivatsa(3,B,# ,name);
+		if(typeof(FA)=="int"||typeof(FB)=="int")return 0;
+		s="("+FA+")=("+FB+")";
+		if(FA.typeof()=="AlgoSet"&&FB.typeof()=="AlgoSet"){
+			W={};
+			na=FA.getRowSize();
+			nb=FB.getRowSize();
+			a=0;
+			while(a<na){
+				b=0;
+				while(b<nb){
+					fa=FA.getSub({a});
+					fb=FA.getSub({b});
+					s="("+fa+")=("+fb+")";
+					W.push(PROGRAM(s));
+					++b;
+					}
+				++a;
+				}
+			s=W.export();
+			}
+		return PROGRAM(s);
+		}
+	if(n==5){
+		F=sparivatsa(4,A,B,name[w=0]);
+		if(typeof(F)=="int")F=sparivatsa(4,A,B,name[w=1]);
+		if(typeof(F)=="int")return 0;
+		return {F,w};
+		}
+	if(n==6){
+		Q=A.getSub({0});
+		if(Q.typeof()=="var")return A.getSub({1});
+		Q=A.getSub({1});
+		if(Q.typeof()=="var")return A.getSub({0});
+		return 0;
+		}
+	return 0;
+}
+
+
+
+void recurseFindStrategu(var Nabor,var Result,var ids,var podstavka){
+	i=0;
+	while(i<Nabor.size()){
+		if(typeof(Nabor[i])!="int"){
+			j=i+1;
+			for(;j<Nabor.size();++j){
+				if(typeof(Nabor[j])!="int"){
+					A=Nabor[i]-Nabor[j];
+					B=Nabor[j]-Nabor[i];
+					if((A+B).empty()){if(Nabor[i].size()==2){
+						(*Result)[(*ids)]={A:(*podstavka)[i],B:(*podstavka)[j],name:Nabor[i]};
+						++( *ids);
+						continue;
+						}}
+					U=Nabor[i]+Nabor[j]-(A+B);
+					U=((vector)((set)U));
+					if(U.empty());else {
+						k=0;
+						while(k<U.size()){
+							Nabor2=Nabor;
+							Nabor2[i]=Nabor2[j]=Nabor.size();
+							Nabor2.push(A+B+(U-{U[k]}));
+							(*Result)[(*ids)]={A:(*podstavka)[i],B:(*podstavka)[j],name:U[k]};
+							podstavka->push((*ids));
+							++( *ids);
+							recurseFindStrategu(Nabor2,Result,ids,podstavka);
+							podstavka->pop();
+							++k;
+							}
+						}
+					}
+				}
+			}
+		++i;
+		}
+}
+
+
+// smodule1.code	:-|

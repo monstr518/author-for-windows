@@ -1,0 +1,209 @@
+// analize1.txt
+
+var getF(var namedll,var Row){
+	//what="?: get code for row "+Row.export()+" first(0)";
+	rok=[0;Row.length()).getN().export();
+	rok=rok.substr(1,rok.length()-2);
+	Row=Row.export();
+	Row=Row.substr(1,Row.length()-2);
+	what="?: get code y=f(x) for table:head(x,y){x:"+rok+";y:"+Row+";}";
+	//trace(what);
+	SendDLL(namedll,what);
+	n=Recv1DLL(namedll);
+	if(n==0)return ".";
+	Rejoin={};
+	for(i=0;i<n;++i)Rejoin+={Recv1DLL(namedll)};
+	R=PROGRAM(Rejoin[rand()%Rejoin.length()]);
+	return R.getSub({1});
+}
+
+
+void ReplaceVars(var*proga,string ho,var na){
+	if(typeof(na)!="program")na=PROGRAM((string)na);
+	acces={};
+	while(1){
+		p=proga->getRowSize(acces);
+		if(proga->typeof(acces,"name")==ho)proga->typeof(acces,"name",na);
+		if(!p){
+			x=proga->getSub(acces);
+			if(ho==x)proga->setSub(acces,na);
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+}
+
+
+var getResult1(var namedll,var problem){
+	formula=getF(namedll,problem["Row"]);
+	if(formula==".")OFF;
+	Cells=problem["Row"].length();
+	formula=PROGRAM(formula);
+	ReplaceVars(&formula,"x","i");
+	text="m=reserve("+Cells+");\n"+
+	"for(int i=0;i<m.length();++i)m[i]="+formula+";";
+	return text;//(string)PROGRAM(text);
+}
+
+
+
+var getResult2(var namedll,var problem){
+	R=problem["Row"];
+	Cells=R.length();
+	P=reserve(Cells-1);
+	Regim=rozpad({0,1});
+	for(i=0;i<P.length();++i){
+		if(!Regim)P[i]=R[i+1]-R[i];
+		if(Regim)P[i]=(float)R[i+1]/R[i];
+		}
+	formula=getF(namedll,P);
+	if(formula==".")OFF;
+	formula=PROGRAM(formula);
+	ReplaceVars(&formula,"x","i");
+	i=0;
+	var start;
+	if(!Regim)start=R[0]-eval(formula);
+	if(Regim)start=(float)R[0]/eval(formula);
+	text="m=reserve("+Cells+");";
+	if(Regim)start="(float)"+start;
+	text+="t="+start+";";
+	if(!Regim)oper="+=";
+	if(Regim)oper="*=";
+	text+="for(int i=0;i<m.length();++i){t"+oper+formula+";m[i]=(int)t;}";
+	return text;//(string)PROGRAM(text);
+}
+
+
+
+var getResult3(var namedll,var problem){
+	R=problem["Row"];
+	Cells=R.length();
+	if(Cells<2)OFF;
+	text="m=reserve("+Cells+");";
+	text+="if(m.length()>0)m[0]="+R[0]+";";
+	text+="if(m.length()>1)m[1]="+R[1]+";";
+	text+="for(int i=2;i<m.length();++i)m[i]=m[i-1]+m[i-2];";
+	return text;
+}
+
+
+
+
+void SummaruProga(int n){
+	var NP=getVariantov(n);
+	var S=getValuesInLaver(n,"Proga");
+	var SS=getValuesInLaver(n,"S");
+	for(i=1;i<NP;++i)LaverOFF(n,i);
+	setValueInLaver(n,0,"Proga",S);
+	setValueInLaver(n,0,"S",SS);
+}
+
+
+
+var getResultConstructor(var namedll,var problem){
+	R=problem["Row"];
+	Cells=R.length();
+	//trace(problem);
+	x=0;
+	find=x;
+	S={x};
+	Proga=PROGRAM("x"+x);
+	while(1){
+		n=0;
+		for(i=0;i<problem["UseNumbers"].size();++i)n+=problem["UseNumbers"][i];
+		if(!n)break;
+		i=rozpad( [0;i).getN() );
+		if(!problem["UseNumbers"][i])OFF;
+		--problem["UseNumbers"][i];
+		oper=problem["Operators"][i];
+		str="x"+(x+1)+oper+"x"+(x+2);
+		S+={x+1,x+2};
+		S-={find};
+		ReplaceVars(&Proga,"x"+find,str);
+		x+=2;
+		find=S[rozpad( [0;S.size()).getN() )];
+		}
+	Proga=(string)Proga;
+	define(0,"SummaruProga");
+	//Proga=(vector)(set)Proga;
+	SS=S;
+	for(i=0;i<Proga.size();++i){
+		for(j=0;j<10;++j){
+			formula=PROGRAM(Proga[i]);
+			S=SS[i];
+			for(k=0;k<S.size();++k){
+				t=rand()%(problem["Digits"].size()+1);
+				if(t==problem["Digits"])t="i";
+				ReplaceVars(&formula,"x"+S[k],t);
+				}
+			trace(formula);
+//need replace x/n ==> n?x/n:0
+/*
+			text="m=reserve("+Cells+");\n"+
+			"for(int i=0;i<m.length();++i)m[i]="+formula+";";
+			var m;
+			eval(text);
+			trace(m.export());
+			if(R==m)return text;
+*/
+			}
+		}
+	OFF;
+}
+
+
+
+
+//-----------------------------------------------------------------------------------------------------
+void SummaruArray(int n){
+	var NP=getVariantov(n);
+	//trace("Variantov: "+NP);
+	var S=getValuesInLaver(n,"text");
+	//trace(S.export());
+	for(i=1;i<NP;++i)LaverOFF(n,i);
+	setValueInLaver(n,0,"text",S);
+}
+
+
+var Analize1(var problem){
+	var namedll="what.dll";
+	LoadDLL(namedll);
+	SendDLL(namedll,"WAY:"+WAY);
+	SendDLL(namedll,"setcout(off)");
+	problem["Operators"]=split(",",problem["Operators"]);
+	S={"getResult1","getResult2","getResult3"};
+	S=S[rozpad([0;S.length()).getN())];
+	ok=0;
+	var text;
+	if(ControlOFF()){
+		text=eval(S+"(namedll,problem)");
+		var m;
+		eval(text);
+		//trace("m: "+m.export());
+		if(m!=problem["Row"])OFF;
+		ok=1;
+		}
+	ClearPsetOFF();
+	if(!ok){
+		if(ControlOFF()){
+			text=getResultConstructor(namedll,problem);
+			ok=1;
+			}
+		ClearPsetOFF();
+		}
+	if(!ok)text={};else define(0,"SummaruArray");
+	unLoadDLL(namedll);
+	return text;
+}
+
+

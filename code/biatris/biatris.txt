@@ -1,0 +1,266 @@
+//	biatris.txt
+
+
+//--------------------------------------------------------------------------------------------------
+var rowtest(p_table){
+	typesrow={};
+	n=(*p_table)[1].size();
+	for(i=0;i<n;++i){
+		t=(*p_table)[1][i];
+		typesrow.push(typeof(t));
+		}
+	S=(set)typesrow;
+	if(S.size()==1)return typesrow[0]; // string
+	A=B=(set)0;
+	for(i=0;i<n;++i){
+		t=typesrow[i];
+		ok=(*p_table)[0][i];
+		if(ok)A.insert(t); else B.insert(t);
+		}
+	if(S-A==B){
+		a=A.size();
+		b=B.size();
+		if(b<a)a=b;
+		return a; // int
+		}
+	return #;
+}
+
+
+
+var rowRazbor(p_table){
+	n=(*p_table)[0].size();
+	S=(set)0;
+	for(i=0;i<n;++i)S.insert((*p_table)[1][i]);
+	A=B=(set)0;
+	for(i=0;i<n;++i){
+		t=(*p_table)[1][i];
+		ok=(*p_table)[0][i];
+		if(ok)A.insert(t); else B.insert(t);
+		}
+	if(S-A==B){
+		ok=1;
+		if(A.size()>B.size()){A=B;ok=0;}
+		A=(vector)A;
+		R={ok:ok,S:A};
+		return R;
+		}
+	return #;
+}
+
+
+
+var PrevAnalize(p_table){
+	t=rowtest(&(*p_table)["body"]);
+	if(typeof(t)=="string"){
+		if(t=="vector"){
+			table={"head":p_table->head,"body":{}};
+			table.body.push(p_table->body[0]);
+			table.body.push(#);
+			n=p_table->body[1].size();
+			none=p_table->body[1][0].size();
+			R={};
+			ok=0;
+			for(i=0;i<none;++i){
+				table.body[1]={};
+				for(j=0;j<n;++j)table.body[1].push(p_table->body[1][j][i]);
+				x=PrevAnalize(&table);
+				R.push(x);
+				if(x)ok=1;
+				}
+			if(ok)return R;
+			return 0;
+			}
+
+		return 0;
+		}
+	if(!isset(t)){
+		//trace(p_table->export());
+		t=rowRazbor(&p_table->body);
+		if(!isset(t))return 0;
+		return t.S.size();
+		}
+	return t;
+}
+
+
+
+var getAdress(p_row,adres,p_ok){
+	if(!isset(adres)){
+		n=p_row->size();
+		S=(set)0;
+		for(i=0;i<n;++i)S.insert(typeof((*p_row)[i]));
+		if(S.size()==1){
+			type=S[0];
+			if(type=="vector"){
+				S=(set)0;
+				for(i=0;i<n;++i)S.insert((*p_row)[i].size());
+				if(S.size()>1){
+					P=PROGRAM("#.size()=="+S[0]);
+					return {"size",P};
+					}
+				size=S[0];
+				up={};
+				for(i=0;i<size;++i)up.push(1);
+				do{
+					size2=0;
+					for(i=0;i<size;++i)if(up[i])++size2;
+					if(!size2)return 0;
+					posi=rand()%size2;
+					pos=0;
+					for(i=0;i<size;++i){
+						if(!up[i])continue;
+						if(pos==posi)break;
+						++pos;
+						}
+					pos=i;
+					up[pos]=0;
+					row={};
+					for(i=0;i<n;++i)row.push((*p_row)[i][pos]);
+					X=getAdress(&row);
+					}while(X==0);
+				P=PROGRAM("#["+pos+"]");
+				return {"pos",P}+X;
+				}
+			}
+		type="#";
+		if(S.in("vector"))type="vector";
+		if(S.in("set"))type="set";
+		if(S.in("map"))type="map";
+		if(type!="#"){
+			P=PROGRAM("typeof(#)==\""+type+"\"");
+			return {"type",P};
+			}
+		S=(set)0;
+		for(i=0;i<n;++i)S.insert((*p_row)[i]);
+		if(S.size()==1)return 0;
+		pos=rand()%S.size();
+		W=S[pos];
+		if(typeof(W)=="string")W=W.export();
+		P=PROGRAM("#=="+W);
+		return {"==",P};
+		}
+	if(!adres.size()){
+		table={*p_ok,*p_row};
+		R=rowRazbor(&table);
+		if(R.S.size()==1){
+			z=R.ok?"==":"!=";
+			W=R.S[0];
+			if(typeof(W)=="string")W=W.export();
+			P=PROGRAM("#"+z+W);
+			return {"==",P};
+			}
+		s="";
+		if(!R.ok)s="!";
+		s=s+R.S.export()+".in(#)";
+		P=PROGRAM(s);
+		return {"==",P};
+		}
+	pos=adres[0];
+	adres.pop_begin();
+	row={};
+	n=p_row->size();
+	for(i=0;i<n;++i)row.push((*p_row)[i][pos]);
+	X=getAdress(&row,adres,p_ok);
+	return {"pos",PROGRAM("#["+pos+"]")}+X;
+}
+
+
+//vector["pos",#[0],"pos",#[0],"==",#=="0"]
+var assembleDetails(X){
+	access={};
+	P=PROGRAM("#");
+	for(i=0;i<X.size();++i){
+		type=X[i];
+		A=X[++i];
+		N={0};
+		if(type=="size")N={0,0,0};
+		A.setSub(N,P);
+		P=A;
+		access=N+access;
+		}
+	return {access,P};
+}
+
+
+
+var findWayToMinArg(mask,n){
+	if(!isset(n)){
+		min=0;
+		for(i=0;i<mask.size();++i){
+			x=mask[i];
+			if(typeof(x)=="vector")x=findWayToMinArg(x);
+			if(!x)continue;
+			if(!min || x<min)min=x;
+			}
+		return min;
+		}
+	for(i=0;i<mask.size();++i){
+		x=mask[i];
+		if(typeof(x)=="int"){
+			if(x==n)return {i};
+			continue;
+			}
+		x=findWayToMinArg(x,n);
+		if(typeof(x)=="vector")return {i}+x;
+		}
+	return #;
+}
+
+
+
+var Biatris(p_table){
+	if(!p_table->body[0].size())return #;
+	mask=PrevAnalize(p_table);
+	if(mask==0){
+		S=(set)p_table->body[0];
+		if(S.size()==1){
+			P=PROGRAM(p_table->head[0]+"=(bool)"+(S[0]?1:0));
+			return P;
+			}
+		X=getAdress(&p_table->body[1]);
+		if(X==0){
+			s=p_table->body[0][0]?1:0;
+			s="(bool)"+s;
+			s=p_table->head[0]+"="+s;
+			return PROGRAM(s);
+			}
+		X=assembleDetails(X);
+		n=p_table->body[1].size();
+		P=PROGRAM("p_table->body[1][i]");
+		P2=X[1];
+		P2.setSub(X[0],P);
+		P=P2;
+		A=B={head:p_table->head,body:{{},{}}};
+		for(i=0;i<n;++i){
+			ok=eval(P);
+			(ok?A:B).body[0].push(p_table->body[0][i]);
+			(ok?A:B).body[1].push(p_table->body[1][i]);
+			}
+		P=PROGRAM(p_table->head[1]);
+		P2=X[1];
+		P2.setSub(X[0],P);
+		A=Biatris(&A);
+		B=Biatris(&B);
+		if(isset(A)&&isset(B))P=PROGRAM("if(#)#;else #;");
+		if(isset(A)&&!isset(B))P=PROGRAM("if(#)#;");
+		if(!isset(A)&&isset(B))P=PROGRAM("if(#);else #;");
+		P.setSub({0},P2);
+		if(isset(A))P.setSub({1},A);
+		if(isset(B))P.setSub({2},B);
+		return P;
+		}
+	n=findWayToMinArg(mask);
+	adres=findWayToMinArg(mask,n);
+	X=getAdress(&p_table->body[1],adres,&p_table->body[0]);
+	X=assembleDetails(X);
+	P=PROGRAM(p_table->head[1]);
+	X[1].setSub(X[0],P);
+	P=X[1];
+	P2=PROGRAM(p_table->head[0]+"=#");
+	P2.setSub({1},P);
+	return P2;
+}
+
+
+//	biatris.txt	:-|

@@ -1,0 +1,97 @@
+#include <code\Deployment\blocktorow.txt>
+#include <code\Deployment\module1.txt>
+#include <code\Deployment\module2.txt>
+
+
+// Deployment - Развертывание
+var Deployment(SYS,comanda,param1){
+	table=(map)0;
+	table["стартовое состояние"]="starter";
+	table["метод текстового описания состояния"]="toString";
+	table["признак конечного состояния"]="priznakfinish";
+	table["признак допустимого состояния"]="control";
+	table["методы изменения состояния"]="methods";
+	table["подготовка параметров к методам изменения состояния"]="parameters";
+	table["имя модели"]="namemodele";
+	table["номер версии"]="ver";
+	table["время ожидания"]="timeborder";
+	table["файл задания"]="filename";
+	table["метод сравнения двух игровых состояний"]="compare";
+	table["метод наглядного приобразования системы согласно шага развития"]="correctir";
+
+	if(table.isset(comanda)){
+		(*SYS)[table[comanda]]=param1;
+		return;
+		}
+	acts={"включить отображение новых состояний","выключить отображение новых состояний"};
+	t=acts.indexOf(comanda);
+	if(t>=0){
+		if(!isset(SYS->pirmision))SYS->pirmision=(map)0;
+		SYS->pirmision["prosmotr-new"]=!t;
+		}
+	acts={
+		"развернуть систему",
+		"распечатка системы",
+		"взять распечатку системы",
+		"взять последовательность случайного кратчайшего пути",
+		"распечатка состояний по заданному пути",
+		"взять распечатку состояний по заданному пути",
+		"развёртывание толькочто произошло",
+		"делать отчёты в рядок",
+		"делать отчёты в столбик",
+		"сколько времени ушло на разворачивание?",
+		"сколько секунд ушло на разворачивание?",
+		"разварачивать до первого конечного состояния",
+		"сохранять через каждых секунд",
+		"вычислить количество всех кратчайших путей"
+		};
+	t=acts.indexOf(comanda);
+	if(t==0)return poisk(SYS);
+	if(t==1)tracex(printer(SYS));
+	if(t==2)return printer(SYS);
+	if(t==3){
+		FindWAYS(SYS);
+		return DefineRandomWAY(SYS);
+		}
+	if(t==4)tracex(printWAY(SYS,param1));
+	if(t==5)return printWAY(SYS,param1);
+	if(t==6){
+		if(SYS->isset("tolkochto"))return SYS->tolkochto;
+		return 0;
+		}
+	if(t==7 || t==8)SYS->formatZvitov=8-t; // 1- to row
+	if(t==9)return timeFormat(SYS->timezatratil);
+	if(t==10)return SYS->timezatratil;
+	if(t==11)SYS->firstFineEndOK=1;
+	if(t==12)SYS->timeLimitForSave=param1;
+	if(t==13)return computeCountAllShotWays(SYS);
+
+	if(comanda=="взять все пути к узлу рекурсией")return WhotListWaysToX(SYS,param1);
+	if(comanda=="взять все пути через узел рекурсией")return WhotListProxoditPoX(SYS,param1);
+
+	acts={
+		"взять все состояния на шаге",
+		"распечатка множества состояний",
+		"взять распечатку множества состояний",
+		"рекурсивный подсчёт количества путей к конечным узлам",
+		"взять все финальные состояния"
+		};
+	t=acts.indexOf(comanda);
+	if(t==0)return getAllObjektsForStep(SYS,param1);
+	if(t==1)tracex(Deployment(SYS,acts[2],param1));
+	if(t==2)return getStringObjects(SYS,param1);
+	if(t==3)return ComputeSpaceWAYS(SYS,"");
+	if(t==4)return getAllFinalSYS(SYS);
+
+	acts={
+		"взять номер узла с конечным состоянием",
+		"взять все кратчайшие пути к конечному состоянию",
+		"взять параметры переходов состояний по заданному пути"
+		};
+	t=acts.indexOf(comanda);
+	if(t==0)return GetNumberUnitMarkerFinal(SYS);
+	if(t==1)return GetAllWaysForUnitN(SYS);
+	if(t==2)return GetParametersForWay(SYS,param1);
+
+}
+

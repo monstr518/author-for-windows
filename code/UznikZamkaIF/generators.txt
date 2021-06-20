@@ -1,0 +1,254 @@
+
+
+void controllerUstanovkaGeneratora(SYS){
+	if(SYS->isset("FGenerator"))return;
+	SYS->Podobrano={};
+	if(SYS->FineData.size()!=1)return;
+	namesin=SYS->function.getNamesStart();
+	scaners={"myFirstScanerConditions"};
+	for(i=0;i<scaners.size();++i){
+		f=getFunction(scaners[i]);
+		if(typeof(f)!="function")continue;
+		n=f.run("количество переменных");
+		if(namesin.size()!=n)continue;
+		Q={FD:&SYS->FineData[0]};
+		if(n==1)Q.name=namesin[0];else Q.names=namesin;
+		R=f.run(Q);
+		if(typeof(R)=="function"){
+			SYS->FGenerator=R;
+			break;
+			}
+		}
+}
+
+
+
+//-----------------------------------------------------------------------------------------------------------------------
+var serviceInitGenerator(regim,Q,name){
+	if(regim==1){
+		namesQ=getListAllVar(Q);
+		if(namesQ.size()!=1)return 0;
+		if(namesQ[0]!=name)return 0;
+		inverse=(name==(string)Q.getSub({1}));
+		if(!inverse)if(name!=(string)Q.getSub({0}))return 0;
+		znak=Q.typeof();
+		if(znak=="=" || znak=="==" || znak=="!=")return 0;
+		if(inverse)znak[0]=(znak[0]=='<'?'>':'<');
+		return {znak:znak,t:eval(Q.getSub({inverse?0:1}))};
+		}
+	if(regim==2){
+		if(Q.size()!=2)return 0;
+		R=serviceInitGenerator(1,Q[0],name);
+		if(typeof(R)=="int")return 0;
+		R2=serviceInitGenerator(1,Q[1],name);
+		if(typeof(R2)=="int")return 0;
+		if(R.t<R2.t){
+			W=[R.t;R2.t];
+			W.setLimA(R.znak.size()==2);
+			W.setLimB(R2.znak.size()==2);
+			return W;
+			}
+		if(R.t>R2.t){
+			W=[R2.t;R.t];
+			W.setLimA(R2.znak.size()==2);
+			W.setLimB(R.znak.size()==2);
+			return W;
+			}
+		return 0;
+		}
+	if(regim==3){
+		namesQ=getListAllVar(Q);
+		if(namesQ.size()!=1)return 0;
+		if(namesQ[0]!=name)return 0;
+		List=inteligentCompareProgs(Q,"typeof(#)==#");
+		if(List.size()!=2)return 0;
+		if(List[0]==List[1])return "string";
+		if((string)List[0]!=name)return 0;
+		return eval(List[1]);
+		}
+	if(regim==4){
+		namesQ=getListAllVar(Q);
+		if(namesQ.size()!=1)return 0;
+		if(namesQ[0]!=name)return 0;
+		List=inteligentCompareProgs(Q,name+"!=#");
+		if(List.size()!=1)return 0;
+		return {eval(List[0])};
+		}
+	if(regim==5){
+		S=inteligentCompareProgs(Q,"#.find("+name+")>=0");
+		if(S.size()!=1)return 0;
+		Q=S[0];
+		namesQ=getListAllVar(Q);
+		if(namesQ.size())return 0;
+		if(Q.typeof()!="AlgoSet")return 0;
+		return eval(Q);
+		}
+
+	return 0;
+}
+
+
+
+
+var myFirstScanerConditions(Q){
+	if(typeof(Q)=="string")if(Q=="количество переменных")return 1;
+	GQ=(map)0;
+	// вы€снить тип переменной
+	for(i=0;i<Q.FD->vars.size();++i){
+		term=Q.FD->vars[i];
+		t=serviceInitGenerator(3,term,Q.name);
+		if(typeof(t)=="string"){
+			GQ.type=t;
+			break;
+			}
+		}
+	// вы€снить исключени€
+	for(i=0;i<Q.FD->vars.size();++i){
+		term=Q.FD->vars[i];
+		t=serviceInitGenerator(4,term,Q.name);
+		if(typeof(t)!="vector")continue;
+		if(!GQ.isset("not"))GQ.not={};
+		GQ.not.push(t[0]);
+		}
+	// вы€снить границы
+	term2=0;
+	t2=0;
+	for(i=0;i<Q.FD->vars.size();++i){
+		term=Q.FD->vars[i];
+		t=serviceInitGenerator(1,term,Q.name);
+		if(typeof(t)=="int")continue;
+		if(typeof(term2)=="int"){
+			term2=term;
+			t2=t;
+			continue;
+			}
+		t=serviceInitGenerator(2,{term,term2},Q.name);
+		if(typeof(t)=="int")continue;
+		GQ.interval=t;
+		t2=0;
+		break;
+		}
+	if(typeof(t2)!="int")GQ+=t2;
+	// вы€снить список варивнтов
+	for(i=0;i<Q.FD->vars.size();++i){
+		term=Q.FD->vars[i];
+		t=serviceInitGenerator(5,term,Q.name);
+		if(typeof(t)=="int")continue;
+		GQ.iz=t;
+		}
+
+	if(GQ.isset("iz")){
+		if(GQ.isset("not"))GQ.iz-=GQ.not;
+		if(GQ.isset("znak")){
+			S={};
+			for(i=0;i<GQ.iz.size();++i)
+			if(eval((string)GQ.iz[i]+GQ.znak+GQ.t))S.push(GQ.iz[i]);
+			GQ.iz=S;
+			}
+		if(GQ.isset("interval")){
+			S={};
+			for(i=0;i<GQ.iz.size();++i)if(GQ.interval.in(GQ.iz[i]))S.push(GQ.iz[i]);
+			GQ.iz=S;
+			}
+		GQ=GQ.iz;
+		}
+	if(GQ.isset("type") && GQ.isset("not")){
+		S={};
+		for(i=0;i<GQ.not.size();++i){
+			x=GQ.not[i];
+			if({"int","char"}.find(typeof(x))>=0)
+			if({"char","int","float","double"}.find(GQ.type)>=0)x=eval("("+GQ.type+")x");
+			S.push(x);
+			}
+		GQ.not=S;
+		}
+	if(GQ.isset("type"))if(GQ.type=="char"){
+		if(GQ.isset("znak")){
+			if([0;256).in(GQ.t)){
+				if(GQ.znak[0]=='>'){
+					GQ.interval=(GQ.t;GQ.t+256);
+					if(GQ.znak.size()==2)GQ.setLimA(1);
+					}else{
+					GQ.interval=(GQ.t-256;GQ.t);
+					if(GQ.znak.size()==2)GQ.setLimB(1);
+					}
+				}
+			GQ.erase("znak");
+			GQ.erase("t");
+			if(GQ.isset("interval"))GQ.interval=GQ.interval.notU([0;256));
+			}
+		}
+	f=(function)0;
+	f.import(PROGRAM("return GeneratorX("+GQ.export()+");"));
+	return f;
+}
+
+
+
+
+var GeneratorX(Q){
+	//trace(Q.export());
+	if(typeof(Q)=="vector")return Q[#];
+	Q={type:"int",not:{},procent:50}+Q;
+	if(Q.type=="void")return #;
+	if(Q.type=="bool")return (bool)(#?1:0);
+	if(Q.type=="char"){
+		i=[0;256);
+		if(Q.isset("interval"))i=Q.interval.notU(i);
+		Q.interval=i;
+		}
+	power=1000000;
+	if(Q.isset("interval")){
+		A=Q.interval.A();
+		B=Q.interval.B();
+		R=B-A;
+		if(Q.type=="int")++R;
+		do{
+			if(Q.type=="int"){
+				p=rand()%(int)R;
+				p+=(int)A;
+				}else{
+				p=R*(rand()*rand()%power)/power;
+				p+=A;
+				}
+			povtor=(Q.not.indexOf(p)>=0);
+			if(p==A && !Q.interval.limA())povtor=1;
+			if(p==B && !Q.interval.limB())povtor=1;
+			}while(povtor);
+		if(Q.type=="float")p=(float)p;
+		if(Q.type=="digit")p=(digit)p;
+		if(Q.type=="char")p=(char)p;
+		return p;
+		}
+	Q={znak:(#?"<":">="),t:0}+Q;
+	znak=Q.znak;
+	n=0;
+	zdvig=20;
+	first=1;
+	if(Q.procent<1 || Q.procent>100)Q.procent=50;
+	while(1){
+		if(Q.type=="int")p=rand()%zdvig; else{
+			p=(rand()*rand()%power)/power*zdvig;
+			if(Q.type=="float")p=(float)p;
+			if(Q.type=="double")p=(double)p;
+			}
+		if(first){
+			first=0;
+			if(!p && znak.size()==1)++p;
+			}
+		ok=(rand()%100)<Q.procent;
+		if(ok){
+			t=n+p;
+			if(znak[0]=='<')t=-t;
+			t+=Q.t;
+			if(Q.not.indexOf(t)<0){
+				if(Q.type=="digit")t=(digit)t;
+				return t;
+				}
+			}
+		n+=zdvig;
+		}
+	return 0;
+}
+
+

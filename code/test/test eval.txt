@@ -1,0 +1,15 @@
+// тест eval()
+
+
+
+int main(){
+	s="2+3*5+1";
+	trace(s+" = "+eval(s));
+	i=3;
+	var P=PROGRAM({type:"if";condition:"i<10";body:{"trace(i)","++i"};else:"i=5";});
+	trace(P);
+	eval(P);
+	getstring();
+}
+
+

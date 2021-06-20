@@ -1,0 +1,34 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: xzero - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\8AD5~1\LOCALS~1\Temp\RSP1D4.tmp" with contents
+[
+/nologo /MTd /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "XZERO_EXPORTS" /Fp"Debug/xzero.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"D:\Vadim 2007\AI Modules\author02\SYS\DLLS\xzero\xzero.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\8AD5~1\LOCALS~1\Temp\RSP1D4.tmp" 
+Creating temporary file "C:\DOCUME~1\8AD5~1\LOCALS~1\Temp\RSP1D5.tmp" with contents
+[
+WSOCK32.LIB kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"Debug/xzero.pdb" /debug /machine:I386 /out:"Debug/xzero.dll" /implib:"Debug/xzero.lib" /pdbtype:sept 
+".\Debug\StdAfx.obj"
+".\Debug\xzero.obj"
+]
+Creating command line "link.exe @C:\DOCUME~1\8AD5~1\LOCALS~1\Temp\RSP1D5.tmp"
+<h3>Output Window</h3>
+Compiling...
+xzero.cpp
+Linking...
+   Creating library Debug/xzero.lib and object Debug/xzero.exp
+
+
+
+<h3>Results</h3>
+xzero.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

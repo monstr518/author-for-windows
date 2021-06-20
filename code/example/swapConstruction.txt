@@ -1,0 +1,13 @@
+
+
+
+void main(){
+	a=100;
+	b=200;
+	{a,b,true}={b,a+1,0};
+	trace(a);
+	trace(b);
+	getstring();
+}
+
+

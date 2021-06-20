@@ -1,0 +1,182 @@
+// test otgruzka.code
+
+
+
+
+void f(){
+	p_func=&func;
+	if(typeof(func)=="string")p_func=func;
+	while(pos!=p_func->Root()){
+		pos=p_func->Up(pos);
+		if(typeof(pos)=="int"){
+			command=p_func->getCommand(pos);
+			trace(command);
+			namesX=command.getNames();
+			namesX.notU(names);
+			if(namesX.empty())continue;
+			table=getFormulsInCommandForNames(command,names);
+			if(table.empty())continue;
+			trace(table.export());
+			UnknounNames=getUnknounNamesForPredicatsRow(&table);
+			if(UnknounNames.size()){
+				trace(UnknounNames.export());
+				getGramotaForVars(p_func,pos,UnknounNames);
+				}
+			tableOK=filterForNouPredikatRowInMap(&table);
+			trace(table.export());
+			trace(tableOK.export());
+			}
+		return;
+		}
+	while(pos!=p_func->Root())if(typeof(pos)=="vector"){
+		i=0;
+		for(;i<pos.size();++i)rangs;
+		};
+	do {do{
+		--n;
+		if(n>=0){
+			access.push(n);
+			break;
+			}
+		if(access.size());else break;
+		n=access.pop();
+		}while(1);}while(access.size());
+	return 0;
+	t=0;
+	for(;t<Nam.size();++t){
+		if(ce){if(table[2-ce].find(table[ce-1][0])<0){
+			if(progaNOK.size()>s.size())progaNOK=s;
+			continue;
+			}}
+		if(table.size()==2);
+		}
+	while(access.size())if(n<0);else break;
+	for(;j<Nabor.size();++j){
+		if((A+B).empty()){if(Nabor[i].size()==2){
+			++(*ids);
+			continue;
+			}}
+		U=((vector)((set)U));
+		}
+	for(;glubina>jj-j;--j)if(!(mmodele->pages)[j].find(S[i]));else break;
+	for(;1;++i){
+		i=0;
+		if(x){
+			ok;
+			if(z)break;
+			ok2;
+			}
+		}
+	while(1){
+		i=0;
+		if(x){
+			ok;
+			if(z)continue;
+			ok2;
+			}
+		++i;
+		}
+	A=rowNSK(&(*params)["RowA"]);
+	if(A>1){
+		w2=w=getRowOstatok(&(*params)["RowB"],A);
+		w2-={0};
+		if(w2.size()==w.size()){
+			s="";
+			i=0;
+			for(;i<w.size();++i){
+				if(i)s+=" || ";
+				s+="B%"+A+"=="+w[i];
+				}
+			Results->push(s);
+			Results->push("!(A%"+A+")");
+			}
+		}
+	B=rowNSK(&(*params)["RowB"]);
+	if(B>1){
+		w2=w=getRowOstatok(&(*params)["RowA"],B);
+		w2-={0};
+		if(w2.size()==w.size()){
+			s="";
+			i=0;
+			for(;i<w.size();++i){
+				if(i)s+=" || ";
+				s+="A%"+B+"=="+w[i];
+				}
+			Results->push(s);
+			Results->push("!(B%"+B+")");
+			}
+		}
+	i=8;
+	if(i)trace("A");else {if(i>2)trace("B");else trace("C");}
+	while(t<4)while(i<4)if(x);else {
+		if(i>2){
+			if(i)continue;
+			n;
+			}
+		++i;
+		};
+	do{
+		for(;i;++i){
+			}
+		++i;
+		}while(i<4);
+	m={2,3,5,7,11,13};
+	trace("input digit:");
+	n=((int)getstring());
+	if(n<0){
+		trace("need >= 0 !");
+		return;
+		}
+	var ok=0;
+	if(n==0||n==1)ok=1;
+	i=0;
+	for(;i<m.size();++i){
+		if(n==m[i]){
+			ok=1;
+			break;
+			}
+		if(n<m[i])break;
+		}
+	if(i==m.size()){
+		u=m[i-1];
+		oknew=0;
+		do{
+			++u;
+			uok=1;
+			i=0;
+			for(;i<m.size();++i)if(!u%m[i]){
+				uok=0;
+				break;
+				};
+			if(uok){
+				oknew=1;
+				m+={u};
+				if(u==n)ok=1;
+				}
+			}while(n>u);
+		if(oknew){
+			f=getFunction(getThisFunctionName());
+			pos=f.Root();
+			pos=f.Next(pos);
+			str="m="+m.export();
+			f.setComand(pos,str);
+			}
+		}
+	if(ok)trace("digit "+n+" is prime.");else trace("digit "+n+" is not prime.");
+	trace("Pres enter for exit.");
+	getstring();
+}
+
+
+
+int main(){
+	f=getFunction("f");
+	pos=f.Root();
+	pos=f.Next(pos);
+	trace(f.getComand(pos));
+	trace(f.exportText());
+	getstring();
+}
+
+
+// test otgruzka.code	:-|

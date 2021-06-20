@@ -1,0 +1,14 @@
+//	reconstructor.txt
+
+
+void main(){
+	m=(module)#;
+	m.setCode("a(){trace(\"OK\");} bbbb(){trace(100);}");
+	trace(m.toString());
+	m.FindFunction("a").run();
+	m.getAllFunctions()[1].run();
+	getstring();
+}
+
+
+//	reconstructor.txt	:-|

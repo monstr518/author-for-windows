@@ -1,0 +1,36 @@
+//-------------------------------------------------------------------------------------------------------------------------
+void controlPeregruzkaNaVxode(X){
+	si=X->table[0].size();
+	P=reserve(si);
+	nu=X->names.find(X->unknovn);
+	SX=(set)0;
+	one=1;
+	for(i=0;i<si;++i)if(!P[i]){
+		S=(set){X->table[nu][i]};
+		for(k=i+1;k<si;++k)if(!P[k]){
+			ok=1;
+			for(t=0;t<X->table.size();++t)if(t!=nu)
+				if(X->table[t][i]!=X->table[t][k])ok=0;
+			if(ok){
+				S.insert(X->table[nu][k]);
+				P[i]=P[k]=i+1;
+				}
+			}
+		if(S.size()==1)continue;
+		if(SX.empty() && one){SX=S;one=0;}
+		SX.notU(S);
+		}
+	if(SX.empty())return;
+	Q=SX[0];
+	if(SX.size()>1){
+		for(i=0;i<si;++i)if(!P[i])if(SX.in(X->table[nu][i]))break;
+		if(i<si)Q=X->table[nu][i];
+		}
+	for(i=si-1;i>=0;--i)if(X->table[nu][i]!=Q)
+		for(t=0;t<X->table.size();++t)X->table[t].erase(i);
+
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------

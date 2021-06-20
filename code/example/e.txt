@@ -1,0 +1,23 @@
+
+var fact(n){
+	if(n<=1)return (digit)1;
+	return fact(n-1)*n;
+}
+
+
+void main(){
+	s=(digit)0;
+	s.setAccuracy(1000);
+	one=(digit)1;
+	one.setAccuracy(1000);
+	for(i=0;i<30;++i){
+		s+=one/fact(i);
+		tracex(i);
+		}
+	trace();
+	trace(s);
+	a=(digit)1;
+	a.setE();
+	trace(a);
+	getstring();
+}

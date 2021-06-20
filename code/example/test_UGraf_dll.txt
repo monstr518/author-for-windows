@@ -1,0 +1,21 @@
+// программа тестирует работу "UGraf.dll".
+
+void main(){
+	nameDll="UGraf.dll";
+	LoadDLL(nameDll);
+	SendDLL(nameDll,"new");
+	SendDLL(nameDll,"NET(1,-,[],>,2)");
+	SendDLL(nameDll,"NET(2,-,,>,3)");
+	SendDLL(nameDll,"NET(1,-,,>,3)");
+	SendDLL(nameDll,"MARKER(1,-,etr,>,e t)");
+	//SendDLL(nameDll,"GETNET(2,<,\"[]\",-,)");
+	SendDLL(nameDll,"GETMARKER(,,\"etr\",,)");
+	n=Recv1DLL(nameDll);
+	trace(n);
+	for(i=0;i<n;++i)trace(RecvDLL(nameDll));
+
+	//SendDLL(nameDll,"getActivNumber");
+	//trace(Recv1DLL(nameDll));
+	unLoadDLL(nameDll);
+	getstring();
+}

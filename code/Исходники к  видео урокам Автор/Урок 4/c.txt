@@ -1,0 +1,13 @@
+
+main(){
+	a=rozpad({1,2,3,7});
+	b=rozpad({2,4,0});
+	n=a+b;
+	trace( "n=" + n );
+/*
+	if(n!=7)OFF;
+	trace( "n = " + n + " = " + a + "+" + b);
+*/
+	define();
+	getstring();
+}

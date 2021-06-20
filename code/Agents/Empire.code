@@ -1,0 +1,377 @@
+// Empire.code
+
+
+
+
+var Subject(var X){
+	if(typeof(X)!="map")return # ;
+	Q={"table","unknovn","names"}-X.getKeys();
+	if(Q.size())return # ;
+	X+={NamesDano:{},date:{},vars:((map)0)};
+	X.NamesDano=X.names-{X.unknovn};
+	i=0;
+	for(;i<X.NamesDano.size();++i)probaProcentaMod(&X,X.unknovn,(X.NamesDano)[i]);
+	if(X.vars.isset(X.unknovn))return buildORDER(&X);
+	posovpadaloPoisk(&X,X.unknovn);
+	if(X.vars.isset(X.unknovn))return buildORDER(&X);
+	return # ;
+}
+
+
+
+string buildORDER(var X){
+	Need=((set)0);
+	S={X->unknovn};
+	while(S.size()){
+		x=S.pop();
+		Need.insert(x);
+		if(!X->vars.isset(x))continue;
+		Q=getListAllVars(PROGRAM((X->vars)[x]));
+		S+=Q;
+		}
+	Need=((vector)Need);
+	S=Need-X->vars.getKeys();
+	Need-=S;
+	R="";
+	while(Need.size()){
+		i=0;
+		for(;i<Need.size();++i){
+			x=Need[i];
+			Q=getListAllVars(PROGRAM((X->vars)[x]))-S;
+			if(!Q.size())break;
+			}
+		S.push(x);
+		s=x+"="+(X->vars)[x]+";";
+		R+=s;
+		Need.erase(i);
+		}
+	return R;
+}
+
+
+
+vector getListAllVars(var comand){
+	S=((set)({}));
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=comand.getRowSize(acces);
+		x=comand.getSub(acces);
+		if(!p){
+			if(x.typeof()=="var"){
+				S.insert(((string)x));
+				}
+			}
+		acces.push(p);
+		isf=x.typeof()=="function";
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf){if(p==1)--p;}
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf){if(p==1)--p;}
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return ((vector)S);
+}
+
+
+
+void probaProcentaMod(var X,var unknovn,var knovn){
+	traceX(X,knovn);
+	traceX(X,unknovn);
+	namep=X->names.newName();
+	setrow(X,namep+"="+knovn+"-"+unknovn);
+	a=((vector)((set)getRowX(X,namep)));
+	deleteRow(X,namep);
+	v={};
+	i=1;
+	for(;i<a.size();++i)v.push(a[i]-a[i-1]);
+	X->date=((vector)((set)(X->date+v)));
+	namez=X->names.newName();
+	i=0;
+	for(;i<X->date.size();++i){
+		setrow(X,namez+"="+knovn+"%"+(X->date)[i]);
+		traceX(X,namez);
+		if(compare2Rows(X,namez,unknovn)){
+			deleteRow(X,namez);
+			(X->vars)[unknovn]=knovn+"%"+(X->date)[i];
+			return;
+			}
+		namea=X->names.newName();
+		setrow(X,namea+"="+namez+"-"+unknovn);
+		u=(getSortUniqueValue(X,namea)-{0})[0];
+		deleteRow(X,namea);
+		if((X->date)[i]==(u<0? -u:u));else {
+			s="("+knovn+(u>0?"-"+u:"+"+ -u)+")%"+(X->date)[i];
+			setrow(X,namez+"="+s);
+			traceX(X,namez);
+			if(compare2Rows(X,namez,unknovn)){
+				deleteRow(X,namez);
+				(X->vars)[unknovn]=s;
+				return;
+				}
+			}
+		}
+}
+
+
+
+bool compare2Rows(var X,var A,var BB){
+	RowA=getRowX(X,A);
+	RowBB=getRowX(X,BB);
+	if(RowA==RowBB)return 1;
+	if(X->NamesDano.size()!=1)return 0;
+	si=RowA.size();
+	nu=X->names.find((X->NamesDano)[0]);
+	Gipotizes=((set)0);
+	ProblemV={};
+	i=0;
+	for(;i<si;++i)if(RowA[i]!=RowBB[i]){
+		t=0;
+		for(;t<si;++t)if((X->table)[nu][t]==(X->table)[nu][i]){if(RowA[i]==RowBB[t]){
+			Gipotizes.insert({RowBB[i],RowBB[t]});
+			break;
+			}};
+		if(t>=si)ProblemV.push(i);
+		};
+	v=0;
+	for(;v<ProblemV.size();++v){
+		u=RowBB[ProblemV[v]];
+		ok=0;
+		i=0;
+		for(;i<Gipotizes.size();++i)if(Gipotizes[i][0]==u){if(Gipotizes[i][1]==RowA[ProblemV[v]])ok=1;};
+		if(!ok)return 0;
+		}
+	return 1;
+}
+
+
+
+var getSortUniqueValue(var X,var name){
+	S=getRowX(X,name);
+	m=((map)0);
+	i=0;
+	for(;i<S.size();++i)if(m.isset(S[i]))++m[S[i]];else m[S[i]]=1;
+	S={};
+	K=m.getKeys();
+	i=0;
+	for(;i<K.size();++i)S.push(m[K[i]]);
+	S.sort();
+	R={};
+	t=S.size()-1;
+	for(;t>=0;--t){
+		k=0;
+		i=0;
+		for(;i<K.size();++i)if(m[K[i]]==S[t]){
+			k=i;
+			break;
+			};
+		R.push(K[k]);
+		m.erase(K[k]);
+		K.erase(k);
+		}
+	return R;
+}
+
+
+
+void deleteRow(var X,var name){
+	i=X->names.find(name);
+	if(i>=0){
+		X->table.erase(i);
+		X->names.erase(i);
+		X->vars.erase(name);
+		}
+}
+
+
+
+void setrow(var X,var proga){
+	if(typeof(proga)=="string")proga=PROGRAM(proga);
+	if(typeof(proga)!="program")return;
+	t=proga.typeof();
+	if(t!="="&&t!="==")return;
+	newname=((string)proga.getSub({0}));
+	deleteRow(X,newname);
+	proga=proga.getSub({1});
+	n=(X->table)[0].size();
+	R={};
+	i=0;
+	for(;i<n;++i){
+		cp=proga;
+		k=0;
+		for(;k<X->table.size();++k)ReplaceVars(&cp,(X->names)[k],(X->table)[k][i]);
+		R.push(eval(cp));
+		}
+	X->table.push(R);
+	X->names.push(newname);
+	(X->vars)[newname]=proga;
+}
+
+
+
+void ReplaceVars(var* proga,string ho,var na){
+	if(typeof(na)!="program")na=PROGRAM(((string)na));
+	acces={};
+	while(1){
+		p=proga->getRowSize(acces);
+		if(proga->typeof(acces,"name")==ho)proga->typeof(acces,"name",na);
+		if(!p){
+			x=proga->getSub(acces);
+			if(ho==x)proga->setSub(acces,na);
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+}
+
+
+
+var getRowX(var X,var name){
+	t=X->names.find(name);
+	if(t<0)return;
+	return (X->table)[t];
+}
+
+
+
+void traceX(var X,var name){
+	s=name+": ";
+	p=getRowX(X,name);
+	if(typeof(p)=="vector")s+=p.export();
+	if(X->vars.isset(name))s+="   "+(X->vars)[name];
+	trace(s);
+}
+
+
+
+void posovpadaloPoisk(var X,var unknovn){
+	nu=X->names.find(unknovn);
+	mi=mt=0;
+	i=0;
+	for(;i<X->names.size();++i)if(i!=nu){
+		t=sovpadaetV((X->table)[i],(X->table)[nu]);
+		if(t>mt){
+			mt=t;
+			mi=i;
+			}
+		};
+	if(!mt)return;
+	trace("посовпадало елементов в двух рядах: "+mt);
+	S=W=((set)0);
+	i=0;
+	for(;i<(X->table)[nu].size();++i){
+		S.insert({(X->table)[mi][i],(X->table)[nu][i]});
+		W.insert((X->table)[mi][i]);
+		}
+	S=((vector)S);
+	W=((vector)W);
+	IDOK=IDnotOK={};
+	i=0;
+	for(;i<W.size();++i){
+		n=0;
+		t=0;
+		for(;t<S.size();++t)if(S[t][0]==W[i])++n;
+		if(n==1)IDOK.push(W[i]);else IDnotOK.push(W[i]);
+		}
+	trace(IDOK);
+	trace(IDnotOK);
+	nok=1;
+	if(IDOK.size()!=IDnotOK.size()){
+		nok=2;
+		if(IDOK.size()<IDnotOK.size())nok=1;
+		}
+	Nam=X->names-{unknovn,(X->names)[mi]};
+	progaNOK="";
+	i=0;
+	for(;i<IDnotOK.size();++i){
+		x=IDnotOK[i];
+		Q={};
+		t=0;
+		for(;t<S.size();++t)if(S[t][0]==x)Q.push(S[t][1]);
+		trace(Q);
+		t=0;
+		for(;t<Nam.size();++t){
+			R=getRowX(X,Nam[t]);
+			table={};
+			p=0;
+			for(;p<Q.size();++p){
+				U={};
+				ii=0;
+				for(;ii<(X->table)[nu].size();++ii)if((X->table)[nu][ii]==Q[p])U.push(R[ii]);
+				table.push(((vector)((set)U)));
+				}
+			trace(table.export());
+			ce=0;
+			if(table.size()==2){
+				if(table[0].size()==1)ce=1;
+				if(table[1].size()==1)ce=2;
+				}
+			if(ce){if(table[2-ce].find(table[ce-1][0])<0){
+				s=Nam[t]+"=="+table[ce-1][0];
+				s+="?"+Q[ce-1]+":"+Q[2-ce];
+				if(progaNOK=="")progaNOK=s;
+				if(progaNOK.size()>s.size())progaNOK=s;
+				continue;
+				}}
+			if(table.size()==2){if(((set)(table[0]+table[1])).size()==table[0].size()+table[1].size()){
+				ce=table[0].size()>table[1].size();
+				s=table[ce].export()+".find("+Nam[t]+")>=0";
+				s+="?"+Q[ce]+":"+Q[!ce];
+				if(progaNOK=="")progaNOK=s;
+				if(progaNOK.size()>s.size())progaNOK=s;
+				}}
+			}
+		}
+	if(progaNOK=="")return;
+	if((nok==1?IDOK:IDnotOK).size()==1){
+		n=(nok==1?IDOK:IDnotOK)[0];
+		s=(X->names)[mi]+"=="+n;
+		t=0;
+		for(;t<S.size();++t)if(S[t][0]==n)break;
+		s+="?"+S[t][1]+":("+progaNOK+")";
+		namea=X->names.newName();
+		setrow(X,namea+"="+s);
+		if(getRowX(X,namea)==getRowX(X,unknovn)){
+			deleteRow(X,namea);
+			(X->vars)[unknovn]=s;
+			return;
+			}
+		}
+}
+
+
+
+int sovpadaetV(var A,var B){
+	n=A.size();
+	if(B.size()<n)n=B.size();
+	r=0;
+	i=0;
+	for(;i<n;++i)if(A[i]==B[i])++r;
+	return r;
+}
+
+
+// Empire.code	:-|

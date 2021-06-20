@@ -1,0 +1,39 @@
+// Типы данных
+/*
+	void
+	char
+	float
+	double
+	bool
+	int
+
+	string
+	set
+	vector
+	map
+	interval
+	function
+	program
+*/
+
+main(){
+	trace(typeof(#));
+/*
+	trace(isset(#));
+
+	c='X';
+	trace( typeof(c) + " : " + c );
+
+	t=1.56;
+	trace( typeof(t) + " : " + t );
+	t=(float)t;
+	trace( typeof(t) + " : " + t );
+
+	b= 1==2;
+	trace( typeof(b) + " : " + b );
+
+	n=0b101; // 0x5
+	trace( typeof(n) + " : " + n );
+*/
+	getstring();
+}

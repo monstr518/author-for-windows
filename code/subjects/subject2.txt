@@ -1,0 +1,134 @@
+// subject2.txt
+#include <code\instruments\instruments1.txt>
+
+
+//найти простейшее условие
+var findPoProshce(conditions){
+	skladnosti={};
+	for(i=0;i<conditions.size();++i){
+            proga=0;
+            proga=PROGRAM(conditions[i]);
+            n=0;
+            if(typeof(proga)=="program")n=proga.getPower();
+            skladnosti.push(n);
+            }
+	p=0;
+	for(i=1;i<conditions.size();++i)if(skladnosti[p]>skladnosti[i])p=i;
+	return conditions[p];
+}
+
+
+var getCondition(R,nameV,name){
+	conditions={};
+	for(t=0;t<R.size();++t)if(R[t].find(nameV)>=0)conditions.push(R[t]);
+
+        if(conditions.empty())return "pusto!";
+	condition=findPoProshce(conditions);
+	condition=PROGRAM(condition);
+	ReplaceVars(&condition,nameV,name);
+	return condition;
+}
+
+
+var getMethod(table,methods,j){
+	List={};
+	for(i=0;i<table.size();++i){
+		if(table[i].indexOf(methods[j])<0)List+={table[i]};
+		}
+	Obshce={};
+	for(i=0;i<methods.size();++i){
+		ok=1;
+		for(t=0;t<List.size();++t)if(List[t].indexOf(methods[i])<0)ok=0;
+		if(ok)Obshce+={methods[i]};
+		}
+	if(!Obshce.size())return "pusto!";
+	method=findPoProshce(Obshce);
+	return method;
+}
+
+
+//-------------------------------------------------------------------------------------------------------
+var Subject(var params){
+	if(params=="help" || params=="interface")return "{inputRow:{},outputRow:{},names:{input:\"x\"}}";
+	if(!(params.find("inputRow") && params.find("outputRow")))return "see interface";
+	var Results={};
+	name="x";
+	if(params.find("names"))if(params.names.find("input"))name=params.names.input;
+	methods=(set){};
+	table={};
+	for(i=0;i<params.inputRow.size() && i<params.outputRow.size();++i){
+		problem={input:params.inputRow[i],output:params.outputRow[i],name:name};
+		R=master(problem);
+		table+={R};
+		methods+=R;
+		}
+	methods=(vector)methods;
+	prioritet={};
+	for(i=0;i<methods.size();++i){
+		n=0;
+		for(j=0;j<table.size();++j)if(table[j].indexOf(methods[i])>=0)++n;
+		prioritet.push(n);
+		}
+	//trace(methods);
+	j=0;
+	for(i=1;i<methods.size();++i)if(prioritet[i]>prioritet[j])j=i;
+	//trace(table);
+        if(prioritet[j]==table.size()){
+            for(i=0;i<methods.size();++i)if(prioritet[i]==table.size()){
+                str=methods[i];
+                if(str!=name)str=name+"="+str;
+                Results.push(str);
+                }
+            return Results;
+            }
+	problem={RowA:{},RowB:{}};
+	for(i=0;i<table.size();++i){
+		if(table[i].indexOf(methods[j])>=0)problem.RowA+={params.inputRow[i]};
+			else problem.RowB+={params.inputRow[i]};
+		}
+	//trace(problem);
+	R=master(problem);
+	//trace(R);
+	if(methods[j]==name){ // токо елсе
+		condition=getCondition(R,"B",name);
+                if(condition=="pusto!")return Results;
+		condition="if("+condition+")";
+		method=getMethod(table,methods,j);
+                if(method=="pusto!")return Results;
+		Results.push(condition+name+"="+method+";");
+		return Results;
+		}
+	condition=getCondition(R,"A",name);
+        if(condition=="pusto!")return Results;
+	method=methods[j];
+	method2=getMethod(table,methods,j);
+	if(method2=="pusto!"){
+                problem={inputRow:{},outputRow:{},names:{input:name}};
+                for(i=0;i<table.size();++i)if(table[i].indexOf(methods[j])<0){
+                    problem.inputRow+={params.inputRow[i]};
+                    problem.outputRow+={params.outputRow[i]};
+                    }
+                //trace(problem);
+                R=master(problem);
+                //trace(R);
+                if(R.size())method2=findPoProshce(R);
+		}
+        if(method2=="pusto!")return Results;
+        proga=PROGRAM(method2);
+        if(proga.isProsto()){
+            method3=method2;
+            if(proga.typeof()=="=")method3=proga.getSub({1});
+            str=name+"="+condition+"?"+method+":"+method3+";";
+            Results.push(str);
+            }
+	condition="if("+condition+")";
+        proga1=PROGRAM(method);
+        if(proga1.typeof()!="=")method=name+"="+method;
+	str=condition+method+";";
+        if(proga.typeof()!="=")method2=name+"="+method2;
+        if(method2.substr(method2.size()-1,1)!=";")method2+=";";
+	str+=" else "+method2;
+	Results.push(str);
+	return Results;
+}
+

@@ -1,0 +1,177 @@
+// module1.code
+
+
+
+
+string GeneratorUniqueName(var AllNames){
+	size=((int)'Z')-((int)'A')+1;
+	n=1;
+	while(1){
+		newName="";
+		i=0;
+		for(;i<n;++i)newName+=((char)(rand()%size+((int)'A')));;
+		if(isset(AllNames)){if(AllNames->indexOf(newName)<0)break;}
+		++n;
+		}
+	if(isset(AllNames))AllNames->push(newName);
+	return newName;
+}
+
+
+
+var question(var vopros,var formula,var nameVar){
+	namedll="what.dll";
+	if(DLLS.indexOf(namedll)<0){
+		LoadDLL(namedll);
+		SendDLL(namedll,"WAY:"+WAY);
+		}
+	if(vopros=="equality")what="?: get equality for ("+formula+") unknown {"+nameVar+"}";
+	if(vopros=="optimize")what="?: optimize ("+formula+")";
+	if(vopros=="compare"){
+		if(typeof(formula)=="program"){if(formula.typeof()=="="){
+			formula2=PROGRAM("#==#");
+			formula2.setSub({0},formula.getSub({0}));
+			formula2.setSub({1},formula.getSub({1}));
+			formula=formula2;
+			}}
+		what="?: compare ("+formula+")";
+		}
+	SendDLL(namedll,what);
+	R=RecvDLL(namedll);
+	return R;
+}
+
+
+
+vector getAllNamesIzFunction(var func){
+	f= &func;
+	if(typeof(func)=="string")f=func;
+	AllNamesFunction=f->getNamesStart();
+	S=f->getIDs();
+	while(S.size()){
+		n=S.pop();
+		command=f->getCommand(n);
+		if(typeof(command)=="program");else continue;
+		AllNamesFunction+=getListAllVar(command);
+		continue;
+		}
+	return ((vector)((set)AllNamesFunction));
+}
+
+
+
+vector getListAllVar(var comand){
+	S=((set)({}));
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=comand.getRowSize(acces);
+		x=comand.getSub(acces);
+		if(typeof(x)=="program"){
+			if(p==1){if(x.typeof()=="CreateVar")S.insert(x.typeof({},"name"));}
+			if(!p){if(x.typeof()=="var")S.insert(((string)x));}
+			}
+		acces.push(p);
+		isf=x.typeof()=="function";
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf){if(p==1)--p;}
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf);else continue;
+			if(p==1);else continue;
+			--p;
+			continue;
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return ((vector)S);
+}
+
+
+
+var ReplaceVars(var* proga,string ho,var na){
+	if(typeof(na)!="program")na=PROGRAM(((string)na));
+	acces={};
+	ok=0;
+	while(1){
+		p=proga->getRowSize(acces);
+		if(proga->typeof(acces,"name")==ho)proga->typeof(acces,"name",na);
+		if(!p){
+			x=proga->getSub(acces);
+			if(ho==x){
+				proga->setSub(acces,na);
+				ok=1;
+				}
+			}
+		acces.push(p);
+		n=acces.size()-1;
+		p=acces[n];
+		while(!p){
+			acces.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return ok;
+}
+
+
+
+void InverseCondition(var condition){
+	type=condition->typeof();
+	if(type=="!."){
+		( *condition)=condition->getSub({0});
+		return;
+		}
+	if((a=type[0]=='<')||type[0]=='>'){
+		b=type.size()==1;
+		type=a?">":"<";
+		if(b)type+="=";
+		c=PROGRAM("#"+type+"#");
+		c.setSub({0},condition->getSub({0}));
+		c.setSub({1},condition->getSub({1}));
+		( *condition)=c;
+		return;
+		}
+	if(type=="!="||type=="=="){
+		type=type=="!="?"==":"!=";
+		c=PROGRAM("#"+type+"#");
+		c.setSub({0},condition->getSub({0}));
+		c.setSub({1},condition->getSub({1}));
+		( *condition)=c;
+		return;
+		}
+	if(type=="&&"||type=="||"){
+		type=type=="&&"?"||":"&&";
+		c=PROGRAM("#"+type+"#");
+		x=condition->getSub({0});
+		InverseCondition(&x);
+		c.setSub({0},x);
+		x=condition->getSub({1});
+		InverseCondition(&x);
+		c.setSub({1},x);
+		( *condition)=c;
+		return;
+		}
+	c=PROGRAM("!#");
+	c.setSub({0},(*condition));
+	( *condition)=c;
+}
+
+
+// module1.code	:-|

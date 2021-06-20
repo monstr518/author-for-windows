@@ -1,0 +1,10 @@
+
+main(){
+	n=(#?9:7);
+	//if(#)n=1;else n=5;
+	//n=10;
+	trace( "Однозначно :-)  n=" + n );
+
+	define();
+	getstring();
+}

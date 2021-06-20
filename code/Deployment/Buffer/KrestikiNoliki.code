@@ -1,0 +1,31 @@
+// KrestikiNoliki.code
+
+
+
+
+getbuffergraf(){
+	G=((graf)0);
+	G.MARKER(0,0,"",0,"START");
+	return G;
+}
+
+
+
+getbufferunits(){
+	X={};
+	X.push({game:{{0,0,0},{0,0,0},{0,0,0}},n:0,xod:1});
+	return X;
+}
+
+
+
+getbufferparams(){
+	M=((map)0);
+	M["k"]=1;
+	M["good"]=1;
+	M["timezatratil"]=0;
+	return M;
+}
+
+
+// KrestikiNoliki.code	:-|

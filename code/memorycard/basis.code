@@ -1,0 +1,539 @@
+// basis.code
+
+
+
+
+var CreateOneMemoryCard(){
+	X={"Conditions":{},"EqualeVars":{},"conflict":0,"know":((map)0),"knowDont":((map)0),"markerknow":((map)0),"pos":0,"posLastAnalizeCondition":-1,"posPreviorInGraph":0,"povtorCommand":0,"randomRow":{},"usedNames":((set)0)};
+	return X;
+}
+
+
+
+var toStringOneMemoryCard(var p_memorycard){
+	s2=s="";
+	names=p_memorycard->know.getKeys();
+	i=0;
+	for(;i<names.size();++i){
+		if(i)s+=" && ";
+		s+=names[i]+"=="+(p_memorycard->know)[names[i]];
+		}
+	names=p_memorycard->knowDont.getKeys();
+	i=0;
+	for(;i<names.size();++i){
+		if(i)s2+=" && ";
+		s2+=names[i]+"!="+(p_memorycard->knowDont)[names[i]];
+		}
+	if(s.size()&&s2.size())s+=" && "+s2;else s+=s2;
+	s2="";
+	i=0;
+	for(;i<p_memorycard->Conditions.size();++i){
+		if(i)s2+=" && ";
+		P=(p_memorycard->Conditions)[i];
+		if(typeof(P)=="vector"){
+			ss="";
+			j=0;
+			for(;j<P.size();++j){
+				if(j)ss+=" || ";
+				ss+=P[j];
+				}
+			s2+="("+ss+")";
+			}else s2+=P;
+		}
+	if(s.size()&&s2.size())s+=" && "+s2;else s+=s2;
+	s2="";
+	i=0;
+	for(;i<p_memorycard->EqualeVars.size();++i){
+		if(i)s2+=" && ";
+		S=(p_memorycard->EqualeVars)[i];
+		j=1;
+		for(;j<S.size();++j){
+			if(j-1)s2+=" && ";
+			s2+=((string)S[j-1])+"=="+S[j];
+			}
+		}
+	if(s.size()&&s2.size())s+=" && "+s2;else s+=s2;
+	if(p_memorycard->conflict)s+="\nConflict!";
+	return s;
+}
+
+
+
+void setValueInMC(var p_memorycard,var name,var value){
+	if(typeof(name)=="program")name=((string)name);
+	X=#;
+	if(isDefinedInMC(p_memorycard,name,&X)){if(X!=value){
+		i=0;
+		for(;i<p_memorycard->EqualeVars.size();++i)if((p_memorycard->EqualeVars)[i].find(name)>=0)(p_memorycard->EqualeVars)[i]-={name};
+		}}
+	(p_memorycard->know)[name]=value;
+	p_memorycard->usedNames.insert(name);
+}
+
+
+
+var findAllRowOR(var P){
+	if(P.typeof()!="||")return {P};
+	return findAllRowOR(P.getSub({0}))+findAllRowOR(P.getSub({1}));
+}
+
+
+
+bool isTyftoLogic(var t,var t2){
+	if(t==t2)return 1;
+	if(t+"="==t2)return 1;
+	if(t2=="!="&&(t=="<"||t==">"))return 1;
+	return 0;
+}
+
+
+
+var scanerRowOrInMC(var p_memorycard,var row){
+	i=0;
+	for(;i<row.size();++i){
+		ok=0;
+		P=row[i];
+		h={"==","!=","<",">","<=",">="}.find(P.typeof());
+		if(h<0)continue;
+		A=P.getSub({0});
+		B=P.getSub({1});
+		P2=pairFindConditionInMC(p_memorycard,A,#,B);
+		if(typeof(P2)=="program"){
+			if(isTyftoLogic(P2.typeof(),P.typeof()))return 1;
+			m={"!=","==",">=","<=",">","<"};
+			h2={"==","!=","<",">","<=",">="}.find(P2.typeof());
+			ok=isTyftoLogic(m[h2],P.typeof())||isTyftoLogic(P2.typeof(),m[h]);
+			}
+		if(ok){
+			row.erase(i);
+			--i;
+			}
+		}
+	if(row.size()==1)return row[0];
+	if(row.size())p_memorycard->Conditions.push(row);else p_memorycard->conflict=1;
+	return 0;
+}
+
+
+
+void glueRowOrInMC(var p_memorycard,var p_row){
+	ok=1;
+	while(ok){
+		ok=0;
+		i=0;
+		for(;i<p_row->size();++i){
+			P=(*p_row)[i];
+			A=P.getSub({0});
+			B=P.getSub({1});
+			t=P.typeof();
+			j=i+1;
+			for(;j<p_row->size();++j){
+				P2=(*p_row)[j];
+				AA=P2.getSub({0});
+				BB=P2.getSub({1});
+				if(!(A==AA&&B==BB||B==AA&&A==BB))continue;
+				t2=P2.typeof();
+				if(B==AA){
+					n={"==","!=","<",">","<=",">="}.find(t2);
+					t2={"==","!=",">","<",">=","<="}[n];
+					}
+				t3=t;
+				if(t=="<"){
+					n={">",">=","<=","==","!="}.find(t2);
+					if(n>=0)t3={"!=",".","<=","<=","!="}[n];
+					}
+				if(t==">"){
+					n={"<","<=",">=","==","!="}.find(t2);
+					if(n>=0)t3={"!=",".",">=",">=","!="}[n];
+					}
+				if(t=="=="){
+					n={"<","<=",">",">=","!="}.find(t2);
+					if(n>=0)t3={"<=","<=",">=",">=","."}[n];
+					}
+				if(t==">="){
+					n={"<","<=",">","==","!="}.find(t2);
+					if(n>=0)t3={".",".",">=",">=","."}[n];
+					}
+				if(t=="<="){
+					n={"<",">=",">","==","!="}.find(t2);
+					if(n>=0)t3={"<=",".",".","<=","."}[n];
+					}
+				if(t=="!="){
+					n={"<",">=",">","==","<="}.find(t2);
+					if(n>=0)t3={"!=",".","!=",".","."}[n];
+					}
+				p_row->erase(j);
+				if(t3!="."){
+					P=PROGRAM("#"+t3+"#");
+					P.setSub({0},A);
+					P.setSub({1},B);
+					(*p_row)[i]=P;
+					}else p_row->erase(i);
+				ok=1;
+				break;
+				}
+			}
+		}
+}
+
+
+
+void setConditionsInMC(var p_memorycard,var P){
+	if(typeof(P)!="program")return;
+	t=P.typeof();
+	if(t=="||"){
+		row=findAllRowOR(P);
+		glueRowOrInMC(p_memorycard,&row);
+		P=scanerRowOrInMC(p_memorycard,row);
+		if(typeof(P)!="program")return;
+		t=P.typeof();
+		}
+	if(t=="&&"){
+		setConditionsInMC(p_memorycard,P.getSub({0}));
+		setConditionsInMC(p_memorycard,P.getSub({1}));
+		return;
+		}
+	if(t=="=="){
+		A=P.getSub({0});
+		B=P.getSub({1});
+		if(A.typeof()=="var")A=((string)A);
+		if(B.typeof()=="var")B=((string)B);
+		P2=pairFindConditionInMC(p_memorycard,A,#,B);
+		if(typeof(P2)=="program"){
+			if({"!=","<",">"}.find(P2.typeof())>=0)p_memorycard->conflict=1;
+			if(P2.typeof()==">="||P2.typeof()=="<=")p_memorycard->Conditions.erase(p_memorycard->posLastAnalizeCondition);
+			}
+		ok=0;
+		ii=0;
+		i=0;
+		for(;i<p_memorycard->EqualeVars.size();++i){
+			p_row=&(p_memorycard->EqualeVars)[i];
+			a=b=0;
+			j=0;
+			for(;j<p_row->size();++j){
+				if((*p_row)[j]==A)a=1;
+				if((*p_row)[j]==B)b=1;
+				}
+			if(a&&b)return;
+			if(a)p_row->push(B);
+			if(b)p_row->push(A);
+			if(a||b){
+				if(ok){
+					(p_memorycard->EqualeVars)[ii]+=(*p_row)-{A,B};
+					p_memorycard->EqualeVars.erase(i);
+					return;
+					}
+				ok=1;
+				ii=i;
+				}
+			}
+		if(!ok)p_memorycard->EqualeVars.push({A,B});
+		return;
+		}
+	if(t==">"||t=="<"){
+		A=P.getSub({0});
+		B=P.getSub({1});
+		if(A.typeof()=="var")A=((string)A);
+		if(B.typeof()=="var")B=((string)B);
+		if(pairIsEqualeInMC(p_memorycard,A,B))p_memorycard->conflict=1;else {
+			if(pairIsNotEqualeInMC(p_memorycard,A,B)){
+				X=(p_memorycard->Conditions)[p_memorycard->posLastAnalizeCondition];
+				if(X.typeof()=="!=")p_memorycard->Conditions.erase(p_memorycard->posLastAnalizeCondition);else {
+					fc=pairFindConditionInMC(p_memorycard,A,t,B);
+					if(typeof(fc)=="program"){if(fc==P)return;}
+					fc=pairFindConditionInMC(p_memorycard,A,t==">"?"<":">",B);
+					if(typeof(fc)=="program")p_memorycard->conflict=1;
+					}
+				}
+			P2=pairFindConditionInMC(p_memorycard,A,#,B);
+			if(typeof(P2)=="program"){
+				if(t+"="==P2.typeof()||P2.typeof()=="!=")p_memorycard->Conditions.erase(p_memorycard->posLastAnalizeCondition);
+				ok=0;
+				if(t==">"&&{"<","<="}.find(P2.typeof())>=0)ok=1;
+				if(t=="<"&&{">",">="}.find(P2.typeof())>=0)ok=1;
+				if(ok)p_memorycard->conflict=1;
+				}
+			p_memorycard->posLastAnalizeCondition=-1;
+			}
+		}
+	if(t==">="||t=="<="){
+		A=P.getSub({0});
+		B=P.getSub({1});
+		if(A.typeof()=="var")A=((string)A);
+		if(B.typeof()=="var")B=((string)B);
+		if(pairIsEqualeInMC(p_memorycard,A,B))return;
+		P2=pairFindConditionInMC(p_memorycard,A,#,B);
+		if(typeof(P2)=="program"){
+			if(P2.typeof()[0]==t[0])return;
+			p_memorycard->conflict=1;
+			}
+		p_memorycard->posLastAnalizeCondition=-1;
+		}
+	p_memorycard->Conditions.push(P);
+}
+
+
+
+bool pairIsEqualeInMC(var p_memorycard,var A,var B){
+	if(typeof(A)=="program"){if(A.typeof()=="var")A=((string)A);}
+	if(typeof(B)=="program"){if(B.typeof()=="var")B=((string)B);}
+	if(typeof(A)==typeof(B)){if(A==B)return 1;}
+	i=0;
+	for(;i<p_memorycard->EqualeVars.size();++i){
+		p_row=&(p_memorycard->EqualeVars)[i];
+		ok=0;
+		j=0;
+		for(;j<p_row->size();++j){
+			if((*p_row)[j]==A)++ok;
+			if((*p_row)[j]==B)++ok;
+			}
+		if(ok==2)return 1;
+		}
+	return 0;
+}
+
+
+
+bool pairIsNotEqualeInMC(var p_memorycard,var A,var B,var stop){
+	if(typeof(A)=="string")A=PROGRAM(A);
+	if(typeof(B)=="string")B=PROGRAM(B);
+	if(A==B)return 0;
+	i=0;
+	for(;i<p_memorycard->Conditions.size();++i){
+		P=(p_memorycard->Conditions)[i];
+		if(typeof(P)!="program")continue;
+		if({"<",">","!="}.find(P.typeof())<0)continue;
+		A2=P.getSub({0});
+		B2=P.getSub({1});
+		a=A2==A&&B2==B;
+		b=A2==B&&B2==A;
+		if(a||b){
+			p_memorycard->posLastAnalizeCondition=i;
+			return 1;
+			}
+		a=A==A2||A==B2;
+		b=B==A2||B==B2;
+		if(!a&&!b)continue;
+		ok=2;
+		if(a)ok=pairIsEqualeInMC(p_memorycard,B,A==A2?B2:A2);
+		if(b)ok=pairIsEqualeInMC(p_memorycard,A,B==A2?B2:A2);
+		if(ok<2){
+			if(ok)p_memorycard->posLastAnalizeCondition=i;
+			return ok;
+			}
+		}
+	if(isset(stop))return 0;
+	if(typeof(A)=="program"){if(A.typeof()=="var")A=((string)A);}
+	i=0;
+	for(;i<p_memorycard->EqualeVars.size();++i){
+		p_row=&(p_memorycard->EqualeVars)[i];
+		pos=p_row->find(A);
+		if(pos>=0){
+			j=0;
+			for(;j<p_row->size();++j)if(j!=pos){if(pairIsNotEqualeInMC(p_memorycard,(*p_row)[j],B,1))return 1;};
+			return 0;
+			}
+		}
+	return 0;
+}
+
+
+
+bool pairIsMoreOrLessInMC(var p_memorycard,var A,var t,var B){
+	if({">","<","<=",">="}.find(t)<0)return 0;
+	return pairIsNotEqualeInMC(p_memorycard,A,B);
+}
+
+
+
+bool isDefinedInMC(var p_memorycard,var P,var p_x,var stop){
+	if(typeof(P)=="program"){if(P.typeof()=="var")P=((string)P);}
+	if(p_memorycard->know.isset(P)){
+		if(isset(p_x)){
+			(*p_x)=(p_memorycard->know)[P];
+			if(((bool)isTerminateX))p_memorycard->know.erase(P);
+			}
+		return 1;
+		}
+	if(isset(stop))return 0;
+	t=-1;
+	i=0;
+	for(;i<p_memorycard->EqualeVars.size();++i){
+		p_row=&(p_memorycard->EqualeVars)[i];
+		t=p_row->find(P);
+		if(t>=0)break;
+		}
+	if(t>=0){
+		i=0;
+		for(;i<p_row->size();++i)if(i!=t){if(isDefinedInMC(p_memorycard,(*p_row)[i],p_x,1))return 1;};
+		}
+	return 0;
+}
+
+
+
+var pairFindConditionInMC(var p_memorycard,var A,var t,var B,var stop){
+	if(typeof(A)=="string")A=PROGRAM(A);
+	if(typeof(B)=="string")B=PROGRAM(B);
+	if(!isset(stop)){if(pairIsEqualeInMC(p_memorycard,A,B)){
+		P=PROGRAM("#==#");
+		P.setSub({0},A);
+		P.setSub({1},B);
+		return P;
+		}}
+	if(isset(t)){
+		i={"<",">","!=","==","<=",">="}.find(t);
+		antiZnak={">","<","!=","==",">=","<="}[i];
+		}
+	i=0;
+	for(;i<p_memorycard->Conditions.size();++i){
+		P=(p_memorycard->Conditions)[i];
+		if(typeof(P)!="program")continue;
+		if(isset(t)){if(P.typeof()!=t&&P.typeof()!=antiZnak)continue;}
+		A2=P.getSub({0});
+		B2=P.getSub({1});
+		a=A2==A&&B2==B;
+		b=A2==B&&B2==A;
+		okeq=0;
+		if(!a){
+			if(A2==A){if(pairIsEqualeInMC(p_memorycard,B,B2))okeq=a=1;}
+			if(B2==B){if(pairIsEqualeInMC(p_memorycard,A,A2))okeq=a=1;}
+			}
+		if(!b){
+			if(A2==B){if(pairIsEqualeInMC(p_memorycard,A,B2))okeq=b=1;}
+			if(B2==A){if(pairIsEqualeInMC(p_memorycard,B,A2))okeq=b=1;}
+			}
+		if(isset(t)){
+			if(a){if(P.typeof()!=t)a=0;}
+			if(b){if(P.typeof()!=antiZnak)b=0;}
+			}
+		if(a||b){
+			p_memorycard->posLastAnalizeCondition=i;
+			if(b){
+				if(!isset(t)){
+					i={"<",">","!=","==","<=",">="}.find(P.typeof());
+					antiZnak={">","<","!=","==",">=","<="}[i];
+					}
+				P=PROGRAM("#"+antiZnak+"#");
+				P.setSub({0},A);
+				P.setSub({1},B);
+				}
+			if(a&&okeq){
+				P.setSub({0},A);
+				P.setSub({1},B);
+				}
+			return P;
+			}
+		}
+	if(isset(stop))return 0;
+	A2=A;
+	if(A.typeof()=="var")A=((string)A);
+	i=0;
+	for(;i<p_memorycard->EqualeVars.size();++i){
+		p_row=&(p_memorycard->EqualeVars)[i];
+		pos=p_row->find(A);
+		if(pos>=0){
+			j=0;
+			for(;j<p_row->size();++j)if(j!=pos){
+				P=pairFindConditionInMC(p_memorycard,(*p_row)[j],t,B,1);
+				if(typeof(P)=="program"){
+					P.setSub({0},A2);
+					return P;
+					}
+				};
+			return 0;
+			}
+		}
+	return 0;
+}
+
+
+
+string pairFindXConditionInMC(var p_memorycard,var A,var B,var p_stopList){
+	if(!isset(p_stopList)){
+		stopList={};
+		p_stopList=&stopList;
+		}
+	if(typeof(A)=="program"){if(A.typeof()=="var")A=((string)A);}
+	if(typeof(B)=="program"){if(B.typeof()=="var")B=((string)B);}
+	P=pairFindConditionInMC(p_memorycard,A,#,B);
+	if(typeof(P)=="program")return P.typeof();
+	ok=0;
+	i=0;
+	for(;i<p_memorycard->EqualeVars.size();++i){
+		p_row=&(p_memorycard->EqualeVars)[i];
+		j=0;
+		for(;j<p_row->size();++j)if((*p_row)[j]==A)ok=1;
+		if(ok)break;
+		}
+	ListA={A};
+	if(ok)ListA=(p_memorycard->EqualeVars)[i];
+	ii=0;
+	for(;ii<ListA.size();++ii){
+		A=ListA[ii];
+		i=0;
+		for(;i<p_memorycard->Conditions.size();++i){
+			P=(p_memorycard->Conditions)[i];
+			if(typeof(P)!="program")continue;
+			AA=((string)P.getSub({0}));
+			BB=((string)P.getSub({1}));
+			if(AA!=A&&BB!=A)continue;
+			t=P.typeof();
+			if(AA==A){
+				AA=BB;
+				}else {
+				n={"<",">","!=","==","<=",">="}.find(t);
+				t={">","<","!=","==",">=","<="}[n];
+				}
+			if(p_stopList->find(AA)>=0)return "?";
+			p_stopList->push(AA);
+			Z=pairFindXConditionInMC(p_memorycard,AA,B,p_stopList);
+			p_stopList->pop();
+			if(Z=="?")continue;
+			if(t=="!="&&Z==t)return "?";
+			if(Z==t)return Z;
+			if(Z=="!="&&(t=="<"||t==">"))return t;
+			if(Z=="!="&&(t=="<="||t==">="))return t=="<="?"<":">";
+			if(t=="!="&&(Z=="<"||Z==">"))return Z;
+			if(t=="!="&&(Z=="<="||Z==">="))return Z=="<="?"<":">";
+			if(Z=="==")return t;
+			if(Z+"="==t)return Z;
+			if(Z==t+"=")return t;
+			}
+		}
+	return "?";
+}
+
+
+
+void main(){
+	X=CreateOneMemoryCard();
+	setValueInMC(&X,"A",25);
+	setConditionsInMC(&X,PROGRAM("A==B && C==B"));
+	setConditionsInMC(&X,PROGRAM("n==t"));
+	setConditionsInMC(&X,PROGRAM("q==p"));
+	setConditionsInMC(&X,PROGRAM("q==t"));
+	setConditionsInMC(&X,PROGRAM("k!=p"));
+	setConditionsInMC(&X,PROGRAM("k==x"));
+	setConditionsInMC(&X,PROGRAM("k<n"));
+	setConditionsInMC(&X,PROGRAM("i2>ii"));
+	setConditionsInMC(&X,PROGRAM("i==i2"));
+	setConditionsInMC(&X,PROGRAM("y==e || i<ii"));
+	setConditionsInMC(&X,PROGRAM("AA<BB && CC<=AA && CC==DD"));
+	setConditionsInMC(&X,PROGRAM("aa==bb || bb>aa || cc==ee"));
+	trace(toStringOneMemoryCard(&X));
+	trace("?:n==k => "+pairIsEqualeInMC(&X,"n","k"));
+	trace("?:p!=k => "+pairIsNotEqualeInMC(&X,"p","k"));
+	trace("?:n!=k => "+pairIsNotEqualeInMC(&X,"n","k"));
+	trace("?:n!=x => "+pairIsNotEqualeInMC(&X,"n","x"));
+	trace("?:x>t => "+pairIsMoreOrLessInMC(&X,"x",">","t"));
+	tmp=0;
+	ok=isDefinedInMC(&X,"C",&tmp);
+	trace("C: "+(ok?"":"not find.")+(ok?tmp:""));
+	trace("?:(ii,i) => "+pairFindConditionInMC(&X,"ii",#,"i"));
+	trace("?:(BB,DD) => "+pairFindXConditionInMC(&X,"BB","DD"));
+	getstring();
+}
+
+
+// basis.code	:-|

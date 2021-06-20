@@ -1,0 +1,116 @@
+// Методы для решения систем уравнений.
+
+
+var systemPara(SYS){
+	//trace(SYS->vars.export());
+	controlZeroPoke(SYS);
+	UniqueNumber=(vector)(set)SYS->poke;
+	UniqueSystem={};
+	for(i=0;i<UniqueNumber.size();++i){
+		n=UniqueNumber[i];
+		n=SYS->poke.findOf(n);
+		UniqueSystem.push(SYS->vars[n]);
+		}
+	trace(UniqueSystem.export());
+	Nabor={};
+	ReservNames={};
+	for(i=0;i<UniqueSystem.size();++i){
+		t=getListAllVar(UniqueSystem[i]);
+		Nabor.push(t);
+		ReservNames+=t;
+		}
+	ReservNames=(vector)(set)ReservNames;
+	Result={};
+	recurseFindStrategu(Nabor,&ReservNames,&Result);
+
+	trace("----------------------------------------------{");
+	trace(Nabor.export());
+	trace("Result"+Result.export());
+	trace("----------------------------------------------}");
+
+	for(i=0;i<Result.size();++i)if(typeof(Result[i].vidomo)=="vector")break;
+	if(i<Result.size()){
+		R=Result[i];
+		Result.erase(i);
+		root=0;
+		dostavator(R,&Result,&root);
+trace(root);
+		}
+	
+	return 0;
+}
+
+
+
+void dostavator(Q,R,root){
+	trace(Q);
+	if(typeof(Q.iz)=="int"){
+		*root=Q.iz;
+		return;
+		}
+	*root={};
+	for(i=0;i<Q.iz.size();++i){
+		root->push(0);
+		for(t=0;t<R->size();++t)if((*R)[t].vidomo==Q.iz[i]){
+			K=(*R)[t];
+			R->erase(t);
+			dostavator(K,R,&(*root)[i]);
+			break;
+			}
+		}
+}
+
+
+
+void recurseFindStrategu(Nabor,ReservNames,Result){
+	for(i=0;i<Nabor.size();++i)if(typeof(Nabor[i])!="int")
+	for( j=i+1;j<Nabor.size();++j)if(typeof(Nabor[ j ])!="int"){
+		A=Nabor[i]-Nabor[ j ];
+		B=Nabor[ j ]-Nabor[i];
+		if((A+B).empty())if(Nabor[i].size()==2){
+			R={vidomo:Nabor[i],iz:{}};
+			tmpname=GeneratorUniqueName(ReservNames);
+			R.iz.push(tmpname);
+			M->ReservNames.push(tmpname);
+			tmpname=GeneratorUniqueName(ReservNames);
+			R.iz.push(tmpname);
+			M->ReservNames.push(tmpname);
+			Result->push(R);
+			S=R.iz;
+			P={i,j};
+			while(S.size()){
+				A=S.pop();
+				I=P.pop();
+				R={vidomo:A,iz:{}};
+				for(k=0;k<Nabor.size();++k)
+				if(typeof(Nabor[k])=="int")if(Nabor[k]==I){
+					tmpname=GeneratorUniqueName(ReservNames);
+					S.push(tmpname);
+					P.push(k);
+					R.iz.push(tmpname);
+					}
+				if(!R.iz.size())R.iz=I;
+				Result->push(R);
+				}
+			continue;
+			}
+		U=((Nabor[i]+Nabor[ j ])-(A+B));
+		U=(vector)(set)U;
+		if(U.empty())continue;
+		for(k=0;k<U.size();++k){
+			Nabor2=Nabor;
+			Nabor2[i]=Nabor2[ j ]=Nabor.size();
+			Nabor2.push(A+B);
+			recurseFindStrategu(Nabor2,ReservNames,Result);
+			}
+		}
+}
+
+
+
+void controlZeroPoke(SYS){
+	if(SYS->poke.min()>0)return;
+	n=SYS->poke.max();
+	for(i=0;i<SYS->poke.size();++i)if(SYS->poke[i]==0)SYS->poke[i]=++n;
+}
+

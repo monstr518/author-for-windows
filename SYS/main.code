@@ -1,0 +1,25 @@
+// main.code
+
+
+
+
+int Main(){
+	s="\\code\\a.txt";
+	if(count(ARGS)>1){
+		s=ARGS[1];
+		s2=s.substr(0,WAY.length());
+		if(s2==WAY)s=s.substr(WAY.length());
+		f=getFunction(getThisFunctionName());
+		pos=f.Root();
+		pos=f.Next(pos);
+		f.setComand(pos,"s="+s.export());
+		}
+	if(s[0]=='\\')s=WAY+s;
+	include(s);
+	main();
+	define();
+	uninclude(s);
+}
+
+
+// main.code	:-|

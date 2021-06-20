@@ -1,0 +1,116 @@
+// algoscaner.code
+
+
+
+
+var scanerAlgorithm(var p_func,var scanFunc){
+	pos=p_func->Root();
+	pos=p_func->Down(pos);
+	listpos={pos};
+	rangpos={p_func->Rang(pos)};
+	while(listpos.size()){
+		rang=rangpos.min();
+		i=rangpos.find(rang);
+		pos=listpos[i];
+		while(1){
+			i=listpos.find(pos);
+			if(i<0)break;
+			rangpos.erase(i);
+			listpos.erase(i);
+			}
+		if(pos==p_func->Root())continue;
+		if(scanFunc.run(p_func,pos))return pos;
+		pos=p_func->Down(pos);
+		if(typeof(pos)=="int")pos={pos};
+		i=0;
+		for(;i<pos.size();++i){
+			rang2=p_func->Rang(pos[i]);
+			if(rang>=rang2);else {
+				listpos.push(pos[i]);
+				rangpos.push(rang2);
+				}
+			}
+		}
+	return #;
+}
+
+
+
+var conditionResult(var reserveName518){
+	reserveName518=reserveName518.getSub({0});
+	if(reserveName518.getNames().in("reserveName518"))return #;
+	result=eval(reserveName518);
+	if(isset(result))result=((bool)result);
+	return result;
+}
+
+
+
+bool isIfConst(var p_func,var pos){
+	command=p_func->getCommand(pos);
+	if(!command.isIF())return false;
+	if(typeof(conditionResult(command))!="bool")return false;
+	if(!p_func->isBodyIF(pos))return false;
+	return true;
+}
+
+
+
+int getFreeLabel(var p_func){
+	ids=p_func->getIDs();
+	labels={};
+	i=0;
+	for(;i<ids.size();++i){
+		command=p_func->getCommand(ids[i]);
+		if(command.typeof()!="Label");else labels.push(command.typeof("value"));
+		}
+	newLabel=10;
+	while(labels.in(newLabel))newLabel+=10;
+	return newLabel;
+}
+
+
+
+var getAccessToLabel(var p_tree,var labelX){
+	n=p_tree->getRowSize();
+	i=0;
+	for(;i<n;++i){
+		sub=p_tree->getSub({i});
+		if(sub==labelX)return {i};
+		access=getAccessToLabel(&sub,labelX);
+		if(isset(access))return {i}+access;
+		}
+	return #;
+}
+
+
+
+bool replaceConstCondition(var p_func){
+	scanFunc=getFunction("isIfConst");
+	pos=scanerAlgorithm(p_func,scanFunc);
+	if(!isset(pos))return 0;
+	frrelabel=getFreeLabel(p_func);
+	posnew=p_func->insertUp(pos);
+	labelX=PROGRAM("<label:"+frrelabel+">");
+	p_func->setCommand(posnew,labelX);
+	frrelabel2=getFreeLabel(p_func);
+	command=p_func->getCommand(pos);
+	ok=conditionResult(command);
+	tree=p_func->export();
+	access=getAccessToLabel(&tree,labelX);
+	access[access.size()-1]=access.end()+1;
+	command=tree.getSub(access);
+	command=command.getSub({ok?1:2});
+	if(isset(command))tree.setSub(access,command);else tree.setSub(access,PROGRAM("<label:"+frrelabel2+">"));
+	p_func->import(tree);
+	pos=p_func->getLabel(frrelabel);
+	p_func->delete(pos);
+	if(!isset(command)){
+		pos=p_func->getLabel(frrelabel2);
+		p_func->delete(pos);
+		}
+	return 1;
+}
+
+
+// algoscaner.code	:-|

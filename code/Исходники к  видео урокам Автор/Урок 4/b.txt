@@ -1,0 +1,13 @@
+
+main(){
+	
+	s={1,2,3,4,5,1};
+	trace( "Количество елементов во множестве: " + s.size() );
+	trace(s); // .export()
+/*
+	n=rozpad(s);
+	trace( "Однозначно :-)  n=" + n );
+*/
+	define();
+	getstring();
+}

@@ -1,0 +1,33 @@
+// comparetest.txt
+#include <code\analize\comparefunctions.txt>
+
+
+var f1(){
+	a=ff()+2;
+	for(i=0;i<10;++i)if(!!0)a+=i;
+	return 2*i+a;
+}
+
+var f2(){
+	a=2+ff();
+	for(t=0;t<10;++t)if(0)a+=t;
+	return a+t*2;
+}
+
+var ff(){return 9;}
+
+
+//--------------------------------------------------------------------------------------------------
+void main(){
+	f1=getFunction("f1");
+	f2=getFunction("f2");
+	ok=(f1==f2);
+	trace("f1==f2: "+(ok?"equale":"not equale"));
+
+	ok=CompareFunctions("f1","f2");
+	trace("CompareFunctions(f1,f2): "+(ok?"equale":"not equale"));
+
+	getstring();
+}
+
+// comparetest.txt	:-|

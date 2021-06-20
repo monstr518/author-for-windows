@@ -1,0 +1,217 @@
+
+void main(){
+	var nameDll="Server.dll";
+	LoadDLL(nameDll);
+	SendDLL(nameDll,"newserver");
+	SendDLL(nameDll,"setport(8959)");
+	var str="setexe:\""+WAY+"\\SYS\\SAFlashPlayer.exe\" "+WAY+"\\code\\example\\Sudoku\\Sudaku.swf";
+	SendDLL(nameDll,str);
+	SendDLL(nameDll,"connect");
+	trace("connect ok.");
+	while(1){
+		SendDLL(nameDll,"slux");
+		str=Recv1DLL(nameDll);
+		if(str=="exit"){
+			SendDLL(nameDll,"send:{comand}");
+			SendDLL(nameDll,"send:quit");
+			break;
+			}
+		if(str=="game")rungame(nameDll);
+		if(str=="getMaps")getMaps(nameDll);
+		if(str=="saveAdd")saveAdd(nameDll);
+		if(str=="deleteMap")deleteMap(nameDll);
+		if(str=="resave")resave(nameDll);
+		}
+
+}
+
+
+void resave(var nameDll){
+	SendDLL(nameDll,"slux");
+	n=Recv1DLL(nameDll);
+	SendDLL(nameDll,"slux");
+	str=Recv1DLL(nameDll);
+	str="m.push_back("+str.export()+");";
+	var f=getFunction("getAllLevels");
+	var pos=f.Root();
+	pos=f.Next(pos);
+	pos=f.Next(pos);
+	for(int i=0;i<n;++i)pos=f.Next(pos);
+	pos.insertDown(str);
+	pos=f.Next(pos);
+	pos=f.Next(pos);
+	f.delete(pos);
+	trace("resave matrex");	
+}
+
+
+void deleteMap(var nameDll){
+	SendDLL(nameDll,"slux");
+	n=Recv1DLL(nameDll);
+	//trace(n);
+	var f=getFunction("getAllLevels");
+	var pos=f.Root();
+	pos=f.Next(pos);
+	pos=f.Next(pos);
+	pos=f.Next(pos);
+	for(int i=0;i<n;++i)pos=f.Next(pos);
+	pos.delete();
+}
+
+
+void saveAdd(var nameDll){
+	SendDLL(nameDll,"slux");
+	str=Recv1DLL(nameDll);
+	str="m.push_back("+str.export()+");";
+	var n=getAllLevels().length();
+	var f=getFunction("getAllLevels");
+	var pos=f.Root();
+	pos=f.Next(pos);
+	pos=f.Next(pos);
+	for(int i=0;i<n;++i)pos=f.Next(pos);
+	pos.insertDown(str);
+	trace("Save new matrex.");
+}
+
+
+void getMaps(var nameDll){
+	trace("get Levels");
+	var m=getAllLevels();
+	if(!m.length())return;
+	SendDLL(nameDll,"send:{comand,List}");
+	SendDLL(nameDll,"send:setLevels");
+	string str="[";
+	for(int i=0;i<m.length();++i){
+		if(i)str+=",";
+		str+="x";
+		}
+	str+="]";
+	SendDLL(nameDll,"send:"+str);
+	for(i=0;i<m.length();++i)SendDLL(nameDll,"send:"+m[i].export());
+}
+
+
+var getAllLevels(){
+	var m={};
+	m.push_back("004300617870000050000020008040093005590040083300510090100050000060000032987002500");
+	return m;
+}
+
+
+
+void rungame(var nameDll){
+	var starttime=getTime();
+	SendDLL(nameDll,"slux");
+	str=Recv1DLL(nameDll);
+	var f=getFunction("gogame");
+	pos=f.Next(pos);
+	int n=createNewLaver();
+	int p=createNewProcess(n,f);
+	setValueInLaver(n,p,"str",str);
+	runLaver(n);
+	//trace(getLaverMessage(n));
+	var NP=getVariantov(n);
+	//trace("Variantov:"+NP);
+	if(NP>0){
+		var m=getValuesInLaver(n,"m");
+		m=m[0];
+		SendDLL(nameDll,"send:{comand,Result}");
+		SendDLL(nameDll,"send:setResult");
+		SendDLL(nameDll,"send:"+OutStr(&m).export());
+		}else trace("No solutions.");
+	trace("time:"+timeFormat(getTime()-starttime));
+}
+
+
+//--------------------------------------------------------------------------------------------------------
+var initSudaku(var*m,string s){
+	*m=reserve(9);
+	int k=0;
+	for(int i=0;i<9;++i){
+		(*m)[i]=reserve(9);
+		for(int j=0;j<9;++j){
+			(*m)[i][j]=s[k++];
+			}
+		}
+}
+
+
+
+bool proba(var*m,int x,int y,int p){
+	for(int j,i=0;i<9;++i)if((*m)[y][i]==p)return 0;
+	for(i=0;i<9;++i)if((*m)[i][x]==p)return 0;
+	x=(int)(x/3);
+	y=(int)(y/3);
+	x*=3;
+	y*=3;
+	for(i=0;i<3;++i)
+	for(j=0;j<3;++j)
+	if((*m)[y+i][x+j]==p)return 0;
+	return 1;
+}
+
+
+
+int one(var*m){
+	int x,y,ok=0;
+	for(y=0;y<9;++y)
+	for(x=0;x<9;++x)
+	if((*m)[y][x]=='0'){
+		var s={};
+		for(int p=1;p<10;++p)if(proba(m,x,y,p+'0'))s+={(p+'0')};
+		if(s.size()==1){
+			++ok;
+			(*m)[y][x]=(char)s[0];
+			trace("x="+x+" y="+y+" p="+(s[0]-'0'));
+			}
+		}
+	return ok;
+}
+
+
+
+var Out(var*m){
+	string str="";
+	int x,y;
+	for(y=0;y<9;++y){
+		for(x=0;x<9;++x){
+			str+=((*m)[y][x]);
+			}
+		str+="\n";
+		}
+	return str;
+}
+
+
+var OutStr(var*m){
+	string str="";
+	int x,y;
+	for(y=0;y<9;++y){
+		for(x=0;x<9;++x){
+			str+=((*m)[y][x]);
+			}
+		}
+	return str;
+}
+
+
+
+void gogame(string str){
+	setPrioritetProcess("end");
+	var m;
+	initSudaku(&m,str);
+	trace(Out(&m));
+	while(one(&m));
+	int x,y;
+	for(y=0;y<9;++y)
+	for(x=0;x<9;++x)
+	if(m[y][x]=='0'){
+		var s={};
+		for(int p=1;p<10;++p)if(proba(&m,x,y,p+'0'))s+={p+'0'};
+		if(s.size()==0)OFF;
+		m[y][x]=(char)s[rozpad( [0;s.size()).getN() )];
+		}
+	trace(Out(&m));
+	define();
+}
+

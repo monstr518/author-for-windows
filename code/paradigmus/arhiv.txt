@@ -1,0 +1,39 @@
+// arhiv.txt
+
+var findFunctionInArhivParadigm(p_function,resultF){
+	module=getThisModule();
+	func=p_function->copy();
+	if(isset(resultF)){
+		names=module.getAllFunctionNames();
+		ok=1;
+		n=1;
+		while(ok){
+			if(names.in("paradigma"+n))++n;else ok=0;
+			}
+		namef="paradigma"+n;
+		func.setName(namef);
+		module.add(func);
+		namef="result"+n;
+		resultF.setName(namef);
+		module.add(resultF);
+		return 0;
+		}
+	fs=module.getAllFunctions();
+	for(i=0;i<fs.size();++i){
+		namef=fs[i].getName();
+		n=(int)namef.substr("paradigma".size());
+		if(!n)continue;
+		func.setName(namef);
+		if(func==fs[i]){
+			namef="result"+n;
+			f=module.FindFunction(namef);
+			return f;
+			}
+		}
+	return 0;
+}
+
+
+
+
+// arhiv.txt	:-|

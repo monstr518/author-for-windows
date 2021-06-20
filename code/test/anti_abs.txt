@@ -1,0 +1,23 @@
+
+// abs(abs(abs(x)-20)-10)==n
+int anti_abs(int n){
+	if(n<0)OFF;
+	if(#){
+		if(n==0)OFF;
+		n=-n;
+		}
+	return n;
+}
+
+
+int problem(int n){
+	return anti_abs(anti_abs(anti_abs(n)+10)+20);
+}
+
+void main(){
+	trace(problem(5));
+	define();
+	getstring();
+}
+
+

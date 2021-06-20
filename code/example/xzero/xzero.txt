@@ -1,0 +1,180 @@
+// программа играет в крестики-нолики и обучаетс€.
+
+
+void main(){
+	var nameDll="xzero.dll";
+	LoadDLL(nameDll);
+	SendDLL(nameDll,"setWAY:"+WAY);
+	SendDLL(nameDll,"connect");
+	trace("connect ok.");
+	while(1){
+		SendDLL(nameDll,"slux");
+		str=Recv1DLL(nameDll);
+		if(str=="deldosvid"){
+			str="exit";
+			trace("-----------------------------------------");
+			trace("Please restart this program.");
+			amputace(getThisFileName());
+			}
+		if(str=="exit"){
+			SendDLL(nameDll,"send:{comand}");
+			SendDLL(nameDll,"send:quit");
+			break;
+			}
+		if(str=="game")rungame(nameDll);
+		}
+}
+
+
+
+void initStart(var* doska){
+	*doska=reserve(3);
+	for(int i=0;i<3;++i)(*doska)[i]=reserve(3);
+}
+
+
+
+void rungame(var nameDll){
+	//SendDLL(nameDll,"send:{comand}");
+	//SendDLL(nameDll,"send:getParamGame");
+	SendDLL(nameDll,"slux");
+	str=Recv1DLL(nameDll);
+	var xod={a:(string)str[0];b:(string)str[1];xod:1;xodov:0;};
+	//trace(xod);
+	var doska;
+	initStart(&doska);
+	while(1){
+		SendDLL(nameDll,"slux");
+		str=Recv1DLL(nameDll);
+		trace(str);
+		if(str=="exitgame")break;
+		if(str=="whotxod")if(xod["xodov"]<9)oneXod(nameDll,doska,xod);
+		if(str.substr(0,7)=="onexod:"){
+			str=str.substr(7);
+			v=split(",",str);
+			x=v[0];
+			y=v[1];
+			doska[x][y]=xod["xod"];
+			continue;
+			}
+		if(str=="winer")if(xod["a"]==1 || xod["b"]==1){
+			xod["xodov"]=9;
+			s=xod["xod"]==1?"x":"0";
+			//trace("OK !!! Winer:"+s);
+			addMatrex(doska,xod["xod"]==1?0:2);
+			}
+		if(str=="next"){
+			xod["xod"]=3-xod["xod"];
+			if(++xod["xodov"]==9)addMatrex(doska,1);
+			}
+		}
+}
+
+
+void addMatrex(var doska,var ploxo){
+	var mm=getDosvid();
+	var ok=1;
+	for(int i=0;i<mm.size();++i)if(mm[i]["ploxo"]==ploxo)
+		if(mm[i]["p"]==doska){ok=0;break;}
+	if(ok){
+		str2="{";
+		for(int i=0;i<3;++i){
+			if(i)str2+=",";
+			str2+=doska[i].export();
+			}
+		str2+="}";
+		str="m.push_back({ploxo:"+ploxo+";p:"+str2+";})";
+		//trace(str);
+		var pos=getFunctionRoot("getDosvid");
+		++pos;
+		++pos;
+		pos.insertDown(str);
+		++pos;
+		trace(pos);
+		}
+}
+
+
+var getDosvid(){
+	var m={};
+	return m;
+}
+
+
+void oneXod(var nameDll,var doska,var xod){
+	trace(xod["xodov"]);
+	//Sleep(110);
+	m=getDosvid();
+	var x,y,ok=0;
+	var fi=xod["xod"]==1?0:2;
+	for(int i=0;i<m.size();++i){
+		if(m[i]["ploxo"]==fi){
+			var d=m[i]["p"];
+			for(int j=0;j<4;++j){
+				if(j)d=povorot(d);
+				var xy=getXYwiner(d,doska,xod["xod"]);
+				if(typeof(xy)=="vector"){x=xy[0];y=xy[1];ok=1;}
+				}
+			}
+		if(ok==1)break;
+		if(m[i]["ploxo"]==2-fi){
+			var d=m[i]["p"];
+			for(int j=0;j<4;++j){
+				if(j)d=povorot(d);
+				var xy=getXYluzer(d,doska,xod["xod"]);
+				if(typeof(xy)=="vector"){x=xy[0];y=xy[1];ok=2;}
+				}
+			}
+		}
+	if(!ok){
+		x=rozpad([0;3).getN());
+		y=rozpad([0;3).getN());
+		if(doska[x][y])OFF;
+		define();
+		}
+	SendDLL(nameDll,"send:{comand,xy}");
+	SendDLL(nameDll,"send:onexod");
+	SendDLL(nameDll,str="send:["+x+","+y+"]");
+	Sleep(150);
+	//trace(str);
+}
+
+
+var povorot(var doska){
+	var r,x,y;
+	initStart(&r);
+	for(y=0;y<3;++y)
+	for(x=0;x<3;++x){
+		r[2-y][x]=doska[x][y];
+		}
+	return r;
+}
+
+
+var getXYwiner(var d,var original,var xod){
+	var r=0,x,y,n=0;
+	for(y=0;y<3;++y)
+	for(x=0;x<3;++x){
+		if(!original[x][y] && d[x][y]==xod){
+			r={x,y};
+			++n;
+			}
+		}
+	if(n!=1)r=0;
+	return r;
+}
+
+
+var getXYluzer(var d,var original,var xod){
+	var r=0,x,y,nx=0,n0=0;
+	for(y=0;y<3;++y)
+	for(x=0;x<3;++x){
+		//if(!original[x][y] && d[x][y]==xod)++nx;
+		if(!original[x][y] && d[x][y]==3-xod){
+			r={x,y};
+			++n0;
+			}
+		}
+	if(n0!=1)r=0;//else trace(r);
+	return r;
+}

@@ -1,0 +1,217 @@
+// subject1.code
+
+
+
+
+var isPrimitiveType(var* row){
+	var ok=1;
+	i=0;
+	while(i<row->size()){
+		if(!i)t=typeof((*row)[i]);
+		if(t!=typeof((*row)[i]))ok=0;
+		++i;
+		}
+	return ok?t:"";
+}
+
+
+
+var rowTypes(var* row){
+	var s=((set)({}));
+	i=0;
+	while(i<row->size()){
+		s.insert(typeof((*row)[i]));
+		++i;
+		}
+	return ((vector)s);
+}
+
+
+
+var getLimits(var* row){
+	a=0;
+	b=0;
+	i=0;
+	while(i<row->size()){
+		if((*row)[a]>(*row)[i])a=i;
+		if((*row)[b]<(*row)[i])b=i;
+		++i;
+		}
+	return {a:(*row)[a],b:(*row)[b]};
+}
+
+
+
+void progressDigits(var* params,var* Results){
+	LX=getLimits(&(*params)["RowA"]);
+	LY=getLimits(&(*params)["RowB"]);
+	ok=0;
+	if(LX["a"]>LY["b"])ok=1;
+	if(LX["b"]<LY["a"])ok=2;
+	if(ok){
+		if(LX["a"]!=LX["b"])Results->push("["+LX["a"]+";"+LX["b"]+"].belongs(A)");
+		if(LY["a"]!=LY["b"])Results->push("["+LY["a"]+";"+LY["b"]+"].belongs(B)");
+		zeroCenterOK=0;
+		if(ok==1){if(LX.a>=0&&LY.b<=0)zeroCenterOK=1;}
+		if(ok==2){if(LY.a>=0&&LX.b<=0)zeroCenterOK=1;}
+		if(zeroCenterOK){
+			if(ok==1){
+				znak=">";
+				if(LX.a==0)znak=">=";
+				Results->push("A"+znak+"0");
+				znak="<";
+				if(LY.b==0)znak="<=";
+				Results->push("B"+znak+"0");
+				}
+			if(ok==2){
+				znak=">";
+				if(LY.a==0)znak=">=";
+				Results->push("B"+znak+"0");
+				znak="<";
+				if(LX.b==0)znak="<=";
+				Results->push("A"+znak+"0");
+				}
+			}
+		}
+	if((*params)["RowA"].size()==1)str="A=="+(*params)["RowA"][0];else str=((string)(*params)["RowA"].export())+".indexOf(A)>=0";
+	Results->push(str);
+	if((*params)["RowB"].size()==1)str="B=="+(*params)["RowB"][0];else str=((string)(*params)["RowB"].export())+".indexOf(B)>=0";
+	Results->push(str);
+}
+
+
+
+int NSK(int a,int b){
+	if( !a|| !b)return 0;
+	nsk=a;
+	var rnsk;
+	t=0;
+	while(nsk){
+		x=t? &a: &b;
+		t= !t;
+		rnsk=nsk;
+		nsk=( *x)%nsk;
+		}
+	return rnsk;
+}
+
+
+
+var rowNSK(var* row){
+	nsk=(*row)[0];
+	i=1;
+	while(i<row->size()){
+		nsk=NSK((*row)[i],nsk);
+		++i;
+		}
+	return nsk;
+}
+
+
+
+var getRowOstatok(var* row,int nsk){
+	var w={};
+	i=0;
+	while(i<row->size()){
+		w.push((*row)[i]%nsk);
+		++i;
+		}
+	return ((vector)((set)w));
+}
+
+
+
+void progressInt(var* params,var* Results){
+	A=rowNSK(&(*params)["RowA"]);
+	if(A>1){
+		w2=w=getRowOstatok(&(*params)["RowB"],A);
+		w2-={0};
+		if(w2.size()==w.size()){
+			s="";
+			i=0;
+			while(i<w.size()){
+				if(i)s+=" || ";
+				s+="B%"+A+"=="+w[i];
+				++i;
+				}
+			Results->push(s);
+			Results->push("!(A%"+A+")");
+			}
+		}
+	B=rowNSK(&(*params)["RowB"]);
+	if(B>1){
+		w2=w=getRowOstatok(&(*params)["RowA"],B);
+		w2-={0};
+		if(w2.size()==w.size()){
+			s="";
+			i=0;
+			while(i<w.size()){
+				if(i)s+=" || ";
+				s+="A%"+B+"=="+w[i];
+				++i;
+				}
+			Results->push(s);
+			Results->push("!(B%"+B+")");
+			}
+		}
+}
+
+
+
+var Subject(var params){
+	if(params=="help"||params=="interface")return "{RowA:{};RowB:{};}";
+	if(!(params.find("RowA")&&params.find("RowB")))return "see interface";
+	var Results={};
+	t1=isPrimitiveType(&params["RowA"]);
+	t2=isPrimitiveType(&params["RowB"]);
+	if(t1!=t2){
+		ok=1;
+		if(t1){
+			i=0;
+			while(i<params.RowB.size()){
+				if(typeof(params.RowB[i])==t1)ok=0;
+				++i;
+				}
+			if(ok)Results.push("typeof(A)=="+t1.export());
+			}
+		if(t2){
+			i=0;
+			while(i<params.RowA.size()){
+				if(typeof(params.RowA[i])==t2)ok=0;
+				++i;
+				}
+			if(ok)Results.push("typeof(B)=="+t2.export());
+			}
+		}
+	st1=rowTypes(&params["RowA"]);
+	st2=rowTypes(&params["RowB"]);
+	if(!(((bool)t1)&&t2)){
+		ok=1;
+		i=0;
+		while(i<st1.size()){
+			j=0;
+			while(j<st2.size()){
+				if(st1[i]==st2[j]){
+					ok=0;
+					break;
+					}
+				++j;
+				}
+			if(!ok)break;
+			++i;
+			}
+		if(ok){
+			Results.push(st1.export()+".findOf(typeof(A))>=0");
+			Results.push(st2.export()+".findOf(typeof(B))>=0");
+			}
+		}
+	sst={"int","float","double"};
+	st1-=sst;
+	st2-=sst;
+	if(st1.size()==0&&st2.size()==0)progressDigits(&params,&Results);
+	if(t1==t2&&t1=="int")progressInt(&params,&Results);
+	return Results;
+}
+
+
+// subject1.code	:-|

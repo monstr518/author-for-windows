@@ -1,0 +1,53 @@
+//Приложение тестирует библиотеку решателей вопросов.
+//Примеры вопросов смотри внизу.
+//Описание вопросов смотри в документе SYS\DLLS\what\Культура постановки вопросов.doc
+
+
+void main(){
+	var namedll="what.dll",what="";
+	Line="---------------------------------------------------------------------";
+	LoadDLL(namedll);
+	SendDLL(namedll,"WAY:"+WAY);
+	//SendDLL(namedll,"setcout(on)");
+	//what="?: get equality for (y*y+7*y-9=x-y) unknown {y}";//
+	//what="?: optimize (a+1+2*3-100+16+n)"; //
+	what="?: optimize (-t/u*3)"; //
+	SendDLL(namedll,what);
+	trace(Line);
+	n=RecvDLL(namedll);
+	trace(n);
+	trace(Line);
+	unLoadDLL(namedll);
+	getstring();
+}
+
+
+/*
+?: system equations {2*x+5*y=15;3*x+8*y=-1;x=?;y=?}
+?: get code y=f(x) for table: head(x,y){x:1,2;y:5,10;}
+?: get code(n) for signal(A,B) {A:1,2;B:0,5,7;} pset{0,4}
+?: get code for row {0,2,4,6} first(0)
+?: get code for row {0,1,4,9} first(5)
+?: get code(n) for signal(A,B) {A:1,3;B:0,2,4;}
+?: get code(n) for signal(A) {A:0,3,6;B:1,2,4,5,7,8;}
+?: get code y=f(x) for table:head(x,y){x:2,3,4;y:4,10,18;}
+?: get code y=f(x) for table:head(x,y){y:2,3,4;x:4,6,8;}
+?: get code y=f(x) for table:head(x,y){x:0,1,2,3,4,5,6,7;y:0,1,4,3,16,5,36,7;}
+?: get code y=f(x) for table:head(x,y){x:0,1,2,3,4,5,6,7;y:0,4,4,6,16,8,36,10;}
+?: get code y=f(x) for table:head(x,y){x:0,1,2,3,4,5,6,7;y:1,0,9,4,3,9,7,6;}
+?: get code y=f(x) for table:head(x,y){x:0,1,2,3,4;y:5,8,5,8,5;}
+?: get code y=f(x) for table:head(x,y){x:0,3,5,6,7,9;y:8,8,6,8,1,8;}
+?: get code y=f(x) for table:head(x,y){x:0,1,2,3,4,5,6,7;y:1,0,8,4,3,5,7,6;}
+?: what result for formula(x*x+x-2) from {x:2,3,4;}
+?: compare (x+n==x+2-(2-n))
+?: optimize (u*(a-x)+u*(a-x)) from {x=1;}
+?: optimize (-0.5*i+6.5)
+?: get equality for ((x+12)*(x-3)=0) unknown {x}
+?: get equality for (-1.5*y*y+17.5*y-45=x) unknown {y}
+?: get generalized tree formula for (-0.5*i+6.5, (15-i)/2)
+?: what var names formul (a+b=c=t)
+?: get code y=f(x) for table:head(x,y){y:2,5;x:5,26;}
+?: get code y=f(x) for table:head(x,y){x:2,7;y:8,3;}
+?: get code y=f(x) for table:head(x,y){x:-2,0,2;y:-4,0,-4;}
+?: what generalized formula for (-0.5*i+6.5, (15-i)/2) values{t:7,8;}
+*/

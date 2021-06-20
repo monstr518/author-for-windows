@@ -1,0 +1,70 @@
+#include "code\Deployment\Deployment.txt"
+
+//----------------------------------------------------------------------------------------------
+void main(){
+	SYS=(map)0;
+	Deployment(&SYS,"стартовое состояние",{{4,3,2,1},{},{}});
+	Deployment(&SYS,"метод текстового описания состояния","XtoString");
+	//Deployment(&SYS,"разварачивать до первого конечного состояния");
+	Deployment(&SYS,"признак конечного состояния","gotovo");
+	Deployment(&SYS,"методы изменения состояния",{"perebros"});
+	Deployment(&SYS,"подготовка параметров к методам изменения состояния",{"paramsForPerebros"});
+	Deployment(&SYS,"развернуть систему");
+	Deployment(&SYS,"распечатка системы");
+	trace();
+
+	ways=Deployment(&SYS,"взять все кратчайшие пути к конечному состоянию");
+	trace("Количество возможных путей: "+ways.size());
+	Deployment(&SYS,"распечатка состояний по заданному пути",ways[0]);
+	trace();
+
+	trace(
+		"На разворачивание системы ушло времени: " +
+		Deployment(&SYS,"сколько времени ушло на разворачивание?")
+		);
+
+	getstring();
+}
+
+
+// Метод для подготовки параметров к методу изменения состояния
+var paramsForPerebros(S){
+	v={};
+	for(i=0;i<S->size();++i){
+		iz=&(*S)[i];
+		if(!iz->size())continue;
+		for(t=0;t<S->size();++t)if(i!=t){
+			ok=0;
+			kuda=&(*S)[t];
+			if(!kuda->size())ok=1;else if(kuda->end()>iz->end())ok=1;
+			if(ok)v.push({i,t});
+			}
+		}
+	return v;
+}
+
+
+// методы изменения состояния
+void perebros(S,iz,kuda){
+	x=(*S)[iz].pop();
+	(*S)[kuda].push(x);
+}
+
+
+// Вернет 1, когда цель достигнута
+bool gotovo(S){
+	return (*S)[1]=={4,3,2,1};
+}
+
+
+// Вернёт строку, по которой видно положение фишок.
+string XtoString(S){
+	str="";
+	for(i=0;i<S->size();++i){
+		if(i)str+="|";
+		ss="";
+		for(t=0;t<(*S)[i].size();++t)ss+=(*S)[i][t];
+		str+=ss.rovno(5);
+		}
+	return str;
+}

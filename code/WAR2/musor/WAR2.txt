@@ -1,0 +1,237 @@
+
+#include "code\WAR2\maska.txt"
+
+
+//------------------------------------------------------------------------------------------
+var ManagerW2(sys,command,params){
+	if(typeof(*sys)!="map")*sys=(map)0;
+	if(!sys->isset("valide"))sys->valide=1;
+	if(command=="user1" || command=="user2"){
+		IM=params["интерфейсный метод"];
+		if(typeof(IM)!="function")IM=getFunction(IM);
+		if(typeof(IM)!="function"){
+			sys->valide=0;
+			trace("интерфейсный метод для "+command+" не задан.");
+			}
+		params["интерфейсный метод"]=IM;
+		(*sys)[command]=params;
+		}
+	if(command=="law"){
+		if(typeof(params)!="function")params=getFunction(params);
+		if(typeof(params)!="function"){
+			sys->valide=0;
+			trace("law (правела боя) не задан.");
+			}
+		(*sys)[command]=params;
+		}
+	if(command=="количество игр")sys->count=params;
+	if(command=="run")ServerW2(sys);
+
+}
+
+
+
+
+void ServerW2(sys){
+	if(!sys->valide)return;
+	fork("ClientW2",getThisLaverNumber(),0);
+	fork("ClientW2",getThisLaverNumber(),1);
+
+	BotsNumberLaver={#,#};
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+
+	Send(BotsNumberLaver[0],BotsNumberLaver[1],1);
+	Send(BotsNumberLaver[1],BotsNumberLaver[0],1);
+
+	Send(BotsNumberLaver[0],"setparams",1);
+	Send(BotsNumberLaver[0],(*sys)["user1"],1);
+	Send(BotsNumberLaver[1],"setparams",1);
+	Send(BotsNumberLaver[1],(*sys)["user2"],1);
+
+	Send(BotsNumberLaver[0],"law",1);
+	Send(BotsNumberLaver[0],sys->law,1);
+	Send(BotsNumberLaver[1],"law",1);
+	Send(BotsNumberLaver[1],sys->law,1);
+
+	if(!sys->isset("count"))sys->count=0;
+	for(i=0;i<sys->count;++i){
+		Send(BotsNumberLaver[0],"run",1);
+		Send(BotsNumberLaver[1],"run",1);
+		firstXod=#?1:0;
+		Send(BotsNumberLaver[0],firstXod==0,1);
+		Send(BotsNumberLaver[1],firstXod==1,1);
+		Accept();
+		}
+	Send(BotsNumberLaver[0],"Exit",1);
+	Send(BotsNumberLaver[1],"Exit",1);
+}
+
+
+
+
+void ClientW2(nServer,meNumber){
+	Send(nServer,meNumber,1);
+	nProtivnic=Accept(nServer);
+	War1=0;
+	userParameters=0;
+	law=0;
+	while(1){
+		Q=Accept(nServer);
+		if(Q=="Exit")break;
+		if(Q=="setparams"){
+			userParameters=Accept(nServer);
+			War1=userParameters["интерфейсный метод"];
+			userParameters=userParameters["параметры"];
+			}
+		if(Q=="law")law=Accept(nServer);
+		if(Q=="run"){
+			meXod=Accept(nServer);
+			ok=War1.run(nProtivnic,law,userParameters,meXod);
+			if(ok)Send(nServer,"KO",1);
+			}
+		}
+}
+
+
+
+var findCommand(command,mask){
+	access={};
+	do{
+		ok=CommandIsMask(command.getSub(access),mask);
+		if(ok)return access;
+		n=command.getRowSize(access);
+		ok=1;
+		do{
+			--n;
+			if(n>=0){
+				access.push(n);
+				ok=0;
+				}else{
+				if(access.size())n=access.pop();else ok=0;
+				}
+			}while(ok);
+		}while(access.size());
+	return 0;
+}
+
+
+
+
+var WAR1(nProtivnic,etalonlaw,params,meXod){
+		if(!meXod)return 0; //
+	law=etalonlaw.copy();
+	ids=law.getIDs();
+	mask=PROGRAM("Accept()");
+	for(i=0;i<ids.size();++i){
+		command=law.getCommand(ids[i]);
+		if(command.typeof()=="function")if((string)command.getSub({0})=="Send"){
+			X=command.getSub({1});
+			command2=PROGRAM("Send("+nProtivnic+",#,1)");
+			command2.setSub({2},X);
+			law.setCommand(ids[i],command2);
+			}
+		t=findCommand(command,mask);
+		if(typeof(t)=="vector"){
+			P=PROGRAM("Accept("+nProtivnic+")");
+			command.setSub(t,P);
+			law.setCommand(ids[i],command);
+			}
+		}
+	mask=PROGRAM("#=="+"подготовка".export());
+	A=law.export();
+	AllNames=(vector)(set)A.getNames(1);
+	NameObjX=law.getNamesStart();
+	if(NameObjX.size()<2){
+		NameObjX.push(AllNames.newName(5,2));
+		law.setNamesStart(NameObjX);
+		}
+	NameObjX=law.getNamesStart();
+	if(NameObjX.size()<2){
+		NameObjX.push(AllNames.newName(5,2));
+		law.setNamesStart(NameObjX);
+		}
+	NameObjX=law.getNamesStart()[1];
+	//trace(NameObjX);
+	n=A.getRowSize();
+	for(i=0;i<n;++i){
+		x=A.getSub({i});
+		if(!x.isIF())continue;
+		y=x.getSub({0});
+		t=findCommand(y,mask);
+		if(typeof(t)!="int"){
+			y=x.getSub({1});
+			Vars=(vector)(set)y.getNames(1)-getPublicVars(y);
+			break;
+			}
+		}
+	//trace(Vars.export());
+	t=getContextType(Vars[0],y);
+	str="";
+	if(t=="bool")str+=Vars[0]+"="+(#?1:0);
+	//trace(str);
+	ids=law.getIDs();
+	for(i=0;i<ids.size();++i){
+		command=law.getCommand(ids[i]);
+		if(!command.isIF())continue;
+		t=findCommand(command.getSub({0}),mask);
+		if(typeof(t)=="int")continue;
+		pos=law.insertDown(ids[i],(bool)1);
+		law.setCommand(pos,PROGRAM(str));
+		}
+	ReplaceVarsToObjX(&law,NameObjX);
+	trace(law.exportText());
+	//law.run("подготовка");
+
+
+	return meXod;
+}
+
+
+
+
+var getPublicVars(proga){
+	f=proga;
+	if(typeof(proga)=="program")f=proga.toFunction();
+	ids=f.getIDs();
+	S={};
+	for(i=0;i<ids.size();++i){
+		command=f.getCommand(ids[i]);
+		if(command.typeof()=="=")S.push((string)command.getSub({0}));
+		}
+	return (vector)(set)S;
+}
+
+
+
+var getContextType(Var,proga){
+	f=proga;
+	if(typeof(proga)=="program")f=proga.toFunction();
+	ids=f.getIDs();
+	mask=PROGRAM("Q?#:#");
+	isBool=0;
+	for(i=0;i<ids.size();++i){
+		command=f.getCommand(ids[i]);
+		t=findCommand(command,mask);
+		if(typeof(t)!="vector")continue;
+		t.push(0);
+		if(Var==(string)command.getSub(t))isBool=1;
+		}
+	if(isBool)return "bool";
+	//...
+	return #;
+}
+
+
+
+// Заменит все имена в функцие на X->p
+var ReplaceVarsToObjX(plaw,NameObjX){
+	ids=plaw->getIDs();
+	for(i=0;i<ids.size();++i){
+		command=plaw->getCommand(ids[i]);
+
+		}
+}
+

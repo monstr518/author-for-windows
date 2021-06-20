@@ -1,0 +1,39 @@
+
+
+main(){
+	G=(graf)0;
+	G.NET(3,0,"",1,2);
+	G.NET(3,0,"",1,5);
+	G.NET(5,0,"",1,1);
+	G.NET(1,0,"",1,8);
+	G.NET(2,1,"",1,8);
+	G.MARKER(3,0,"",0,"старт");
+	G.MARKER(8,0,"",0,"финиш");
+
+	p=G.getMARKER(#,0,"",0,"старт");
+	a=p[0][0];
+	p=G.getMARKER(#,0,"",0,"финиш");
+	b=p[0][0];
+
+	findWays(G,a,b);
+
+	getstring();
+}
+
+
+void findWays(G,a,b){
+	q=subfindWays(G,a,b);
+	trace(q.export());
+	define();
+}
+
+
+var subfindWays(G,a,b){
+	if(a==b)return {b};
+	p=G.getNET(a,#,"",1,#);
+	for(i=0;i<p.size();++i)if(#){
+		x=subfindWays(G,p[i][1],b);
+		return {a}+x;
+		}
+	OFF;
+}

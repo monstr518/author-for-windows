@@ -1,0 +1,59 @@
+
+int f1(){
+	trace("Известные приветствия:");
+	string str=rozpad({"1)Привет.", "2)Здравствуйте.", "3)Доброго времени суток."});
+	trace(str);
+	define();
+	trace("Я выбрал: "+str);
+	getstring();
+}
+
+void f2(){
+	int n=rozpad({-2,-1,0,1,2,3});
+	if(n>=0)define(1);
+	trace(n);
+	define(2);
+	trace("OK");
+	getstring();
+}
+
+
+void f3(){
+	int starttime=getTime();
+	rozpad({1,2,3});
+	Sleep(63000);
+	define();
+	trace(timeFormat(getTime()-starttime));
+	getstring();
+}
+
+
+void f4(){
+	trace([-5;10));
+	trace([-2;4).getN());
+	trace([-2;4).getZ());
+	getstring();
+}
+
+
+void f5(){
+	int n;
+	var p=&n;
+	n=rozpad({5,9});
+	++n;
+	trace("*p=="+*p);
+	define();
+	getstring();
+}
+
+
+void f6(){
+	trace(#?(#?1:2):(#?3:4));
+	define();
+	getstring();
+}
+
+
+void main(){
+	getstring();
+}

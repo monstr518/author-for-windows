@@ -1,0 +1,32 @@
+
+
+
+void main(){
+	f=getFunction(getThisFunctionName());
+	pos1=f.getLabel(10);
+	pos2=f.getLabel(20);
+	ok=f.isAccesibleSub(pos1,pos2);
+	trace(ok);
+	subf=f.getSubF(pos1,pos2);
+	trace(subf.exportText());
+	f=f.copy();
+	pos=f.getLabel(15);
+	f.insertInUnit(pos,subf);
+	trace(f.exportText());
+	getstring();
+	return;
+	<label:10>
+	if(1){
+		while(1){ok=0;<label:15>}
+		A=0;
+		B=2;
+		
+	}else{
+		100;
+		200;
+	}
+	ok;
+	<label:20>
+}
+
+

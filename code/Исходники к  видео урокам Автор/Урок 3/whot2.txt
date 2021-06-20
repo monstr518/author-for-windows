@@ -1,0 +1,101 @@
+
+f(){
+	n=#;
+	n+=10;
+
+	i=10;
+	if(i<7)n+=5;else n-=21;
+
+	k=14;
+	if(k>10){
+		u=40;
+		if(u==40)++n;else --n;
+		}else{
+		u=25;
+		if(u!=25)n+=10; else n-=10;
+		}
+
+	if(n!=20)OFF;
+	trace("n=="+n);
+}
+
+
+main(){
+	f=getFunction("f");
+	pos=f.Root();
+	var pos2;
+	while(typeof(pos)!="vector"){pos2=pos;pos=f.Up(pos);}
+	//trace(f.getComand(pos2));
+	pos=rozpad(pos);
+	if((string)f.getComand(pos)=="OFF")OFF;
+	condition=f.getComand(pos).getSub({0});
+	//trace(condition);
+	name=(string)condition.getSub({0});
+	digit=eval(condition.getSub({1}));
+	znak=(string)condition.typeof();
+	vetka=rozpad({0,1});
+	if(f.Next(pos)[vetka]!=pos2)OFF;
+	if(vetka){
+		if(znak=="==")znak="!=";else
+		if(znak=="!=")znak="==";
+		}
+	//trace({name,digit,znak});
+	if(znak != "=="){
+		trace("Нет фантазии для генерации числа != " + digit);
+		getstring();
+		return;
+		}
+	m=(map){ };
+	do{
+		pos2=pos;
+		pos=f.Up(pos);
+		if(typeof(pos)=="vector")pos=rozpad(pos);
+		pos3=f.Next(pos);
+		if(typeof(pos3)=="vector"){
+			vetka=rozpad({0,1});
+			if(pos3[vetka]!=pos2)OFF;
+			condition=f.getComand(pos).getSub({0});
+			name2=(string)condition.getSub({0});
+			x=eval(condition.getSub({1}));
+			znak=(string)condition.typeof();
+			if(vetka){
+				i={"==","!=","<",">","<=",">="}.findOf(znak);
+				znak={"!=","==",">=","<=",">","<"}[i];
+				}
+			m[name2]={znak:znak,x:x};
+			continue;
+			}
+		if(f.isEmpty(pos))continue;
+		s=f.getComand(pos);
+		if((string)s==(name+"=#"))break;
+		x=(string)s.getSub({0});
+		if(x==name){
+			str=s.typeof();
+			if(str=="++." || str==".++")--digit;
+			if(str=="--." || str==".--")++digit;
+			i={"+=","-=","*=","/="}.findOf(str);
+			var v;
+			if(i>=0)v=eval(s.getSub({1}));
+			if(i==0)digit-=v;
+			if(i==1)digit+=v;
+			if(i==2)digit/=v;
+			if(i==3)digit*=v;
+			}
+		list=m.getKeys();
+		for(i=0;i<list.size();++i)if(list[i]==x)if(s.typeof()=="="){
+			v=eval(s.getSub({1}));
+			v2=m[x].x;
+			z=m[x].znak;
+			j={"==","!=","<",">","<=",">="}.findOf(z);
+			ok={v==v2,v!=v2,v<v2,v>v2,v<=v2,v>=v2}[ j ];
+			if(!ok)OFF;
+			}
+		}while(pos!=f.Root());
+	define(); // Не помешает
+	f.setComand(pos,name+"="+digit);
+
+	// Тест результата:
+	if(ControlOFF()) f(); else trace("Результат неправельный.");
+	ClearPsetOFF();
+	getstring();
+}

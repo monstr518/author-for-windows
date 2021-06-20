@@ -1,0 +1,485 @@
+var Shared1 = SharedObject.getLocal("SharedSudoku");
+if(typeof(Shared1.data.Games)=="undefined"){
+	//trace("Create: Shared1.data.");
+	Shared1.data.Games=[];
+	}
+
+var N=1,CppOK=0,AB,sendstr="";
+var kekey={};
+var Map;
+var ReadMassiv;
+
+
+function initMap(cellOK){
+	Map=[];
+	var tt=9,r=35;
+	for(var y=0;y<tt;++y){ Map[y]=[];
+	for(var x=0;x<tt;++x){
+		var U=doska.attachMovie("CellOne","z"+N,N++);
+		U._x=(x-parseInt(tt/2))*(r-1);
+		U._y=(y-parseInt(tt/2))*(r-1);
+		U.ix=x;
+		U.iy=y;
+		U.eok=1;
+		U._width=U._height=r;
+		if((parseInt(x/3)+parseInt(y/3))%2)U.fon._visible=0;
+		U.fonkur._visible=0;
+		U.fred._visible=0;
+		U.t._visible=0;
+		if(cellOK)U.onMouseDown=fonMDChengCell;
+		Map[y][x]=U;
+		}
+	}
+}
+
+
+function initRozstanovka(){//2
+	initMap(1);
+	if(VG!=2)setNMap();
+	Map.x=0;
+	Map.y=0;
+	Map[0][0].fonkur._visible=1;
+	Key.addListener(kekey);
+	kekey.onKeyDown = normalKey1;
+	if(VG==1){
+		kekey.onKeyDown = normalKey2;
+		tgoon.text="Меню";
+		}
+	save.onPress=function(){
+		kekey.onKeyDown=0;
+		GOsaveS();
+		if(VG==3){
+			if(Slot==2)Shared1.data.Games[WW1.n-1]=saveS;
+			if(Slot==3){
+				sendstr+="resave.";
+				sendstr+=(WW1.n-1)+".";
+				sendstr+=saveS+".";
+				}
+			gotoAndStop(4);
+			return;
+			}
+		if(VG==1){
+			gotoAndStop(4);
+			return;
+			}
+		gotoAndStop(3);
+		};
+	gofind._visible=0;
+	if(CppOK && VG==1)gofind._visible=1;
+	gofind.onPress=function(){
+		this._visible=0;
+		GOsaveS();
+		sendstr+="game.";
+		sendstr+=saveS+".";
+		};
+}
+
+
+
+function fonMDChengCell(){
+	var b=this.hitTest(_root._xmouse,_root._ymouse,1);
+	if(!b)return;
+	Map[Map.y][Map.x].fonkur._visible=0;
+	this.fonkur._visible=1;
+	Map.x=this.ix;
+	Map.y=this.iy;
+}
+
+
+function normalKey1(){
+	var c=Key.getCode();
+	var x=Map.x,y=Map.y;
+	if(c==Key.UP)--y;
+	if(c==Key.DOWN)++y;
+	if(c==Key.LEFT)--x;
+	if(c==Key.RIGHT)++x;
+	if(x>=9)x=8;
+	if(y>=9)y=8;
+	if(x<0)x=0;
+	if(y<0)y=0;
+	Map[Map.y][Map.x].fonkur._visible=0;
+	Map.x=x;
+	Map.y=y;
+	if(c>=48 && c<=57)c+=96-48;
+	if(c>=96 && c<=105){
+		var U=Map[Map.y][Map.x];
+		U.t.text=(c-96);
+		U.t._visible=1;
+		if(c==96)U.t._visible=0;
+		++Map.x;
+		if(Map.x>=9){
+			Map.x=0;
+			++Map.y;
+			if(Map.y>=9){Map.y=8;Map.x=8;}
+			}
+		}
+	Map[Map.y][Map.x].fonkur._visible=1;
+}
+
+
+function normalKey2(){
+	var c=Key.getCode();
+	var x=Map.x,y=Map.y;
+	if(c==Key.UP)--y;
+	if(c==Key.DOWN)++y;
+	if(c==Key.LEFT)--x;
+	if(c==Key.RIGHT)++x;
+	if(x>=9)x=8;
+	if(y>=9)y=8;
+	if(x<0)x=0;
+	if(y<0)y=0;
+	Map[Map.y][Map.x].fonkur._visible=0;
+	Map.x=x;
+	Map.y=y;
+	if(c>=48 && c<=57)c+=96-48;
+	if(c>=96 && c<=105){
+		var U=Map[Map.y][Map.x];
+		if(U.eok){
+			U.t.text=(c-96);
+			U.t._visible=1;
+			if(c==96)U.t._visible=0;
+			}
+		}
+	Map[Map.y][Map.x].fonkur._visible=1;
+	fredAnalize();
+}
+
+
+function fredAnalize(){
+	var x,y,n=0,OK=1;
+	for(x=0;x<9;++x)
+	for(y=0;y<9;++y){
+		var U=Map[y][x];
+		if(U.t.text=="0"){
+			U.fred._visible=0;
+			continue;
+			}
+		if(fredsubAnalize(x,y)){U.fred._visible=1;OK=0;}else U.fred._visible=0;
+		++n;
+		}
+	if(n==9*9 && OK){
+		var sound=new Sound(this);
+		sound.attachSound("tadam");
+		sound.start(0,1);
+		}
+}
+
+
+function fredsubAnalize(x,y){
+	var n=Map[y][x].t.text;
+	if(n=="0")return 0;
+	var t,tx,ty,x2,y2;
+	for(t=0;t<9;++t)if(t!=x)if(Map[y][t].t.text==n)return 1;
+	for(t=0;t<9;++t)if(t!=y)if(Map[t][x].t.text==n)return 1;
+	x2=parseInt(x/3);
+	y2=parseInt(y/3);
+	for(tx=0;tx<3;++tx)
+	for(ty=0;ty<3;++ty)if(ty+y2*3!=y && tx+x2*3!=x){
+		if(Map[ty+y2*3][tx+x2*3].t.text==n)return 1;
+		}
+	return 0;
+}
+
+
+function sleep(ms){
+    var init = getTimer();
+    while(true) {
+        if(getTimer() - init >= ms) {
+            break;
+        }
+    }
+}
+
+function fonEF(){
+	if(sendstr!=""){
+		so.send(sendstr);
+		sendstr="";
+		sleep(50);
+		}
+}
+
+
+var VG,Slot=0,saveS="";
+//-----------------------------------------------------------------------------------------------------------
+function initSaveLoad(){//3
+	++AB;
+	kback.onPress=function(){gotoAndStop(4);};
+	if(AB==1){
+		head.text="Откуда прочитать?";
+		b1.onPress=function(){Slot=1;gotoAndStop(5);};
+		b2.onPress=function(){Slot=2;gotoAndStop(5);};
+		b3.onPress=function(){Slot=3;sendstr+="getMaps.";};
+		}
+	if(AB==2 || VG==2){
+		b1._visible=0;
+		head.text="Куда записать?";
+		b2.onPress=function(){
+			Shared1.data.Games.push(saveS);
+			gotoAndStop(4);
+			};
+		b3.onPress=function(){
+			sendstr+="saveAdd.";
+			sendstr+=saveS+".";
+			gotoAndStop(4);
+			};
+		}
+	if(VG==3){
+		b1._visible=0;
+		head.text="Что редактируем?";
+		}
+	if(VG==5){
+		b1._visible=0;
+		head.text="Откуда удалять?";
+		}
+	if(!CppOK){
+		b3._visible=0;
+		//t3._visible=0;
+		}
+}
+
+
+//-----------------------------------------------------------------------------------------------------------
+var WW1=0,Result;
+function initInSlot(){//5
+	WW1={maxn:0,n:1};
+	if(Slot==1)WW1.maxn=getGameM(-1);
+	if(Slot==2)WW1.maxn=getGameM2(-1);
+	if(Slot==3)WW1.maxn=getGameM3(-1);
+	window1();
+	Result="";
+	kl.v=-1;
+	kr.v=1;
+	kl.onPress=
+	kr.onPress=fonPk;
+	initMap(0);
+	setNMap();
+	open.onPress=function(){
+		if(WW1.n<1 || VG==5){gotoAndStop(4);return;}
+		gotoAndStop(2);
+		};
+	kdel._visible=0;
+	tdel._visible=0;
+	if(VG==5){
+		kdel._visible=1;
+		tdel._visible=1;
+		}
+	kdel.onPress=function(){
+		if(Slot==2)Shared1.data.Games.splice(WW1.n-1,1);
+		if(Slot==3){
+			sendstr+="deleteMap.";
+			sendstr+=(WW1.n-1)+".";
+			gotoAndStop(4);
+			}
+		gotoAndStop(4);
+		};
+}
+
+
+function getS(){
+	var s="";
+	if(Slot==1)s=getGameM(WW1.n-1);
+	if(Slot==2)s=getGameM2(WW1.n-1);
+	if(Slot==3)s=getGameM3(WW1.n-1);
+	return s;
+}
+
+
+function setNMap(){
+	if(!Result.length){
+		if(WW1.n<1)return;
+		}
+	var s="";
+	if(Result.length)s=Result;else s=getS();
+	var x,y,i=0;
+	for(y=0;y<9;++y)
+	for(x=0;x<9;++x){
+		var U=Map[y][x];
+		var c=s.charAt(i++);
+		U.t._visible=1;
+		if(c=='0')U.t._visible=0;else
+			if(VG==1)U.eok=0;
+		U.t.text=c;
+		}
+}
+
+
+function GOsaveS(){
+	var s="";
+	var x,y;
+	for(y=0;y<9;++y)
+	for(x=0;x<9;++x){
+		var U=Map[y][x];
+		s+=U.t.text;
+		}
+	saveS=s;
+}
+
+
+function fonPk(){
+	WW1.n+=this.v;
+	window1();
+	setNMap();
+}
+
+
+function window1(){
+	if(WW1.n<1)WW1.n=1;
+	if(WW1.n>WW1.maxn)WW1.n=WW1.maxn;
+	w1.text=WW1.n+"/"+WW1.maxn;
+}
+
+
+//-----------------------------------------------------------------------------------------------------------
+var so=0,soOK;
+function initMenu(){//4
+	onEnterFrame=fonEF;
+	AB=0;
+	a1.onPress=function(){VG=1;gotoAndStop(3);};
+	a2.onPress=function(){VG=2;gotoAndStop(2);};
+	a3.onPress=function(){VG=3;gotoAndStop(3);};
+	a4.onPress=function(){VG=4;gotoAndStop(3);};
+	a5.onPress=function(){VG=5;gotoAndStop(3);};
+	if(!so){
+		soOK=0;
+		so = new XMLSocket();
+		fpovtorConnect();
+		so.onConnect=fresultConnect;
+		so.onData=fgetmessage;
+		so.onClose=fsoClose;
+		}
+	initKeyModule();
+}
+
+function fpovtorConnect(){
+	var b = so.connect("127.0.0.1", 8959);
+	if (!b){trace("He удалось отправить запрос");}
+	kexit._visible=
+	tkexit._visible=0;
+}
+
+function fantiConnect(){
+	so.send("exit.");
+	//so.close();soOK=0;
+	initKeyModule();
+}
+
+function fsoClose(){soOK=0;trace("Разрыв связи.");}
+
+function fgetmessage(tx){
+	var t=parseKvant(tx,_root,"BUFFER");
+	if(t!=2)return;
+	if(BUFFER.comand=="trace")trace(BUFFER.message);
+	if(BUFFER.comand=="quit")fscommand("quit");
+	if(BUFFER.comand=="setLevels"){ReadMassiv=BUFFER.List;gotoAndStop(5);}
+	if(BUFFER.comand=="setResult"){Result=BUFFER.Result;setNMap();}
+	delete BUFFER;
+}
+
+
+function initKeyModule(){
+	if(soOK){
+		tkexit.text="Выход";
+		kexit.onPress=fantiConnect;
+		CppOK=1;
+		}else{
+		tkexit.text="Подключить C++";
+		kexit.onPress=fpovtorConnect;
+		}
+}
+
+
+function fresultConnect(success){
+	if (!success) {
+		trace("He удалось установить соединение");
+		soOK=0;
+		initKeyModule();
+		kexit._visible=
+		tkexit._visible=1;
+		return;
+		}
+	//Соединение успешно установлено
+	soOK=1;
+	initKeyModule();
+	//so.send(ss);
+	kexit._visible=
+	tkexit._visible=1;
+}
+
+
+//-----------------------------------------------------------------------------------------------------------
+function getGameM(i){
+	var m=[
+	"527000138100528004600030002010000060056000320090000040900060005200815006865000213",
+	"086030901070100028100009763907253180002790500500640097003504670600072019001900340",
+	"206050409030702060408090705080000050907080304050000080803020501040108090601070803",
+	"000690002000200050002805007080003045004189000006004700700900080908012576005400021",
+	"318460000040852070000013060560200780700000309003740650100070800850306040400100597",
+	"406800791000000020100570000003004006200000000087090100701005000000010837390020005",
+	"075000089010000060200080054900430002002000008000200540006020013094013005023540806",//1
+	"004301007817504069300697418000050080580000200000830075750968100000400800438215790",//8
+	"060370580040812396802056147008637001050281470107495860000009725200503908509028634",//3
+	"020609873000021906679380125710968200480030700090047600007003000300896517900470000",
+	"900763002000802000001000800810000053300050006420000071009000300000301000600527009",
+	"306007049280009130009000200070098010000173000020540090001000900042900063960300701",
+	"004300617870000050000020008040093005590040083300510090100050000060000032987002500",
+	"801760034007000106056400970500020307160305098403080005039007850604000700780091603"
+	];
+	if(i<0)return m.length;
+	return m[i];
+}
+
+
+function getGameM2(i){
+	if(i<0)return Shared1.data.Games.length;
+	return Shared1.data.Games[i];
+}
+
+function getGameM3(i){
+	if(i<0)return ReadMassiv.length;
+	return ReadMassiv[i];
+}
+
+//-------------------------------------------------------------------------------------------------------
+function parseKvant(ss,OBJ,nameX){
+	var pro;
+	if(OBJ[nameX]!=undefined)if(OBJ[nameX].sus!=undefined){
+		pro=OBJ[nameX].sus;
+		var t=2;
+		if(!pro.isMassiv)for(var i=0;i<pro.length;++i)if(pro[i]!=0){
+			t=parseKvant(ss,OBJ[nameX],pro[i]);
+			if(!t || t==2)pro[i]=0;
+			if(i+1<pro.length)return 1;
+			}
+		if(t==1)return 1;
+		if(pro.isMassiv)for(var i=0;i<pro.length;++i)if(pro[i]!="ok"){
+			var n=Number(pro[i]);
+			if(isNaN(n)){
+				if(ss=="")return 1;
+				var t=parseKvant(ss,OBJ[nameX],i);
+				if(!t || t==2)pro[i]="ok";
+				ss="";
+				continue;
+				}
+			OBJ[nameX][i]=n;
+			}
+		delete OBJ[nameX].sus;
+		return 2;
+		}
+	var ism=(ss.charAt(0)=="[");
+	var isStr=(ss.charAt(0)=="\"");
+	if(!isStr && !ism && ss.charAt(0)!="{"){
+		OBJ[nameX]=ss;
+		return 0;
+		}
+	ss=ss.substr(1,ss.length-2);
+	if(isStr){
+		OBJ[nameX]=ss;
+		return 0;
+		}
+	pro=ss.split(",",ss.length);
+	pro.isMassiv=ism;
+	OBJ[nameX]=[];
+	OBJ[nameX].sus=pro;
+	//if(ism)return parseKvant("",OBJ,nameX);
+	return 1;
+}

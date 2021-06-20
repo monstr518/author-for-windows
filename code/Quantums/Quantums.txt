@@ -1,0 +1,318 @@
+
+void SkilledSample(){
+	m=reserve(8);
+
+	m[Quantum("All")]=5;
+	//m[Quantum("Exists")]=7;
+	m[Quantum("Exists!")]=0;
+	trace(m.export());
+
+	i=Quantum("All");
+	t=i+20;
+	m[t]=i+100;
+	trace(m.export());
+}
+
+
+void main(){
+	Mahine("SkilledSample");
+	SkilledSample();
+	define();
+	getstring();
+}
+
+
+//-------------------------------------------------------------------------------------
+void Mahine(f){
+	if(typeof(f)=="string")f=getFunction(f);
+	while(findFirstStrogo(f));
+	while(find2FirstStrogo(f));
+}
+
+
+int findFirstStrogo(f){
+	findProgram=PROGRAM("#[Quantum(#)]=#");
+	pos=f.getIDs();
+	for(i=0;i<pos.size();++i){
+		posid=pos[i];
+		programA=f.getCommand(posid);
+		var List;
+		b=compareProgsStrogo(programA,findProgram,&List);
+		if(!b)continue;
+		//trace(List.export());
+		strX="";
+		if(getListAllVars(List[1]).empty())strX=eval(List[1]);
+		if(strX=="All"){
+			name1=getNewNameInAlgorithm(f);
+			newfunction=(function)0;
+			text=name1+"=0;while("+name1+"<"+List[0]+".size()){"+List[0]+"["+name1+"]="+List[2]+";++"+name1+";}";
+			newfunction.import(PROGRAM(text));
+			f.insertSub(posid,newfunction);
+			return 1;
+			}
+		if(strX=="Exists!"){
+			text=(string)List[0]+"[rand()%"+List[0]+".size()]="+List[2];
+			f.setCommand(posid,PROGRAM(text));
+			return 1;
+			}
+		if(strX=="Exists"){
+			text=(string)List[0]+"[rozpad( [0;"+List[0]+".size()).getN() )]="+List[2];
+			f.setCommand(posid,PROGRAM(text));
+			return 1;
+			}
+			
+		}
+	return 0;
+}
+
+
+int find2FirstStrogo(f){
+	findProgram=PROGRAM("#=Quantum(#)");
+	pos=f.getIDs();
+	b=0;
+	List=0;
+	posid=0;
+	for(i=0;i<pos.size();++i){
+		posid=pos[i];
+		programA=f.getCommand(posid);
+		b=compareProgsStrogo(programA,findProgram,&List);
+		if(b)break;
+		}
+	if(b){
+		//trace(List.export());
+		toDel={};
+		findProgram=PROGRAM("#[#]=#");
+		findProgram2=PROGRAM("#=#");
+		var List2;
+		var table=(map){};
+		while(posid!=f.Root() && typeof(posid)=="int"){
+			toDel.push(posid);
+			posid=f.Next(posid);
+			programA=f.getCommand(posid);
+			b=compareProgsStrogo(programA,findProgram,&List2);
+			if(b){
+				//trace(List2.export());
+				if(List2[1]==List[0]){
+					DeleteListUnits(&f,toDel);
+					strX="";
+					if(getListAllVars(List[1]).empty())strX=eval(List[1]);
+					if(strX=="All"){
+						text="for("+List[0]+"=0;"+List[0]+"<"+List2[0]+".size();++"+List[0]+")"
+							+ List2[0] + "[" + List[0] + "]=" + List2[2];
+						//trace(text);
+						newfunction=(function)0;
+						newfunction.import(PROGRAM(text));
+						f.insertSub(posid,newfunction);
+						}
+					if(strX=="Exists!"){
+						text=(string)List[0] + "=rand()%" + List2[0] + ".size();"
+							+ List2[0] + "[" + List[0] + "]=" + List2[2];
+						//trace(text);
+						newfunction=(function)0;
+						newfunction.import(PROGRAM(text));
+						f.insertSub(posid,newfunction);
+						}
+					if(strX=="Exists"){
+						text=(string)List[0] + "=rozpad([0;" + List2[0] + ".size()).getN());"
+							+ List2[0] + "[" + List[0] + "]=" + List2[2];
+						//trace(text);
+						newfunction=(function)0;
+						newfunction.import(PROGRAM(text));
+						f.insertSub(posid,newfunction);
+						}
+					return 1;
+					}
+				nameQ=(string)List2[1];
+				if(!table.isset(nameQ)){
+					trace("¬ыражение "+nameQ+" должно быть не сложней имени переменной.");
+					break;
+					}
+				b=(getListAllVars(table[nameQ]).indexOf((string)List[0])<0);
+				if(b){
+					trace("¬ыражение "+table[nameQ]+" должно содержать переменную "+List[0]);
+					break;
+					}
+				formula=nameQ+"="+table[nameQ];
+				r=getConclusionFormul(formula,(string)List[0]);
+				if(typeof(r)!="string")break;
+				DeleteListUnits(&f,toDel);
+				strX="";
+				if(getListAllVars(List[1]).empty())strX=eval(List[1]);
+				keys=table.getKeys()-{nameQ};
+				tablevars="";
+				for(i=0;i<keys;++i)tablevars+=keys[i]+"="+table[keys[i]]+";";
+				if(strX=="All"){
+					text="for("+nameQ+"=0;"+nameQ+"<"+List2[0]+".size();++"+nameQ+"){"
+							+ r + ";"
+							+ tablevars
+							+ List2[0] + "[" + nameQ + "]=" + List2[2] +";}";
+					//trace(text);
+					newfunction=(function)0;
+					newfunction.import(PROGRAM(text));
+					f.insertSub(posid,newfunction);
+					}
+				if(strX=="Exists!"){
+					text=nameQ + "=rand()%" + List2[0] + ".size();"
+							+ r + ";"
+							+ tablevars
+							+ List2[0] + "[" + nameQ + "]=" + List2[2] +";";
+					//trace(text);
+					newfunction=(function)0;
+					newfunction.import(PROGRAM(text));
+					f.insertSub(posid,newfunction);
+					}
+				if(strX=="Exists"){
+					text=nameQ + "=rozpad([0;" + List2[0] + ".size()).getN());"
+							+ r + ";"
+							+ tablevars
+							+ List2[0] + "[" + nameQ + "]=" + List2[2] +";";
+					//trace(text);
+					newfunction=(function)0;
+					newfunction.import(PROGRAM(text));
+					f.insertSub(posid,newfunction);
+					}
+				return 1;
+				}
+			b=compareProgsStrogo(programA,findProgram2,&List2);
+			if(b)if(List2[0].typeof({})=="var"){
+				table[(string)List2[0]]=List2[1];
+				}
+			}
+		}
+	return 0;
+}
+
+
+bool compareProgsStrogo(programA,findProgram,List){
+	*List={};
+	access={};
+	Limits={};
+	R=0;
+	var p,grani;
+	while(1){
+		grani=programA.getRowSize(access);
+		pbn=findProgram.getRowSize(access);
+		pa=programA.typeof(access);
+		pb=findProgram.typeof(access);
+		if(pb!="#"){
+			if(grani!=pbn)break;
+			}
+		Limits.push(grani);
+		//trace({pa,pb});
+		start=-1;
+		if(pb=="#"){
+			List->push(programA.getSub(access));
+			start=grani;
+			}else{
+			if(pa!=pb)return 0;
+			if(pa=="var"){
+				if(programA.getSub(access)!=findProgram.getSub(access))return 0;
+				}
+			}
+		access.push(start);
+		povtor=1;
+		while(povtor){
+			if(access.empty())break;
+			povtor=0;
+			p=access[access.size()-1];
+			++p;
+			if(p>=Limits[Limits.size()-1]){
+				access.pop_back();
+				Limits.pop_back();
+				povtor=1;
+				}
+			}
+		if(povtor){
+			R=1;
+			break;
+			}
+		access[access.size()-1]=p;
+		}
+	return R;
+}
+
+
+
+//¬з€ть список всех переменных
+vector getListAllVars(comand){
+	S=(set){};
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=comand.getRowSize(acces);
+		x=comand.getSub(acces);
+		if(!p){
+			if(x.typeof()=="var"){
+				S.insert((string)x);
+				}
+			}
+		acces.push(p);
+		isf=(x.typeof()=="function");
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf)if(p==1)--p;
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf)if(p==1)--p;
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return (vector)S;
+}
+
+
+
+vector getAllNamesInAlgorithm(f){
+	names={};
+	pos=f.getIDs();
+	for(i=0;i<pos.size();++i){
+		posid=pos[i];
+		programA=f.getCommand(posid);
+		names+=getListAllVars(programA);
+		}
+	return (vector)(set)names;
+}
+
+
+string getNewNameInAlgorithm(f){
+	names=getAllNamesInAlgorithm(f);
+	var name,n=3;
+	do{
+		name="";
+		for(i=0;i<n;++i)name+=(char)(rand()%('Z'-'A'+1)+'A');
+		++n;
+		}while(names.indexOf(name)>=0);
+	return name;
+}
+
+
+void DeleteListUnits(pf,toDel){
+	for(i=0;i<toDel.size();++i)pf->delete(toDel[i]);
+}
+
+
+var getConclusionFormul(formula,name){
+	var namedll="what.dll";
+	if(DLLS.indexOf(namedll)<0){
+		LoadDLL(namedll);
+		SendDLL(namedll,"WAY:"+WAY);
+		}
+	what="?: get equality for ("+formula+") unknown {"+name+"}";
+	SendDLL(namedll,what);
+	R=RecvDLL(namedll);
+	if(!R.size())return 0;
+	R=R[0];
+	//R=split("=",R)[1];
+	return R;
+}
+

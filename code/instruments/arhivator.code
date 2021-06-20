@@ -1,0 +1,228 @@
+// arhivator.code
+
+
+
+
+SXEMA: var ArhivateVector(var p_data,var n){
+	10:ListResult.push({"one":text});{310}
+	20:prev=0;{790}
+	30:text="";{20}
+	40:X=subArhivateData(&X,n);{30}
+	50:if(typeof(X)=="string");{90,70}
+	60:X=#;{150}
+	70:text+=X.one;{60}
+	80:text+=",";{130}
+	90:text+="#";{150}
+	100:i=0;{390}
+	110:X=S[0];{40}
+	120:++i;{280}
+	130:X=subArhivateData(&(*p_data)[i],n);{50}
+	140:if(i);{80,130}
+	150:List.push(X);{120}
+	160:nameY="X"+n;{370}
+	170:++n;{160}
+	180:if(n);{540,170}
+	190:nameX="X";{180}
+	200:if(p_data->empty());{690,190}
+	210:if(typeof((*p_data))!="vector");{680,200}
+start:	220:;{210}
+	230:Counts={};{530}
+	240:ListResult.push(text);{230}
+	250:if(i<List.size());{670,240}
+	260:i=0;{250}
+	270:text=nameX+"={"+text+"};";{260}
+	280:if(i<p_data->size());{140,270}
+	290:i=0;{280}
+	300:List={};{290}
+	310:text="";{300}
+	320:if(eval(text)==(*p_data));{10,310}
+	330:text=p_data->export();{320}
+	340:if(S.size()==1);{110,330}
+	350:ListResult={};{340}
+	360:S=((set)(*p_data));{350}
+	370:if(p_data->size()==1);{920,360}
+	380:text+=endtext;{650}
+	390:if(i<Conditions.size());{1230,1250}
+	400:if(i<Conditions.size());{1060,380}
+	410:i=0;{400}
+	420:bad=0;{410}
+	430:text+="for(i=0;i<"+p_data->size()+";++i){";{420}
+	440:text=nameX+"={};";{430}
+	450:inot=Counts.findAll(nn)[#];{440}
+	460:if(nn>1);{1160,450}
+	470:if(i<Indexes.size());{1330,460}
+	480:i=0;{470}
+	490:Conditions={};{480}
+	500:nn=Counts.max();{490}
+	510:if(i<S.size());{1440,500}
+	520:i=0;{510}
+	530:Indexes={};{520}
+	540:nameX+=n;{170}
+	550:return ListResult[minpos];{220}
+	560:if(i<ListResult.size());{1560,550}
+	570:i=0;{560}
+	580:size=0;{570}
+	590:min=0;{580}
+	600:minpos=0;{590}
+	610:if(ListResult.empty());{1580,600}
+	620:if(i<p_data->size()-1);{1570,610}
+	630:i=2;{620}
+	640:if(!bad);{1710,630}
+	650:text+="}";{640}
+	660:++i;{250}
+	670:if(typeof(List[i])=="string");{710,660}
+	680:return #;{200}
+	690:return {"one":"{}"};{190}
+	700:text+=nameX+"["+i+"]="+nameY+";";{660}
+	710:text+=List[i];{700}
+	720:ListResult.push(text);{330}
+	730:text+="for(i=0;i<"+p_data->size()+";++i)"+nameX+".push("+X+");";{720}
+	740:text=nameX+"={};";{730}
+	750:X=S[0];{740}
+	760:if(!prev);{810,800}
+	770:text+="reserve("+p_data->size()+","+X+");";{760}
+	780:if(prev);{860,770}
+	790:if(typeof(X)=="string");{850,820}
+	800:ListResult.push(text);{750}
+	810:ListResult.push({"one":text});{750}
+	820:if(typeof(X)=="map");{930,780}
+	830:X=nameY;{780}
+	840:text=X;{830}
+	850:prev=1;{840}
+	860:text+=nameX+"=";{770}
+	870:return text;{360}
+	880:text=X+"{"+text+"}";{870}
+	890:text+="X"+n;{880}
+	900:if(typeof(X)=="map");{960,890}
+	910:p="";{900}
+	920:X=subArhivateData(&(*p_data)[0],n);{910}
+	930:X=X.one;{780}
+	940:return {"one":text};{890}
+	950:text="{"+text+"}";{940}
+	960:text=X.one;{950}
+	970:text+=text2;{1050}
+	980:endtext=nameX+".push("+X+");";{1050}
+	990:if(i==inot);{980,970}
+	1000:text2+="continue;}";{990}
+	1010:text2+=nameX+".push("+X+");";{1000}
+	1020:text2="if("+Conditions[i]+"){";{1010}
+	1030:if(Y!=X);{1070,1020}
+	1040:Y=eval(((string)X));{1030}
+	1050:++i;{400}
+	1060:X=S[i];{1040}
+	1070:bad=1;{1020}
+	1080:size=ListResult[i].one.size();{1530}
+	1090:text+="for(i=0;i<"+p_data->size()+";++i){";{100}
+	1100:text+=nameX+"=reserve("+p_data->size()+","+X+");";{1090}
+	1110:if(typeof(X)=="string");{1300,1290}
+	1120:text="";{1110}
+	1130:X=subArhivateData(&X,n);{1120}
+	1140:X=S[inot];{1130}
+	1150:inot=Counts.findAll(nn)[#];{1140}
+	1160:bad=0;{1150}
+	1170:text+=nameX+"[i]="+X+";";{1220}
+	1180:text+="if("+Conditions[i]+")";{1170}
+	1190:if(Y!=X);{1260,1180}
+	1200:Y=eval(((string)X));{1190}
+	1210:X=S[i];{1200}
+	1220:++i;{390}
+	1230:if(i!=inot);{1210,1220}
+	1240:if(!bad);{1340,450}
+	1250:text+="}";{1240}
+	1260:bad=1;{1180}
+	1270:X=X.one;{1100}
+	1280:X=nameY;{1100}
+	1290:if(typeof(X)=="map");{1270,1100}
+	1300:text=X;{1280}
+	1310:Conditions.push(Indexes[i].export()+".in(i)");{1320}
+	1320:++i;{470}
+	1330:if(Indexes[i].size()==1);{1360,1310}
+	1340:ListResult.push(text);{450}
+	1350:;{1320}
+	1360:Conditions.push("i=="+Indexes[i][0]);{1350}
+	1370:Indexes.push(Index);{1430}
+	1380:Counts.push(Count);{1370}
+	1390:if(j<p_data->size());{1480,1380}
+	1400:j=0;{1390}
+	1410:Index={};{1400}
+	1420:X=S[i];{1410}
+	1430:++i;{510}
+	1440:Count=0;{1420}
+	1450:Index.push(j);{1470}
+	1460:++Count;{1450}
+	1470:++j;{1390}
+	1480:if((*p_data)[j]==X);{1460,1470}
+	1490:size=ListResult[i].size();{1520}
+	1500:minpos=i;{1550}
+	1510:min=size;{1500}
+	1520:if(!min||size<min);{1510,1550}
+	1530:if(type=="string");{1490,1520}
+	1540:if(type=="map");{1080,1530}
+	1550:++i;{560}
+	1560:type=typeof(ListResult[i]);{1540}
+	1570:table={};{1700}
+	1580:return #;{600}
+	1590:if(i<table.size());{1760,1800}
+	1600:i=0;{1590}
+	1610:text+=nameX+"=";{1600}
+	1620:text=nameX+"="+table[0].export()+";";{1610}
+	1630:if(ok);{1620,1720}
+	1640:if(j<table[0].size());{1870,1630}
+	1650:j=0;{1640}
+	1660:ok=1;{1650}
+	1670:if(intable.size());{1920,1660}
+	1680:if(j<p_data->size());{1910,1670}
+	1690:j=0;{1680}
+	1700:intable={};{1690}
+	1710:ListResult.push(text);{630}
+	1720:++i;{620}
+	1730:text+="+";{1740}
+	1740:text+=nameX;{1750}
+	1750:++i;{1590}
+	1760:if(i);{1730,1740}
+	1770:;{610}
+	1780:ListResult.push(text);{1770}
+	1790:text+=";";{1780}
+	1800:if(table.end().size()<table[0].size());{1810,1790}
+	1810:text+=".mid(0,"+table.end().size()+")";{1790}
+	1820:ok=ok&&table[k][j]==table[0][j];{1830}
+	1830:++k;{1850}
+	1840:if(table[k].size()>j);{1820,1830}
+	1850:if(k<table.size());{1840,1860}
+	1860:++j;{1640}
+	1870:k=1;{1850}
+	1880:table.push(intable);{1930}
+	1890:if(intable.size()==i);{1880,1900}
+	1900:++j;{1680}
+	1910:intable.push((*p_data)[j]);{1890}
+	1920:table.push(intable);{1660}
+	1930:intable={};{1900}
+}
+
+
+
+var subArhivateData(var p_data,var n){
+	type=typeof((*p_data));
+	if(type=="void")return {"one":"#"};
+	if(type=="bool")return {"one":((string)(*p_data))};
+	if(type=="int")return {"one":((string)(*p_data))};
+	if(type=="double")return {"one":((string)(*p_data))};
+	if(type=="float")return {"one":"(float)"+((string)(*p_data))};
+	if(type=="digit")return {"one":"(digit)"+((string)(*p_data)).export()};
+	if(type=="vector")return ArhivateVector(p_data,n);
+	return #;
+}
+
+
+
+var ArhivateData(var data){
+	R=subArhivateData(&data,0);
+	F=((function)0);
+	if(typeof(R)=="vector")R=R[#];
+	if(typeof(R)=="map")F.import(PROGRAM("return "+R.one));
+	if(typeof(R)=="string")F.import(PROGRAM(R+"return X;"));
+	return F;
+}
+
+
+// arhivator.code	:-|

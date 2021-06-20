@@ -1,0 +1,9 @@
+
+main(){
+	trace("Вот те раз!");
+	f=getFunction(getThisFunctionName());
+	pos=f.getLabel(37);
+	if(pos)f.setCommand(pos,PROGRAM("trace("+"Вот те два!".export()+")"));
+	<label:37>
+	getstring();
+}

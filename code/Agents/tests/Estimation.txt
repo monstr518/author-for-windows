@@ -1,0 +1,94 @@
+#include <code\Agents\Empire.txt>
+
+var pravilo(n){
+	if(!n)return "победа";
+	p={1,2,4};
+	s={};
+	for(i=0;i<p.size();++i)if(p[i]<=n)s.push(p[i]);
+	return s;
+}
+
+
+var EstimationF(X){
+	if(!GLOBALS.isset("Statistica")){
+		<label:10>
+		GLOBALS.Statistica={};
+		}
+	if(typeof(X)=="string"){
+		if(X=="get"){
+			S=&GLOBALS.Statistica;
+			table={{},{}};
+			for(i=0;i<S->size();++i)if((*S)[i][2]==1){
+				table[0].push((*S)[i][0]);
+				table[1].push((*S)[i][1]);
+				}
+			return table;
+			}
+		if(X=="SaveControl"){
+			f=getFunction(getThisFunctionName());
+			pos=f.getLabel(10);
+			pos=f.Down(pos);
+			x=f.getCommand(pos);
+			if(x.getRowSize({1})==GLOBALS.Statistica.size())return;
+			x.setSub({1},PROGRAM(GLOBALS.Statistica.export()));
+			f.setCommand(pos,x);
+			}
+		if(X=="учится"){
+			R=Subject({table:EstimationF("get"),unknovn:"x",names:{"n","x"}});
+			if(R==#)return;
+			R="n=X[0];"+R+"return X[1]==x;";
+			ff=(function)0;
+			ff.import(PROGRAM(R));
+			f=getFunction(getThisFunctionName());
+			pos=f.getLabel(20);
+			pos=f.insertDown(pos);
+			f.insertSub(pos,ff);
+			}
+		return;
+		}
+	if(typeof(X)!="vector")return;
+	if(X.size()<3)X.push(#);
+	<label:20>
+	nfind=2;
+	if(typeof(X[nfind])!="void"){
+		GLOBALS.Statistica.push(X);
+		if(GLOBALS.Statistica.size()>20)EstimationF("учится");
+		return;
+		}
+	S=&GLOBALS.Statistica;
+	for(i=0;i<S->size();++i){
+		Q=(*S)[i];
+		Q[nfind]=#;
+		if(Q==X)return (*S)[i][nfind];
+		}
+	return #;
+}
+
+
+
+int defineX(e){ // {1,#,0};
+	t=2;
+	for(i=0;i<e.size();++i){
+		x=e[i];
+		if(typeof(x)=="void"){
+			if(t==2)t=1;
+			}else if(x)t=0;
+		}
+	s={};
+	for(i=0;i<e.size();++i){
+		y=(typeof(e[i])=="void");
+		if(!t && !y)if(e[i])s.push(i);
+		if(t==1 && y)s.push(i);
+		if(t==2 && !y)if(!e[i])s.push(i);
+		}
+	if(!s.size())return -1;
+	return s[#];
+}
+
+
+
+vector getEstimations(p,n){
+	e={};
+	for(i=0;i<p.size();++i)e.push(EstimationF({n,p[i],#}));
+	return e;
+}

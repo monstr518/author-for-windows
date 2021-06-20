@@ -1,0 +1,16 @@
+
+void main(){
+	f=getFunction(getThisFunctionName());
+	//trace(f.toString());
+	pos=f.Next(f.Root());
+	//pos=f.Next(pos);
+	pos=f.insertDown(pos);
+	f.setIF(pos,"1");
+	pos=f.insertDown(pos,(bool)1);
+	f.setComand(pos,"OK");
+	//f.delete(pos);
+	//trace(f.getComand(pos));
+	trace(f.toString());
+	trace(f.export());
+	getstring();
+}

@@ -1,0 +1,28 @@
+#include "code\UznikZamkaIF\master.txt"
+
+
+
+void main(){
+	nikras();
+	trace();
+	SYS=0;
+	MasterUznik(&SYS,"подопытная функция","nikras");
+	MasterUznik(&SYS,"задний ход");
+
+	getstring();
+}
+
+
+
+var nikras(){
+	trace("1) Привет.");
+	trace("2) Мы находимся внутри функции nikras().");
+	trace("3) Пока.");
+	a=18;
+	b=100;
+	n=++ a + b++;
+	n+=(a-=b)+(b+=a-n);
+	trace(n+5+b);
+}
+
+

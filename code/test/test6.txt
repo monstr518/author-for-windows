@@ -1,0 +1,97 @@
+
+void f(){
+	A=rowNSK(&(*params)["RowA"]);
+	if(A>1){
+		w2=w=getRowOstatok(&(*params)["RowB"],A);
+		w2-={0};
+		if(w2.size()==w.size()){
+			s="";
+			for(i=0;i<w.size();++i){
+				if(i)s+=" || ";
+				s+="B%"+A+"=="+w[i];
+				}
+			Results->push(s);
+			Results->push("!(A%"+A+")");
+			}
+		}
+	B=rowNSK(&(*params)["RowB"]);
+	if(B>1){
+		w2=w=getRowOstatok(&(*params)["RowA"],B);
+		w2-={0};
+		if(w2.size()==w.size()){
+			s="";
+
+			for(i=0;i<w.size();++i){
+				if(i)s+=" || ";
+				s+="A%"+B+"=="+w[i];
+				}
+
+			Results->push(s);
+			Results->push("!(B%"+B+")");
+			}
+		}
+
+	i=8;
+	if(i)trace("A");else if(i>2)trace("B"); else {trace("C");}
+
+	while(t<4)
+	while(i<4){
+		//if(i)break 2;
+		if(x)continue;
+		if(i>2){if(i)break;n;}
+		++i;
+		}
+
+	do{ while(i){++i;}++i;}while(i<4);
+
+	m={2,3,5,7,11,13};
+	trace("input digit:");
+	n=(int)getstring();
+	if(n<0){
+		trace("need >= 0 !");
+		return;
+		}
+	var ok=0;
+	if(n==0 || n==1)ok=1;
+
+	for(i=0;i<m.size();++i){
+		if(n==m[i]){ok=1;break;}
+		if(n<m[i])break;
+		}
+	if(i==m.size()){
+		do{
+			++u;
+			uok=1;
+			for(i=0;i<m.size();++i)if(!(u%m[i])){uok=0;break;}
+			}while(n>u);
+		if(oknew){
+			pos=getFunctionRoot(getThisFunctionName());
+			++pos;
+			++pos;
+			str="m="+m.export();
+			//trace(str);
+			replaceFormul(pos,str);
+			}
+		}
+
+	if(ok)trace("digit "+n+" is prime.");else trace("digit "+n+" is not prime.");
+	trace("Pres enter for exit.");
+	getstring();
+
+}
+
+
+int main(){
+	s="2+3*5+1";
+	trace(s+" = "+eval(s));
+	i=3;
+	var P=PROGRAM({type:"if";condition:"i<10";body:{"trace(i)","++i"};else:"i=5";});
+	trace(P);
+	eval(P);
+	pos=getFunctionRoot("f");
+	++pos;
+	trace(pos);
+	getstring();
+}
+
+

@@ -1,0 +1,30 @@
+// forever.code
+
+#include <code\forever\instruments.txt>
+
+
+
+int testf(){
+	x=1;
+	while(x)++x;
+}
+
+
+
+void forever(var namefunction){
+	f=getFunction(namefunction);
+	trace(f);
+	Obj=getMapIF(f);
+	excludeNotCycles(Obj);
+	trace(TransleateToText(Obj));
+	getstring();
+}
+
+
+
+void main(){
+	forever("testf");
+}
+
+
+// forever.code	:-|

@@ -1,0 +1,35 @@
+
+
+void main(){
+	var n=createNewLaver();
+	var pos=getFunctionRoot("f");
+	++pos;
+	var i=createNewProcess(n,pos);
+	runLaver(n);
+	var t=getLaverMessage(n);
+	if(!t.empty()){
+		//trace(t["activ"]);
+		var pos2=getPosLaverProcess(n,t["activ"]);
+		trace("Message problem: "+t["message"]);
+		trace(pos2);
+		}
+	trace("Pres enter for continue.");
+	getstring();
+/*
+	var pos=getFunctionRoot("f");
+	do{
+	++pos;
+	trace(pos.toString());
+	}while(!pos.isRoot());
+*/
+}
+
+
+void f(){
+	trace("Hellou world!!!");
+	int i=10+2-5;
+	++i;
+	trace(i);
+	var s=reserve(10);
+	trace(s);
+}

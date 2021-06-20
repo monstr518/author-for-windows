@@ -1,0 +1,36 @@
+
+#include "code\WAR2\WAR2.txt"
+
+
+
+var gameZero(n){
+	if(n=="подготовка"){
+		//X=Q;
+		status=X?1:0;
+		}
+	if(n=="атака"){
+		Send("!");
+		if(Accept()=="OFF");
+		return 1;
+		}
+	if(n=="ответ"){
+		if(Accept()=="!"){
+			Send(status?".":"OFF");
+			return 1;
+			}
+		}
+}
+
+
+
+void main(){
+	sys=(map)0;
+	ManagerW2(&sys,"user1",{"интерфейсный метод":"WAR1","параметры":{name:"Том"}});
+	ManagerW2(&sys,"user2",{"интерфейсный метод":"WAR1","параметры":{name:"Джерри"}});
+	ManagerW2(&sys,"law","gameZero");
+	ManagerW2(&sys,"количество игр",1);
+	ManagerW2(&sys,"run");
+	getstring();
+}
+
+

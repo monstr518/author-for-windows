@@ -1,0 +1,131 @@
+// функция blocktorow(sys) предназначина для 
+// слития порций текста с переносами строк
+// в одну порцию текста с переносоми строк.
+// ---------------------------------------------------------------------------
+// функция getzvit(row) преобразует все блоки в отчётную строчку.
+
+/*
+void main(){
+	s1="AAAA\nBBBB\nCCCC";
+	s2="AAAA2\nBBBB2\nCCCC2\nDDDD2";
+	row={s1,s2,s1,s2,s1,s2,s1,s2,s1,s2,s1,s2,s1,s2,s1,s2};
+	x=getzvit(row,"----------------------------------------------------------\n");
+	trace(x);
+	getstring();
+}
+*/
+
+
+string getzvit(row,otstup){
+	if(!isset(otstup))otstup=1;
+	if(typeof(otstup)!="string"){
+		n=(int)otstup;
+		otstup="";
+		while(n>0){
+			otstup+="\n";
+			--n;
+			}
+		}
+	buffer="";
+	pos=0;
+	nfirst=0;
+	while(pos<row.size()){
+		sys={rowblock:{row[pos]}};
+		++pos;
+		do{
+			x=blocktorow(&sys);
+			if(typeof(x)=="string"){
+				--pos;
+				if(nfirst)buffer+=otstup;
+				nfirst=1;
+				buffer+=x;
+				buffer+="\n";
+				break;
+				}
+			if(pos>=row.size()){
+				sys.gotovo=2;
+				++pos;
+				continue;
+				}
+			sys.rowblock.push(row[pos]);
+			++pos;
+			}while(1);
+		}
+	return buffer;
+}
+
+
+var blocktorow(sys){
+	if(!isset(sys->rowparams))sys->rowparams={};
+	if(!isset(sys->gotovo))sys->gotovo=0;
+	while(sys->rowparams.size()<sys->rowblock.size()){
+		str=sys->rowblock[sys->rowparams.size()];
+		sys->rowparams.push(analizespace(str));
+		}
+	maxy=0;
+	do{
+		if(sys->gotovo==1){
+			sys->rowblock.pop_back();
+			sys->gotovo=2;
+			}
+		sum=0;
+		for(i=0;i<sys->rowblock.size();++i){
+			params=sys->rowparams[i];
+			sum+=params[0];
+			if(maxy<params[1])maxy=params[1];
+			}
+		sloj=0;
+		if(sys->rowblock.size()>1){
+			sloj=(80-sum)/(sys->rowblock.size()-1);
+			if(sloj<=0)sys->gotovo=1;
+			sloj=(int)sloj;
+			if(sloj<1)sys->gotovo=1;
+			}
+		}while(sys->gotovo==1);
+	if(!sys->gotovo)return 0;
+	//if(!sloj)return sys->rowblock[0];
+	row={};
+	for(i=0;i<sys->rowblock.size();++i)row.push(sys->rowblock[i].split("\n"));
+	srow={};
+	//++maxy;
+	if(sloj>30)sloj=30;
+	for(i=0;i<maxy;++i){
+		sy="";
+		gruz=0;
+		for(n=0;n<row.size();++n){
+			if(n)sy=sy.rovno(gruz+=sloj);//sy+="	";
+			s="";
+			if(row[n].size()>i)s=row[n][i];
+			sy+=s;
+			gruz+=sys->rowparams[n][0];
+			}
+		srow.push(sy);
+		}
+	str="";
+	for(i=0;i<maxy;++i){
+		if(i)str+="\n";
+		str+=srow[i];
+		}
+	return str;
+}
+
+
+
+var analizespace(s){
+	a=0;
+	t=0;
+	b=0;
+	for(i=0;i<s.length();++i){
+		++t;
+		if(s[i]=='\n'){
+			++a;
+			if(t>b)b=t;
+			t=0;
+			}
+		}
+	if(t){
+		++a;
+		if(t>b)b=t;
+		}
+	return {b,a};
+}

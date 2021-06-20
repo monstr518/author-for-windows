@@ -1,0 +1,112 @@
+// WAR2 тест игры "угадай число" дл€ игроков с обучением
+
+
+void main(){
+	fork("war1",getThisLaverNumber(),0);
+	fork("war1",getThisLaverNumber(),1);
+	BotsNumberLaver={#,#};
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+
+	Send(BotsNumberLaver[0],BotsNumberLaver[1]);
+	Send(BotsNumberLaver[1],BotsNumberLaver[0]);
+
+	maxN=5;
+	Send(BotsNumberLaver[0],maxN);
+	Send(BotsNumberLaver[1],maxN);
+
+	nGames=70; //  оличество игр
+	for(i=0;i<nGames;++i){
+		Send(BotsNumberLaver[0],"OK",1);
+		Send(BotsNumberLaver[1],"OK",1);
+		numberFirstXod=#?1:0;
+		Send(BotsNumberLaver[0],numberFirstXod==0,1);
+		Send(BotsNumberLaver[1],numberFirstXod==1,1);
+
+		Q=Accept();
+		//trace(Q[1]);
+		}
+
+	Send(BotsNumberLaver[0],"Zvit");
+	Send(BotsNumberLaver[1],"Zvit");
+
+	getstring();
+}
+
+
+
+
+void war1(nServer,meNumber){
+	Send(nServer,meNumber,1);
+	nProtivnic=Accept(nServer);
+	maxN=Accept(nServer);
+	X={statistic:reserve(maxN)};
+	while(1){
+		Q=Accept(nServer);
+		if(Q=="Exit")break;
+		if(Q=="Zvit"){
+			trace("я номер "+meNumber+":"+X.statistic.export());
+			break;
+			}
+		winer=ZeroGame(&X,nServer,nProtivnic);
+		if(winer)trace("ѕобедил: "+meNumber);
+		}
+}
+
+
+
+
+void ZeroGame(X,nServer,nProtivnic){
+	meXod=Accept(nServer);
+	status=1;
+	meX=X->statistic.find(X->statistic.max());
+	finalAtac=0;
+	while(1){
+	if(meXod){
+		if(finalAtac){
+			Send(nProtivnic,"!",1);
+			result=Accept(nProtivnic);
+			if(result=="OFF"){
+				X->statistic[meX]++;
+				return 1;
+				}else{
+				X->statistic[meX]--;
+				}
+			return 0;
+			}
+		if(!finalAtac){
+			meY=rand()%X->statistic.size();
+			Send(nProtivnic,meY,1);
+			result=Accept(nProtivnic);
+			if(result)finalAtac=1;
+			}
+		}
+	if(!meXod){
+		messege=Accept(nProtivnic);
+		if(typeof(messege)=="int"){
+			if(messege==meX)status=0;
+			Send(nProtivnic,!status,1);
+			}
+		if(messege=="!"){
+			isOFF=!status;
+			Send(nProtivnic,isOFF?"OFF":".",1);
+			if(isOFF){
+				X->statistic[meX]--;
+				}else{
+				X->statistic[meX]++;
+				}
+			Send(nServer,"Game Over",1);
+			return 0;
+			}
+		}
+	meXod=!meXod;
+	}
+	return 0;
+}
+
+/*
+я номер 1:{-1,9,0,0,0}
+я номер 0:{-2,-2,-2,-1,-1}
+*/

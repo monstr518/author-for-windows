@@ -1,0 +1,115 @@
+
+
+void controllerUstanovkaGeneratora(SYS){
+	if(SYS->isset("FGenerator"))return;
+	SYS->Podobrano={};
+	if(SYS->FineData.size()!=1)return;
+	namesin=SYS->function.getNamesStart();
+	primitiveFunctions={"myFirstGenerator", "myGenerator2Promigutok"};
+	for(i=0;i<primitiveFunctions.size();++i){
+		f=getFunction(primitiveFunctions[i]);
+		n=f.run("количество переменных");
+		if(namesin.size()!=n)continue;
+		if(f.run(SYS)){
+			SYS->FGenerator=f;
+			break;
+			}
+		}
+}
+
+
+
+var serviceInitGenerator(regim,Q,name){
+	if(regim==1){
+		namesQ=getListAllVar(Q);
+		if(namesQ.size()!=1)return 0;
+		if(namesQ[0]!=name)return 0;
+		inverse=(name==(string)Q.getSub({1}));
+		znak=Q.typeof();
+		if(znak=="==" || znak=="!=")return 0;
+		if(inverse)znak[0]=(znak[0]=='<'?'>':'<');
+		return {znak:znak,t:eval(Q.getSub({inverse?0:1}))};
+		}
+	if(regim==2){
+		if(Q.size()!=2)return 0;
+		R=serviceInitGenerator(1,Q[0],name);
+		if(typeof(R)=="int")return 0;
+		R2=serviceInitGenerator(1,Q[1],name);
+		if(typeof(R2)=="int")return 0;
+		if(R.t<R2.t){
+			W=[R.t;R2.t];
+			W.setLimA(R.znak.size()==2);
+			W.setLimB(R2.znak.size()==2);
+			return W;
+			}
+		if(R.t>R2.t){
+			W=[R2.t;R.t];
+			W.setLimA(R2.znak.size()==2);
+			W.setLimB(R.znak.size()==2);
+			return W;
+			}
+		return 0;
+		}
+	return 0;
+}
+
+
+
+// a>=0
+var myFirstGenerator(SYS){
+	if(SYS=="количество переменных")return 1;
+	if(!SYS->isset("mode")){
+		name=SYS->function.getNamesStart()[0];
+		FD=&SYS->FineData[0];
+		if(FD->vars.size()!=1)return 0;
+		R=serviceInitGenerator(1,FD->vars[0],name);
+		if(typeof(R)=="int")return 0;
+		SYS->mode=R;
+		return 1;
+		}
+	t=SYS->mode.t;
+	znak=SYS->mode.znak;
+	n=0;
+	zdvig=10;
+	first=1;
+	while(1){
+		p=rand()%zdvig;
+		if(first){
+			first=0;
+			if(!p && znak.size()==1)++p;
+			}
+		ok=(rand()%100)<50;
+		if(ok){
+			t+=n+p;
+			if(znak[0]=='<')t=-t;
+			if(SYS->Podobrano.indexOf(t)<0){
+				SYS->Podobrano.push(t);
+				return t;
+				}
+			}
+		n+=zdvig;
+		}
+	return 0;
+}
+
+
+
+// a>0 && a<=100
+var myGenerator2Promigutok(SYS){
+	if(SYS=="количество переменных")return 1;
+	if(!SYS->isset("mode")){
+		name=SYS->function.getNamesStart()[0];
+		FD=&SYS->FineData[0];
+		R=serviceInitGenerator(2,FD->vars,name);
+		if(typeof(R)=="int")return 0;
+		SYS->mode={interval:R};
+		return 1;
+		}
+	meinterval=SYS->mode.interval;
+	S=meinterval.getZ()-SYS->Podobrano;
+	if(!S.size())return SYS->GeneratorError="числовой промежуток исчерпан";
+	x=S[rand()%S.size()];
+	SYS->Podobrano.push(x);
+	return x;
+}
+

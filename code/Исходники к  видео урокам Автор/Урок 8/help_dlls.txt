@@ -1,0 +1,35 @@
+// программа вызывает строку помоши у каждого dll модуля.
+// результат смотри в файле: out.html
+
+
+void main(){
+	var names=getNamesAllDll();
+	trace(names.export());
+	echo("Список вех dll модулей:"+names.export());
+	var name=names[rozpad([0;names.size()).getN())];
+	var a="",s="<hr/>Имя модуля: "+name+"<br/>";
+	LoadDLL(name);
+	SendDLL(name,"HELP");
+	var t=Recv1DLL(name);
+	trace(t);
+	s+=t+"<br/>";
+	t=t.substr(10);
+	var v=split(",",t);
+	for(int i=0;i<v.size();++i){
+		if(v[i]=="")continue;
+		t="HELP:"+v[i].trim();
+		SendDLL(name,t);
+		t=Recv1DLL(name);
+		s+=t+"<br/>";
+		}
+	if(name=="test.dll"){
+		SendDLL(name,"author");
+		a=Recv1DLL(name);
+		}
+	unLoadDLL(name);
+	echo(s);
+	if(a.size())echo("<hr/>"+a);
+	define();
+	trace("Смотри файл: "+"out.html".export());
+	getstring();
+}

@@ -1,0 +1,112 @@
+// ExportData.code
+
+
+
+
+string ExportData(var data){
+	type=typeof(data);
+	if(type=="void")return "#";
+	if(type=="int"||type=="bool")return ((string)data);
+	if(type=="double")return ((string)data);
+	if(type=="float")return "(float)"+((string)data);
+	if(type=="digit")return "(digit)"+((string)data).export();
+	if(type=="string")return data.export();
+	if(type=="vector"||type=="map"){
+		text=data.export();
+		if(eval(text)==data)return text;
+		}
+	isSet=0;
+	if(type=="set"){
+		data=((vector)data);
+		type="vector";
+		isSet=1;
+		}
+	if(type=="vector"){
+		text="";
+		i=0;
+		for(;i<data.size();++i){
+			if(i)text+=",";
+			text+=ExportData(data[i]);
+			}
+		text="{"+text+"}";
+		if(isSet)text="(set)"+text;
+		return text;
+		}
+	if(type=="map"){
+		text="";
+		keys=data.getKeys();
+		i=0;
+		for(;i<keys.size();++i){
+			if(i)text+=",";
+			text+=keys[i].export();
+			text+=":";
+			text+=ExportData(data[keys[i]]);
+			}
+		text="{"+text+"}";
+		return text;
+		}
+	if(type=="program"){
+		text=((string)data).export();
+		text="PROGRAM("+text+")";
+		return text;
+		}
+	trace("ExportData! Error type: "+type);
+	return "#";
+}
+
+
+
+string ExportDataSpeed(var p_data){
+	type=typeof((*p_data));
+	if(type=="void")return "#";
+	if(type=="int"||type=="bool")return ((string)(*p_data));
+	if(type=="double")return ((string)(*p_data));
+	if(type=="float")return "(float)"+((string)(*p_data));
+	if(type=="digit")return "(digit)"+((string)(*p_data)).export();
+	if(type=="string")return p_data->export();
+	if(type=="vector"||type=="map"){
+		text=p_data->export();
+		if(eval(text)==(*p_data))return text;
+		}
+	isSet=0;
+	if(type=="set"){
+		data=((vector)(*p_data));
+		p_data=&data;
+		type="vector";
+		isSet=1;
+		}
+	if(type=="vector"){
+		text="";
+		i=0;
+		for(;i<p_data->size();++i){
+			if(i)text+=",";
+			text+=ExportDataSpeed(&(*p_data)[i]);
+			}
+		text="{"+text+"}";
+		if(isSet)text="(set)"+text;
+		return text;
+		}
+	if(type=="map"){
+		text="";
+		keys=p_data->getKeys();
+		i=0;
+		for(;i<keys.size();++i){
+			if(i)text+=",";
+			text+=keys[i].export();
+			text+=":";
+			text+=ExportDataSpeed(&(*p_data)[keys[i]]);
+			}
+		text="{"+text+"}";
+		return text;
+		}
+	if(type=="program"){
+		text=((string)(*p_data)).export();
+		text="PROGRAM("+text+")";
+		return text;
+		}
+	trace("ExportDataSpeed! Error type: "+type);
+	return "#";
+}
+
+
+// ExportData.code	:-|

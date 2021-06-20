@@ -1,0 +1,217 @@
+// Так выгледил бы язык программирования "Автор", будь он написан на самом себе.
+
+var testf2(x){
+	trace("OK testf2");
+	return x+1;
+}
+
+void testf(){
+	if(1)trace("true");else trace("false");
+	var t=101;
+	trace("OK:"+t);
+	trace("ff:"+(testf2(20)+testf2(1000)));
+}
+
+
+//------------------------------------------------------------------------------------
+void initMaxine(f){
+	if(typeof(f)=="string")f=getFunction(f);
+	var mm=new {stackf:{f},pages:{(map){}}};
+	return mm;
+}
+
+
+//Взять список всех переменных
+vector getListAllVar(comand){
+	S=(set){};
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=comand.getRowSize(acces);
+		x=comand.getSub(acces);
+		if(!p){
+			if(x.typeof()=="var"){
+				S.insert((string)x);
+				}
+			}
+		acces.push(p);
+		isf=(x.typeof()=="function");
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf)if(p==1)--p;
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf)if(p==1)--p;
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return (vector)S;
+}
+
+
+//Заменить переменные
+void ReplaceVars(programa,S){
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=programa->getRowSize(acces);
+		x=programa->getSub(acces);
+		if(!p){
+			if(x.typeof()=="var"){
+				xx=(string)x;
+				for(i=0;i<S.size();++i)if(S[i]==xx)programa->setSub(acces,PROGRAM("*p["+i+"]"));
+				}
+			}
+		acces.push(p);
+		isf=(x.typeof()=="function");
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf)if(p==1)--p;
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf)if(p==1)--p;
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+}
+
+
+bool getSubTree(programa,access){
+	p=programa->getRowSize(*access);
+	x=programa->getSub(*access);
+	isf=(x.typeof()=="function");
+	if(isf){
+		access->push(0);
+		x=(string)programa->getSub(*access);
+		if(issystemf(x))isf=0;
+		access->pop_back();
+		}
+	end=0;
+	if(isf)end=1;
+	while(p>end){
+		--p;
+		access->push(p);
+		isf2 = getSubTree(programa,access);
+		if(isf2)return 1;
+		access->pop_back();
+		}
+	return isf;
+}
+
+
+var virtualMahine(mmodele){
+	MeResult="void";
+	glubina=0;
+	thisPage=&mmodele->pages[mmodele->pages.length()-1];
+	ff=&mmodele->stackf[mmodele->stackf.length()-1];
+	//trace(*ff); //
+	pos=ff->Root();
+	pos=ff->Next(pos);
+	while(pos!=ff->Root()){
+		comand=ff->getCommand(pos);
+		str=(string)comand;
+		if(str=="PAGEOPEN"){mmodele->pages.push((map){});++glubina;}
+		if(str=="PAGECLOSE"){mmodele->pages.pop_back();--glubina;}
+		if(str=="PAGEOPEN" || str=="PAGECLOSE"){
+			thisPage=&mmodele->pages[mmodele->pages.length()-1];
+			}else{
+			if(comand.typeof({})=="CreateVar"){
+				namevar=comand.typeof({},"name");
+				(*thisPage)[namevar]=0;
+				comand=PROGRAM(namevar+"="+(string)comand.getSub({0}));
+				}
+			isReturn=0;
+			if(comand.typeof({})=="return"){
+				isReturn=1;
+				comand=comand.getSub({0});
+				}
+			isIF=0;
+			if(comand.typeof({})=="if"){
+				isIF=1;
+				comand=comand.getSub({0});
+				}
+			//trace(comand);
+			S=getListAllVar(comand);
+			p={};
+			for(i=0;i<S.size();++i){
+				jj=j=mmodele->pages.size()-1;
+				while(glubina>=jj-j){
+					if(mmodele->pages[j].find(S[i]))break;
+					--j;
+					}
+				if(glubina<jj-j)mmodele->pages[j=jj][S[i]]=0;
+				p.push(&mmodele->pages[j][S[i]]);
+				}
+			//trace(S);
+			//trace(p);
+			ReplaceVars(&comand,S);
+			b=1;
+			while(b){
+				//trace(comand);
+				access={};
+				b=getSubTree(&comand,&access);
+				if(!b)MeResult=eval(comand);else{
+					subcomand=comand.getSub(access);
+					//trace(subcomand);
+					access2={};
+					px=subcomand.getRowSize(access2);
+					mmodele->pages.push((map){});
+					thisPage=&mmodele->pages[mmodele->pages.length()-1];
+					var ff2,names;
+					for(ii=0;ii<px;++ii){
+						access2.push(ii);
+						x=subcomand.getSub(access2);
+						access2.pop_back();
+						if(!ii){
+							ff2=getFunction((string)x);
+							names=ff2.getNamesStart();
+							continue;
+							}
+						x=eval(x);
+						(*thisPage)[names[ii-1]]=x;
+						}
+					mmodele->stackf.push(ff2);
+					result=virtualMahine(mmodele);
+					mmodele->stackf.pop_back();
+					mmodele->pages.pop_back();
+					thisPage=&mmodele->pages[mmodele->pages.length()-1];
+					n=p.size();
+					p.push(result);
+					comand.setSub(access,PROGRAM("*p["+n+"]"));
+					}
+				}
+			if(isReturn)break;
+			}
+		pos=ff->Next(pos);
+		if(typeof(pos)=="vector")pos=pos[!MeResult];
+		}
+	for(;glubina;--glubina)mmodele->pages.pop_back();
+	return MeResult;
+}
+
+
+main(){
+	mm=initMaxine("testf");
+	virtualMahine(mm);
+	getstring();
+}

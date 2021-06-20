@@ -1,0 +1,52 @@
+//analize.txt
+
+
+var getAllPosOFF(p_func){
+	if(typeof(p_func)=="function")p_func=&p_func;
+	S={};
+	ids=p_func->getIDs();
+	for(i=0;i<ids.size();++i){
+		command=p_func->getCommand(ids[i]);
+		if(typeof(command.typeof())!="void")
+		if(command.typeof()=="OFF")S.push(ids[i]);
+		}
+	if(S.size()==1)S=S[0];
+	return S;
+}
+
+
+
+
+
+var GoToUPIF(p_func,Pos,isThen){
+	Nabor=(set){};
+	S=(set){Pos};
+	while(S.size()){
+		V=(vector)S;
+		maxi=0;
+		for(i=0;i<V.size();++i)if(p_func->Rang(V[i])>p_func->Rang(V[maxi]))maxi=i;
+		Pos=V[maxi];
+		S.erase(Pos);
+		if(p_func->Root()==Pos)break;
+		if(S.empty()&&Nabor.size()){
+			c=p_func->getCommand(Pos);
+			if(typeof(c.typeof())!="void")if(c.typeof()=="if"){
+				meRang=p_func->Rang(Pos);
+				next=p_func->Next(Pos);
+				if(next.size()==2)
+				if(p_func->Rang(next[0])>meRang && p_func->Rang(next[1])>meRang)
+				if(!(Nabor.in(next[0])&&Nabor.in(next[1]))){
+					isthen=Nabor.in(next[0]);
+					if(isset(isThen))*isThen=isthen;
+					return Pos;
+					}
+				}
+			}
+		Nabor.insert(Pos);
+		up=p_func->Up(Pos);
+		if(typeof(up)=="int")up={up};
+		for(i=0;i<up.size();++i)if(p_func->Rang(up[i])<p_func->Rang(Pos))S.insert(up[i]);
+		}
+
+}
+

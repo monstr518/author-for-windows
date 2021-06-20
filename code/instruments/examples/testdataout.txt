@@ -1,0 +1,38 @@
+//	testdataout.txt
+#include <code\instruments\dataout.txt>
+#include <code\instruments\arhivator.txt>
+
+
+void testDataOut(){
+	X={{a:(set){"'\\'",0,#,1.01,true},"b":"OK",d:{a:"A","c":PROGRAM("a+b")}},0};
+	G=(graph)0;
+	G.NET(0,1,"A",1,1);
+	G.NET(0,1,"A",1,2);
+	G.MARKER(0,1,"",1,"ROOT");
+	X={"OK",G,X};
+	F=dataout(X);
+	trace(F.exportText());
+	trace(F.run()==X);
+}
+
+
+
+void testArhivator(){
+	X={100,200,400,500,100,200,400,500,100,200,400,500,100,200,400,500};
+	X={{1,2,3,1,2,3},X};
+	F=ArhivateData(X);
+	trace(F.exportText());
+	trace(F.run()==X);
+	//F=dataout(X);
+	//trace(F.exportText());
+}
+
+
+void main(){
+	//testDataOut();
+	testArhivator();
+	getstring();
+}
+
+
+//	testdataout.txt	:-|

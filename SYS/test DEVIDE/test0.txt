@@ -1,0 +1,12 @@
+
+Main(){
+	trace("Hello Author!"+"!!");
+	trace("{"+implode((set)({0,1,0,4,2,5,3,3,5,6,7,3,2,8,4,3,10-1}),", ")+"}");
+	trace(implode(" ",split("|","qwer|qqe7|893|*|...")));
+	trace(({1234,543,54,0,-543,-534,73455}+{0,0,0})[6]);
+	trace({A:"7238";B:2659378;}["B"]+22);
+	trace(count({5,67,4,6,4,8,8}));
+	trace("((!1)?true:false)=="+((!1)?"true":"false"));
+	trace(in_array(3,{0,1,2,3,4,5}));
+	Sleep(1000);
+}

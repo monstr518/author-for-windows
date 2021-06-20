@@ -1,0 +1,231 @@
+// Arhiv.code
+
+
+
+
+var QENTFPNCNLLPZCMAOEZL(var a){
+	if(a<0)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var XVBFHKAKCXVQILKVCCKH(var a){
+	if(a<0)OFF;
+}
+
+
+
+var UDHOYQHWJYYQSOITAULA(var a){
+	if(a<10)OFF;
+}
+
+
+
+var JYUPWMLWZYHUSONFUFLZ(var a){
+	if(typeof(a)!="int")OFF;
+}
+
+
+
+var GSADDMEZRNTTFALBWLQB(var a){
+	if(typeof(a)!=a)OFF;
+}
+
+
+
+var MXWTPTTTYKDUYVXJBZHQ(var a){
+	if(typeof(a)!="int")OFF;
+	if(a==3)OFF;
+}
+
+
+
+var FMJMOKEFZWVXZXZQGVGE(var a){
+	if(typeof(a)!="int")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+}
+
+
+
+var TGHYXQFMHZTHEFAOSVKY(var a){
+	if(typeof(a)!="float")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+}
+
+
+
+var GOACDTTDXLZCOEHJQOAE(var a){
+	if(a==3)OFF;
+	if(a==8)OFF;
+}
+
+
+
+var AFDKSLTVWLDJVNQRGLUT(var a){
+	if(typeof(a)!="double")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+}
+
+
+
+var BJHHEJMVFANFMVTCCEVR(var a){
+	if(typeof(a)!="digit")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+}
+
+
+
+var NEDUMVIKPLFOSWEGIRPPYI(var a){
+	if(typeof(a)!="digit")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+	if(a<0)OFF;
+}
+
+
+
+var XZVQOCYHJUYUYGGEZOLLQM(var a){
+	if(typeof(a)!="int")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+	if(a<0)OFF;
+}
+
+
+
+var KZRVLJQHYOBNFHZSKQIW(var a){
+	if(typeof(a)!="int")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+	if(a<0)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var QIFMWJQPHNFGYYQKUBOH(var a){
+	if(typeof(a)!="float")OFF;
+	if(a==3)OFF;
+	if(a==8)OFF;
+	if(a<0)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var BJSTHUICYLBMZCHPUTYU(var a){
+	if(a==3)OFF;
+	if(a==8)OFF;
+	if(a<0)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var VLIBQLCXYLWYQGHNDHHS(var a){
+	if(a==3)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var HZAQVZRZFASBDSKVSYMT(var a){
+	if(a==3||a==8)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var LGJQDWLINAAOWRHNGDEG(var a){
+	if(a==3||a==8)OFF;
+	if(a<0)OFF;
+	if(a>=100)OFF;
+}
+
+
+
+var EAJYFDGJQZKGCSWEELUX(var a){
+	if(a==3||a==8)OFF;
+	if(a<0)OFF;
+	if(a>=10)OFF;
+}
+
+
+
+var FEYGUMVPSYIJOZECSTGQ(var a){
+	if(typeof(a)!="void")OFF;
+}
+
+
+
+var ETNYZUAMRZJEMENDYCJH(var a){
+	if(typeof(a)!="bool")OFF;
+}
+
+
+
+var LNUXFUVYTYMCHQUCCFMB(var a){
+	if(typeof(a)!="float")OFF;
+}
+
+
+
+var YOCURRZHDMGIFQOHEEVN(var a){
+	if(a==3||a==8||a<0)OFF;
+}
+
+
+
+var SQRDAITCDNBUOUPONSET(var a){
+	if({5,8,2,9,0,12}.findOf(a)<0)OFF;
+}
+
+
+
+var HWPLSVTXTNRWRPTZCUUT(var a){
+	if(0>{5,8,2,9,0,12}.findOf(a))OFF;
+}
+
+
+
+var YPDESXNWNWJXUGRLUWQVKK(var a){
+	if({5,8,2,9,0,12}.findOf(a)<0)OFF;
+	if(a==3||a==8||a<0)OFF;
+}
+
+
+
+var XCBAZXWTJKUZGDKXGOGZ(var a){
+	if({5,8,2,9,0,12}.findOf(a)<0)OFF;
+	if(a==3||a==8||a<=0)OFF;
+}
+
+
+
+var ZFPWDWPKOOJPIUEDZSXW(var a){
+	if({5,8,2,9,0,12}.findOf(a)<0)OFF;
+	if(a==3||a==8||a<=0)OFF;
+	if(a>=10)OFF;
+}
+
+
+
+var QPQTZHHFGLSVBXLZIVWV(var a){
+	if(typeof(a)!="char")OFF;
+	if(a==3||a==8||a<=0)OFF;
+}
+
+
+
+var NBLBECISAKJFKKOHOHTJ(var a){
+	if(typeof(a)!="int")OFF;
+	if(a==3||a==8||a<=0)OFF;
+}
+
+
+// Arhiv.code	:-|

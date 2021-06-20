@@ -1,0 +1,211 @@
+// system of equations.code
+
+
+
+
+SXEMA: void main(){
+	10:getstring();{40} // 4
+	20:findSystem(s);{10} // 3
+	30:s="2*x+5*y=15;3*x+8*y=-1;x=?";{20} // 2
+start:	40:;{30} // 1
+}
+
+
+
+SXEMA: void findSystem(var SystemString){
+	10:Name=a[1];{290} // 22
+	20:SendDLL(namedll,"setcout(on)");{240} // 9
+	30:SendDLL(namedll,"WAY:"+WAY);{20} // 8
+	40:LoadDLL(namedll);{30} // 7
+	50:var namedll="what.dll";{40} // 6
+	60:trace(SystemMasiv);{50} // 5
+	70:SystemMasiv=split(";",SystemString);{60} // 4
+	80:var m=((map)0);{70} // 3
+start:	90:;{260} // 1
+	100:define();{270} // 24
+	110:trace(Name+"="+m[Name]);{100} // 23
+	120:trace("---------------------------------------------------------");{110} // 22
+	130:findName(namedll,Name,&m,VarsMasivs,SystemMasiv);{120} // 21
+	140:trace(Name+"=?");{130} // 20
+	150:if(i<SystemMasiv.size());{320,140} // 19
+	160:i=0;{150} // 18
+	170:var Name;{160} // 17
+	180:trace(VarsMasivs);{170} // 16
+	190:trace(Rejoin);{180} // 15
+	200:Rejoin=((vector)((set)Rejoin));{190} // 14
+	210:if(i<SystemMasiv.size());{420,200} // 13
+	220:i=0;{210} // 12
+	230:VarsMasivs={};{220} // 11
+	240:Rejoin={};{230} // 10
+	250:PAGECLOSE;{90} // 26
+	260:PAGEOPEN;{80} // 2
+	270:unLoadDLL(namedll);{250} // 25
+	280:Name=a[0];{310} // 24
+	290:if(a[1]=="?");{280,310} // 23
+	300:if(a[0]=="?");{10,290} // 21
+	310:++i;{150} // 25
+	320:a=split("=",SystemMasiv[i]);{300} // 20
+	330:VarsMasivs+={((vector)((set)VarsMasiv))};{410} // 22
+	340:Rejoin+=VarsMasiv;{330} // 21
+	350:if(j<n);{440,340} // 20
+	360:j=0;{350} // 19
+	370:VarsMasiv={};{360} // 18
+	380:n=RecvDLL(namedll);{370} // 17
+	390:SendDLL(namedll,what);{380} // 16
+	400:trace(what);{390} // 15
+	410:++i;{210} // 23
+	420:what="?: what var names formul ("+SystemMasiv[i]+")";{400} // 14
+	430:++j;{350} // 22
+	440:VarsMasiv+=split(",",RecvDLL(namedll));{430} // 21
+}
+
+
+
+SXEMA: var findName(var namedll,var Name,var* m,var VarsMasivs,var SystemMasiv){
+	10:k=0;{100} // 34
+	20:VarsMasiv={};{10} // 33
+	30:trace("find: "+subName);{40} // 20
+	40:A=findVar(namedll,subName,SystemMasiv[i]);{70} // 21
+	50:trace(F);{200} // 25
+	60:++h;{530} // 29
+	70:B=findVar(namedll,subName,SystemMasiv[j]);{190} // 22
+	80:trace(VarsMasiv.export());{170} // 36
+	90:SystemMasiv2=SystemMasiv2.erase(j);{340} // 42
+	100:if(k<n);{300,80} // 35
+	110:n=RecvDLL(namedll);{20} // 32
+	120:SendDLL(namedll,what);{110} // 31
+	130:trace(what);{120} // 30
+	140:what="?: what var names formul ("+F+")";{130} // 29
+	150:V=findVar(namedll,Name,SystemMasiv[i]);{210} // 8
+	160:VarsMasivs2=VarsMasivs;{230} // 38
+	170:n=0;{160} // 37
+	180:subName=subNames[h];{30} // 19
+	190:if(A==""||B=="");{350,240} // 23
+	200:F=findVar(namedll,Name,F);{260} // 26
+	210:if(V=="");{1070,470} // 9
+	220:if(a<0);{280,340} // 40
+	230:SystemMasiv2=SystemMasiv;{220} // 39
+	240:F=A+"="+B;{50} // 24
+	250:trace(F);{140} // 28
+	260:if(F=="");{370,250} // 27
+	270:if(getCompute(namedll,VarsMasiv,m,F,Name));{670,60} // 52
+	280:VarsMasivs2=VarsMasivs2.erase(j);{90} // 41
+	290:if(n<VarsMasiv.size()-1);{660,270} // 51
+	300:VarsMasiv+=split(",",RecvDLL(namedll));{310} // 36
+	310:++k;{100} // 37
+	320:k=0;{360} // 46
+	330:if(!n);{650,290} // 50
+	340:if(b<0);{640,320} // 43
+	350:;{60} // 24
+	360:if(k<VarsMasiv.size());{710,330} // 47
+	370:;{60} // 28
+	380:i=0;{500} // 4
+	390:if(m->isset(Name));{430,380} // 2
+start:	400:;{390} // 1
+	410:++i;{450} // 12
+	420:j=i+1;{620} // 10
+	430:return 1;{380} // 3
+	440:return 0;{400} // 10
+	450:if(i<VarsMasivs.size());{420,440} // 9
+	460:i=0;{450} // 8
+	470:trace(V);{560} // 10
+	480:if(i<VarsMasivs.size());{850,460} // 7
+	490:i=0;{480} // 6
+	500:if(i<VarsMasivs.size());{820,490} // 5
+	510:PAGECLOSE;{600} // 19
+	520:PAGEOPEN;{610} // 12
+	530:if(h<subNames.size());{180,510} // 18
+	540:int h=0;{530} // 17
+	550:subNames=VarsMasivs[i]*VarsMasivs[j]-{Name};{540} // 16
+	560:(*m)[Name]=V;{590} // 11
+	570:if(a<0||b<0);{720,550} // 15
+	580:b=VarsMasivs[j].indexOf(Name);{570} // 14
+	590:return 1;{1050} // 12
+	600:++j;{620} // 17
+	610:a=VarsMasivs[i].indexOf(Name);{580} // 13
+	620:if(j<VarsMasivs.size());{520,410} // 11
+	630:SystemMasiv2=SystemMasiv2.erase(i);{320} // 45
+	640:VarsMasivs2=VarsMasivs2.erase(i);{630} // 44
+	650:;{60} // 51
+	660:;{60} // 52
+	670:return 1;{60} // 53
+	680:;{330} // 49
+	690:++n;{700} // 49
+	700:++k;{360} // 50
+	710:if(!findName(namedll,VarsMasiv[k],m,VarsMasivs2,SystemMasiv2));{680,690} // 48
+	720:PAGECLOSE;{600} // 16
+	730:if(k<n);{870,940} // 18
+	740:k=0;{730} // 17
+	750:VarsMasiv={};{740} // 16
+	760:n=RecvDLL(namedll);{750} // 15
+	770:SendDLL(namedll,what);{760} // 14
+	780:trace(what);{770} // 13
+	790:what="?: what var names formul ("+V+")";{780} // 12
+	800:trace(V);{790} // 11
+	810:if(V=="");{950,800} // 10
+	820:if(VarsMasivs[i].size()==1);{1040,1050} // 6
+	830:V=findVar(namedll,Name,SystemMasiv[i]);{810} // 9
+	840:++i;{480} // 12
+	850:if(VarsMasivs[i].indexOf(Name)>=0);{830,840} // 8
+	860:++k;{730} // 20
+	870:VarsMasiv+=split(",",RecvDLL(namedll));{860} // 19
+	880:if(getCompute(namedll,VarsMasiv,m,V,Name));{1030,840} // 29
+	890:if(n<VarsMasiv.size()-1);{1020,880} // 28
+	900:if(!n);{1010,890} // 27
+	910:if(k<VarsMasiv.size());{1000,900} // 22
+	920:k=0;{910} // 21
+	930:n=0;{920} // 20
+	940:trace(VarsMasiv.export());{930} // 19
+	950:;{840} // 11
+	960:++n;{990} // 26
+	970:if(!findName(namedll,VarsMasiv[k],m,VarsMasivs2,SystemMasiv2));{1060,960} // 25
+	980:SystemMasiv2=SystemMasiv.erase(i);{970} // 24
+	990:++k;{910} // 27
+	1000:VarsMasivs2=VarsMasivs.erase(i);{980} // 23
+	1010:;{840} // 28
+	1020:;{840} // 29
+	1030:return 1;{840} // 30
+	1040:if(VarsMasivs[i][0]==Name);{150,1050} // 7
+	1050:++i;{500} // 13
+	1060:;{900} // 26
+	1070:;{1050} // 10
+}
+
+
+
+var getCompute(var namedll,var VarsMasiv,var* m,var F,var Name){
+	str="";
+	k=0;
+	for(;k<VarsMasiv.size();++k)str+=VarsMasiv[k]+"="+(*m)[VarsMasiv[k]]+";";
+	what="?: optimize ("+F+") from {"+str+"}";
+	trace(what);
+	SendDLL(namedll,what);
+	n=RecvDLL(namedll);
+	if(n<0)return 0;
+	k=0;
+	for(;k<n;++k)t=RecvDLL(namedll);
+	trace(t);
+	(*m)[Name]=t;
+	return 1;
+}
+
+
+
+SXEMA: var findVar(var namedll,var subName,var equation){
+	10:equation2=split("=",RecvDLL(namedll));{120} // 9
+	20:if(n==0);{80,10} // 7
+	30:n=RecvDLL(namedll);{20} // 6
+	40:SendDLL(namedll,what);{30} // 5
+	50:trace(what);{40} // 4
+	60:var what="?: get equality for ("+equation+") unknown {"+subName+"}";{50} // 3
+start:	70:;{100} // 1
+	80:return "";{10} // 8
+	90:PAGECLOSE;{70} // 13
+	100:PAGEOPEN;{60} // 2
+	110:return equation2[1];{90} // 12
+	120:if(equation2[0]!=subName);{130,110} // 10
+	130:return "";{110} // 11
+}
+
+
+// system of equations.code	:-|

@@ -1,0 +1,78 @@
+// WAR2.code
+
+#include <code\WAR2\analize.txt>
+#include <code\WAR2\functions1.txt>
+
+
+
+var ManagerWAR2(var p_sys,var command,var params){
+	if(typeof((*p_sys))!="map")( *p_sys)=((map)0);
+	if(command=="правило"){
+		f=params;
+		if(typeof(f)=="string")f=getFunction(f);
+		if(typeof(f)!="function")return;
+		p_sys->startLaw={"elements":{0,0,0},"f":f};
+		p_sys->order={"подготовка","атака","ответ"};
+		getElements(f,p_sys->order,&p_sys->startLaw.elements);
+		}
+	if(command=="тестигра"){if(p_sys->isset("startLaw")){
+		ControlSysLawFunction(&p_sys->startLaw,p_sys->order);
+		trace(p_sys->startLaw.sysf.exportText());
+		F1=F2=p_sys->startLaw.sysf;
+		if(!isset(params))params=1;
+		Result=platforma(F1,F2,params);
+		trace(Result.export());
+		}}
+	if(command=="обратный анализ"){if(p_sys->isset("startLaw"))enterReversAnalize(p_sys);}
+}
+
+
+
+void ControlSysLawFunction(var p_LawMode,var order){
+	if(p_LawMode->isset("sysf"))return;
+	freeNames=(p_LawMode->elements)[0].getNames(3)-((p_LawMode->elements)[1].getNames(3)+(p_LawMode->elements)[2].getNames(3));
+	freeNames-={"obj"};
+	i=0;
+	for(;i<3;++i)ReplaceVarsToObjXinTree(&(p_LawMode->elements)[i],"obj",freeNames);
+	p_LawMode->sysf=getFinalFunction(order,p_LawMode->elements);
+}
+
+
+
+void ControlLawElementsF(var p_LawMode){
+	if(p_LawMode->isset("elementsF"))return;
+	p_LawMode->elementsF={};
+	i=0;
+	for(;i<p_LawMode->elements.size();++i)p_LawMode->elementsF.push((p_LawMode->elements)[i].toFunction());
+}
+
+
+
+void enterReversAnalize(var p_sys){
+	LawMode=p_sys->startLaw;
+	ControlLawElementsF(&LawMode);
+	p_atakaf= &(LawMode.elementsF)[1];
+	trace(p_atakaf->exportText());
+	PosOFF=getAllPosOFF(p_atakaf);
+	if(typeof(PosOFF)!="int"){
+		trace("OFF не один в атаке!");
+		trace(PosOFF);
+		return;
+		}
+	Pos=PosOFF;
+	good=1;
+	while(good){
+		good=0;
+		isThen=0;
+		PosIF=GoToUPIF(p_atakaf,Pos,&isThen);
+		if(typeof(PosIF)!="int")trace("Ѕезусловный выход!");
+		X=p_atakaf->getCommand(PosIF).getSub({0});
+		trace(X);
+		trace(isThen);
+		if(X.getNames(3).empty()){if(isThen==((bool)eval(X)))good=1;}
+		Pos=PosIF;
+		}
+}
+
+
+// WAR2.code	:-|

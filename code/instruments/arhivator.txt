@@ -1,0 +1,201 @@
+//	arhivator.txt
+
+
+var ArhivateVector(p_data,n){
+	if(typeof(*p_data)!="vector")return #;
+	if(p_data->empty())return {one:"{}"};
+	nameX="X";
+	if(n)nameX+=n;
+	++n;
+	nameY="X"+n;
+	if(p_data->size()==1){
+		X=subArhivateData(&(*p_data)[0],n);
+		p="";
+		if(typeof(X)=="map"){
+			text=X.one; 
+			text="{"+text+"}";
+			return {one:text};
+			}
+		text+="X"+n;
+		text=X+"{"+text+"}";
+		return text;
+		}
+	S=(set)(*p_data);
+	ListResult={};
+	//if(S.size()==p_data->size());
+	if(S.size()==1){
+		X=S[0];
+		X=subArhivateData(&X,n);
+		text="";
+		prev=0;
+		if(typeof(X)=="string"){
+			prev=1;
+			text=X;
+			X=nameY;
+			} else
+		if(typeof(X)=="map")X=X.one;
+		if(prev)text+=nameX+"=";
+		text+="reserve("+p_data->size()+","+X+");";
+		if(!prev)ListResult.push({one:text}); else ListResult.push(text);
+		X=S[0];
+		text=nameX+"={};";
+		text+="for(i=0;i<"+p_data->size()+";++i)"+nameX+".push("+X+");";
+		ListResult.push(text);
+		//return ListResult[#];
+		}
+	text=p_data->export();
+	if(eval(text)==*p_data)ListResult.push({one:text});
+	text="";
+	List={};
+	for(i=0;i<p_data->size();++i){
+		if(i)text+=",";
+		X=subArhivateData(&(*p_data)[i],n);
+		if(typeof(X)=="string")text+="#"; else {
+			text+=X.one;
+			X=#;
+			}
+		List.push(X);
+		}
+	text=nameX+"={"+text+"};";
+	for(i=0;i<List.size();++i)if(typeof(List[i])=="string"){
+		text+=List[i];
+		text+=nameX+"["+i+"]="+nameY+";";
+		}
+	ListResult.push(text);
+	Counts={};
+	Indexes={};
+	for(i=0;i<S.size();++i){
+		Count=0;
+		X=S[i];
+		Index={};
+		for(j=0;j<p_data->size();++j)if((*p_data)[j]==X){
+			++Count;
+			Index.push(j);
+			}
+		Counts.push(Count);
+		Indexes.push(Index);
+		}
+	nn=Counts.max();
+	Conditions={};
+	for(i=0;i<Indexes.size();++i){
+		if(Indexes[i].size()==1){
+			Conditions.push("i=="+Indexes[i][0]);
+			continue;
+			}
+		Conditions.push(Indexes[i].export()+".in(i)");
+		}
+	if(nn>1){
+		bad=0;
+		inot=Counts.findAll(nn)[#];
+		X=S[inot];
+		X=subArhivateData(&X,n);
+		text="";
+		if(typeof(X)=="string"){
+			text=X;
+			X=nameY;
+			}else 
+		if(typeof(X)=="map")X=X.one;
+		text+=nameX+"=reserve("+p_data->size()+","+X+");";
+		text+="for(i=0;i<"+p_data->size()+";++i){";
+		for(i=0;i<Conditions.size();++i)if(i!=inot){
+			X=S[i];
+			Y=eval((string)X);
+			if(Y!=X)bad=1;
+			text+="if("+Conditions[i]+")";
+			text+=nameX+"[i]="+X+";";
+			}
+		text+="}";
+		if(!bad)ListResult.push(text);
+		}
+	inot=Counts.findAll(nn)[#];
+	text=nameX+"={};";
+	text+="for(i=0;i<"+p_data->size()+";++i){";
+	bad=0;
+	for(i=0;i<Conditions.size();++i){
+		X=S[i];
+		Y=eval((string)X);
+		if(Y!=X)bad=1;
+		text2="if("+Conditions[i]+"){";
+		text2+=nameX+".push("+X+");";
+		text2+="continue;}";
+		if(i==inot)endtext=nameX+".push("+X+");"; else text+=text2;
+		}
+	text+=endtext;
+	text+="}";
+	if(!bad)ListResult.push(text);
+	// {1,2,1,2,1,2,1}
+	for(i=2;i<p_data->size()-1;++i){
+		table={};
+		intable={};
+		for(j=0;j<p_data->size();++j){
+			intable.push((*p_data)[j]);
+			if(intable.size()==i){
+				table.push(intable);
+				intable={};
+				}
+			}
+		if(intable.size())table.push(intable);
+		ok=1;
+		for(j=0;j<table[0].size();++j){
+			for(k=1;k<table.size();++k){
+				if(table[k].size()>j)ok = ok && table[k][j]==table[0][j];
+				}
+			}
+		if(ok){
+			text=nameX+"="+table[0].export()+";";
+			text+=nameX+"=";
+			for(i=0;i<table.size();++i){
+				if(i)text+="+";
+				text+=nameX;
+				}
+			if(table.end().size()<table[0].size())text+=".mid(0,"+table.end().size()+")";
+			text+=";";
+			ListResult.push(text);
+			break;
+			}
+		}
+	// return result:
+	if(ListResult.empty())return #;
+	minpos=0;
+	min=0;
+	size=0;
+	for(i=0;i<ListResult.size();++i){
+		type=typeof(ListResult[i]);
+		if(type=="map")size=ListResult[i].one.size();
+		if(type=="string")size=ListResult[i].size();
+		if(!min || size<min){min=size;minpos=i;}
+		}
+	//trace(ListResult);
+	return ListResult[minpos];
+}
+
+
+
+var subArhivateData(p_data,n){
+	type=typeof(*p_data);
+	if(type=="void")return {one:"#"};
+	if(type=="bool")return {one:(string)(*p_data)};
+	if(type=="int")return {one:(string)(*p_data)};
+	if(type=="double")return {one:(string)(*p_data)};
+	if(type=="float")return {one:"(float)"+(string)(*p_data)};
+	if(type=="digit")return {one:"(digit)"+((string)(*p_data)).export()};
+	if(type=="vector")return ArhivateVector(p_data,n);
+	
+
+	return #;
+}
+
+
+var ArhivateData(data){
+	R=subArhivateData(&data,0);
+	//trace(R);
+	F=(function)0;
+	if(typeof(R)=="vector")R=R[#];
+	if(typeof(R)=="map")F.import(PROGRAM("return "+R.one));
+	if(typeof(R)=="string")F.import(PROGRAM(R+"return X;"));
+	return F;
+}
+
+
+
+//	arhivator.txt	:-|

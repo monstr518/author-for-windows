@@ -1,0 +1,16 @@
+// test2.code
+
+
+
+
+void main(){
+	int a=rozpad({5,3,7});
+	int b=rozpad({15,17});
+	if(a+b!=20)OFF;
+	trace("a+b="+a+"+"+b);
+	define();
+	getstring();
+}
+
+
+// test2.code	:-|

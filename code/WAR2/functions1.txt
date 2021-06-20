@@ -1,0 +1,223 @@
+
+
+bool getElements(f,order,p_elements){
+	*p_elements={0,0,0};
+	elementsN=0;
+	tree=f.export();
+	n=tree.getRowSize({});
+	for(i=0;i<n;++i){
+		X=tree.getSub({i});
+		if(!X.isIF())continue;
+		condition=X.getSub({0});
+		nameX="";
+		if(condition.getNames(3).size()){
+			if(condition.typeof()=="=="){
+				if(!condition.getSub({0}).getNames(3).size())nameX=eval(condition.getSub({0}));
+				if(!condition.getSub({1}).getNames(3).size())nameX=eval(condition.getSub({1}));
+				}
+			}else nameX=eval(condition);
+		t=order.find(nameX);
+		if(t>=0){(*p_elements)[t]=X.getSub({1});++elementsN;}
+		}
+	return elementsN==3;
+}
+
+
+
+
+var getFinalFunction(order,elements){
+	NameCommandVar="command";
+	NameID="nVrag";
+	S=(set){};
+	for(i=0;i<3;++i)S.U(elements[i].getNames(3));
+	S=(vector)S;
+	if(S.in(NameCommandVar))NameCommandVar=(S.newName(4,1));
+	S.push(NameCommandVar);
+	if(S.in(NameID))NameID=(S.newName(4,1));
+	S.push(NameID);
+	resultF=PROGRAM("#;#;#;");
+	for(i=0;i<3;++i){
+		condition=PROGRAM("if("+NameCommandVar+"==#)#;");
+		condition.setSub({0,1},PROGRAM(order[i].export()));
+		condition.setSub({1},elements[i]);
+		resultF.setSub({i},condition);
+		}
+	replaceSAUsage(&resultF,NameID);
+	resultF=resultF.toFunction();
+	resultF.setName("protokol");
+	resultF.setNamesStart({NameCommandVar,NameID,"obj"});
+	return resultF;
+}
+
+
+// Заменит все имена в програмном дереве на X->p
+var ReplaceVarsToObjXinTree(plaw,NameObjX,free){
+	if(!isset(free))free={};
+	access={};
+	fs={};
+	stoper=0;
+	do{
+		n=plaw->getRowSize(access);
+		if(access.empty()){
+			sub=plaw->getSub(access);
+			if(typeof(sub.typeof())!="void")
+			if(sub.typeof()=="function")fs.push(access+{0});
+			}
+		access.push(n);
+		ok=1;
+		while(access.size()&&ok){
+			n=access.pop();
+			--n;
+			if(n<0||stoper){
+				stoper=0;
+				continue;
+				}
+			access.push(n);
+			if(fs.size())if(access==fs.end()){
+				fs.pop();
+				continue;
+				}
+			sub=plaw->getSub(access);
+			if(typeof(sub.typeof())!="void"){
+				if(sub.typeof()=="function")fs.push(access+{0});
+				if(sub.typeof()=="var")if(!free.in((string)sub)){
+					W=PROGRAM(NameObjX+"->#");
+					W.setSub({1},sub);
+					plaw->setSub(access,W);
+					stoper=1;
+					}
+				}
+			ok=0;
+			}
+		}while(access.size());
+}
+
+
+
+//Заменит все Send(X) & Accept() на (NameID,X,1) & (NameID,1)
+void replaceSAUsage(plaw,NameID){
+	access={};
+	do{
+		n=plaw->getRowSize(access);
+		if(access.empty()){
+			sub=plaw->getSub(access);
+			if(typeof(sub.typeof())!="void")
+			if(sub.typeof()=="function"){
+				if((string)sub.getSub({0})=="Send"){
+					X=PROGRAM("Send("+NameID+",#,1)");
+					X.setSub({2},sub.getSub({1}));
+					plaw->setSub(access,X);
+					}
+				if((string)sub.getSub({0})=="Accept"){
+					X=PROGRAM("Accept("+NameID+",1)");
+					plaw->setSub(access,X);
+					}
+				}
+			}
+		access.push(n);
+		ok=1;
+		while(access.size()&&ok){
+			n=access.pop();
+			--n;
+			if(n<0)continue;
+			access.push(n);
+			sub=plaw->getSub(access);
+			if(typeof(sub.typeof())!="void"){
+				if(sub.typeof()=="function"){
+					if((string)sub.getSub({0})=="Send"){
+						X=PROGRAM("Send("+NameID+",#,1)");
+						X.setSub({2},sub.getSub({1}));
+						plaw->setSub(access,X);
+						}
+					if((string)sub.getSub({0})=="Accept"){
+						X=PROGRAM("Accept("+NameID+",1)");
+						plaw->setSub(access,X);
+						}
+					}
+				}
+			ok=0;
+			}
+		}while(access.size());
+}
+
+
+
+//---------------------------------------------------------------------------------------
+var platforma(resultF,resultF2,n){
+	Result={{0,0},{0,0}};//0-{user1,user2} 1-{firstxod,lastxod}
+	for(i=0;i<n;++i){
+		R=ServerW2(resultF,resultF2);
+		Result[0][0]+=R[0][0];
+		Result[0][1]+=R[0][1];
+		Result[1][0]+=R[1][0];
+		Result[1][1]+=R[1][1];
+		}
+	return Result;
+
+}
+
+
+
+var ServerW2(resultF,resultF2){
+	fork("ClientW1",getThisLaverNumber(),0);
+	fork("ClientW1",getThisLaverNumber(),1);
+
+	BotsNumberLaver={#,#};
+	Winner={0,0};
+
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+	Q=Accept();
+	BotsNumberLaver[Q[1]]=Q[0];
+
+	Send(BotsNumberLaver[0],BotsNumberLaver[1],1);
+	Send(BotsNumberLaver[1],BotsNumberLaver[0],1);
+
+	Send(BotsNumberLaver[0],resultF,1);
+	Send(BotsNumberLaver[1],resultF2,1);
+
+	nxod=#%2;
+	Send(BotsNumberLaver[0],!nxod,1);
+	Send(BotsNumberLaver[1],nxod,1);
+	do{
+		Q=Accept();
+		ok=Q[1];
+		id=(Q[0]==BotsNumberLaver[0]?1:0);
+		ok2=Accept(BotsNumberLaver[id]);
+		ok3=(ok&&ok2);
+		if(ok2)Send(BotsNumberLaver[id],ok3,1);
+		if(ok)Send(Q[0],ok3,1);
+		}while(ok3);
+	Winner[id]=ok;
+	Winner[1-id]=ok2;
+	R={Winner};
+	R.push({Winner[nxod],Winner[!nxod]});
+	return R;
+}
+
+
+
+
+void ClientW1(nServer,meNumber){
+	Send(nServer,meNumber,1);
+	nProtivnic=Accept(nServer);
+	law=Accept(nServer);
+	meXod=Accept(nServer);
+	obj=(map){};
+	law.run("подготовка",nProtivnic,&obj);
+	while(1){
+		ok=0;
+		if(ControlOFF()){
+			law.run((meXod?"атака":"ответ"),nProtivnic,&obj);
+			ok=1;
+			}
+		ClearPsetOFF();
+		Send(nServer,ok,1);
+		if(!ok)break;
+		ok=Accept(nServer);
+		if(!ok)break;
+		meXod=!meXod;
+		}
+}
+
+

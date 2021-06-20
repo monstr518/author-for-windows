@@ -1,0 +1,314 @@
+// Quantums.code
+
+
+
+
+void SkilledSample(){
+	m=reserve(8);
+	m[Quantum("All")]=5;
+	m[Quantum("Exists!")]=0;
+	trace(m.export());
+	i=Quantum("All");
+	t=i+20;
+	m[t]=i+100;
+	trace(m.export());
+}
+
+
+
+void main(){
+	Mahine("SkilledSample");
+	SkilledSample();
+	define();
+	getstring();
+}
+
+
+
+void Mahine(var f){
+	if(typeof(f)=="string")f=getFunction(f);
+	while(findFirstStrogo(f));
+	while(find2FirstStrogo(f));
+}
+
+
+
+int findFirstStrogo(var f){
+	findProgram=PROGRAM("#[Quantum(#)]=#");
+	pos=f.getIDs();
+	i=0;
+	while(i<pos.size()){
+		posid=pos[i];
+		programA=f.getCommand(posid);
+		var List;
+		b=compareProgsStrogo(programA,findProgram,&List);
+		if(!b);else {
+			strX="";
+			if(getListAllVars(List[1]).empty())strX=eval(List[1]);
+			if(strX=="All"){
+				name1=getNewNameInAlgorithm(f);
+				newfunction=((function)0);
+				text=name1+"=0;while("+name1+"<"+List[0]+".size()){"+List[0]+"["+name1+"]="+List[2]+";++"+name1+";}";
+				newfunction.import(PROGRAM(text));
+				f.insertSub(posid,newfunction);
+				return 1;
+				}
+			if(strX=="Exists!"){
+				text=((string)List[0])+"[rand()%"+List[0]+".size()]="+List[2];
+				f.setCommand(posid,PROGRAM(text));
+				return 1;
+				}
+			if(strX=="Exists"){
+				text=((string)List[0])+"[rozpad( [0;"+List[0]+".size()).getN() )]="+List[2];
+				f.setCommand(posid,PROGRAM(text));
+				return 1;
+				}
+			}
+		++i;
+		}
+	return 0;
+}
+
+
+
+int find2FirstStrogo(var f){
+	findProgram=PROGRAM("#=Quantum(#)");
+	pos=f.getIDs();
+	b=0;
+	List=0;
+	posid=0;
+	i=0;
+	while(i<pos.size()){
+		posid=pos[i];
+		programA=f.getCommand(posid);
+		b=compareProgsStrogo(programA,findProgram,&List);
+		if(b)break;
+		++i;
+		}
+	if(b){
+		toDel={};
+		findProgram=PROGRAM("#[#]=#");
+		findProgram2=PROGRAM("#=#");
+		var List2;
+		var table=((map)({}));
+		while(posid!=f.Root()&&typeof(posid)=="int"){
+			toDel.push(posid);
+			posid=f.Next(posid);
+			programA=f.getCommand(posid);
+			b=compareProgsStrogo(programA,findProgram,&List2);
+			if(b){
+				if(List2[1]==List[0]){
+					DeleteListUnits(&f,toDel);
+					strX="";
+					if(getListAllVars(List[1]).empty())strX=eval(List[1]);
+					if(strX=="All"){
+						text="for("+List[0]+"=0;"+List[0]+"<"+List2[0]+".size();++"+List[0]+")"+List2[0]+"["+List[0]+"]="+List2[2];
+						newfunction=((function)0);
+						newfunction.import(PROGRAM(text));
+						f.insertSub(posid,newfunction);
+						}
+					if(strX=="Exists!"){
+						text=((string)List[0])+"=rand()%"+List2[0]+".size();"+List2[0]+"["+List[0]+"]="+List2[2];
+						newfunction=((function)0);
+						newfunction.import(PROGRAM(text));
+						f.insertSub(posid,newfunction);
+						}
+					if(strX=="Exists"){
+						text=((string)List[0])+"=rozpad([0;"+List2[0]+".size()).getN());"+List2[0]+"["+List[0]+"]="+List2[2];
+						newfunction=((function)0);
+						newfunction.import(PROGRAM(text));
+						f.insertSub(posid,newfunction);
+						}
+					return 1;
+					}
+				nameQ=((string)List2[1]);
+				if(!table.isset(nameQ)){
+					trace("¬ыражение "+nameQ+" должно быть не сложней имени переменной.");
+					break;
+					}
+				b=getListAllVars(table[nameQ]).indexOf(((string)List[0]))<0;
+				if(b){
+					trace("¬ыражение "+table[nameQ]+" должно содержать переменную "+List[0]);
+					break;
+					}
+				formula=nameQ+"="+table[nameQ];
+				r=getConclusionFormul(formula,((string)List[0]));
+				if(typeof(r)!="string")break;
+				DeleteListUnits(&f,toDel);
+				strX="";
+				if(getListAllVars(List[1]).empty())strX=eval(List[1]);
+				keys=table.getKeys()-{nameQ};
+				tablevars="";
+				i=0;
+				while(i<keys){
+					tablevars+=keys[i]+"="+table[keys[i]]+";";
+					++i;
+					}
+				if(strX=="All"){
+					text="for("+nameQ+"=0;"+nameQ+"<"+List2[0]+".size();++"+nameQ+"){"+r+";"+tablevars+List2[0]+"["+nameQ+"]="+List2[2]+";}";
+					newfunction=((function)0);
+					newfunction.import(PROGRAM(text));
+					f.insertSub(posid,newfunction);
+					}
+				if(strX=="Exists!"){
+					text=nameQ+"=rand()%"+List2[0]+".size();"+r+";"+tablevars+List2[0]+"["+nameQ+"]="+List2[2]+";";
+					newfunction=((function)0);
+					newfunction.import(PROGRAM(text));
+					f.insertSub(posid,newfunction);
+					}
+				if(strX=="Exists"){
+					text=nameQ+"=rozpad([0;"+List2[0]+".size()).getN());"+r+";"+tablevars+List2[0]+"["+nameQ+"]="+List2[2]+";";
+					newfunction=((function)0);
+					newfunction.import(PROGRAM(text));
+					f.insertSub(posid,newfunction);
+					}
+				return 1;
+				}
+			b=compareProgsStrogo(programA,findProgram2,&List2);
+			if(b){if(List2[0].typeof({})=="var")table[((string)List2[0])]=List2[1];}
+			}
+		}
+	return 0;
+}
+
+
+
+bool compareProgsStrogo(var programA,var findProgram,var List){
+	( *List)={};
+	access={};
+	Limits={};
+	R=0;
+	var p;
+	var grani;
+	while(1){
+		grani=programA.getRowSize(access);
+		pbn=findProgram.getRowSize(access);
+		pa=programA.typeof(access);
+		pb=findProgram.typeof(access);
+		if(pb!="#"){if(grani!=pbn)break;}
+		Limits.push(grani);
+		start= -1;
+		if(pb=="#"){
+			List->push(programA.getSub(access));
+			start=grani;
+			}else {
+			if(pa!=pb)return 0;
+			if(pa=="var"){if(programA.getSub(access)!=findProgram.getSub(access))return 0;}
+			}
+		access.push(start);
+		povtor=1;
+		while(povtor){
+			if(access.empty())break;
+			povtor=0;
+			p=access[access.size()-1];
+			++p;
+			if(p>=Limits[Limits.size()-1]){
+				access.pop_back();
+				Limits.pop_back();
+				povtor=1;
+				}
+			}
+		if(povtor){
+			R=1;
+			break;
+			}
+		access[access.size()-1]=p;
+		}
+	return R;
+}
+
+
+
+vector getListAllVars(var comand){
+	S=((set)({}));
+	acces={};
+	accesf={};
+	isf=0;
+	while(1){
+		p=comand.getRowSize(acces);
+		x=comand.getSub(acces);
+		if(!p){if(x.typeof()=="var")S.insert(((string)x));}
+		acces.push(p);
+		isf=x.typeof()=="function";
+		accesf.push(isf);
+		n=acces.size()-1;
+		p=acces[n];
+		isf=accesf[n];
+		if(isf){if(p==1)--p;}
+		while(!p){
+			acces.pop_back();
+			accesf.pop_back();
+			--n;
+			if(n<0)break;
+			p=acces[n];
+			isf=accesf[n];
+			if(isf){if(p==1)--p;}
+			}
+		if(!p)break;
+		--p;
+		acces[n]=p;
+		}
+	return ((vector)S);
+}
+
+
+
+vector getAllNamesInAlgorithm(var f){
+	names={};
+	pos=f.getIDs();
+	i=0;
+	while(i<pos.size()){
+		posid=pos[i];
+		programA=f.getCommand(posid);
+		names+=getListAllVars(programA);
+		++i;
+		}
+	return ((vector)((set)names));
+}
+
+
+
+string getNewNameInAlgorithm(var f){
+	names=getAllNamesInAlgorithm(f);
+	var name;
+	var n=3;
+	do{
+		name="";
+		i=0;
+		while(i<n){
+			name+=((char)(rand()%('Z'-'A'+1)+'A'));
+			++i;
+			}
+		++n;
+		}while(names.indexOf(name)>=0);
+	return name;
+}
+
+
+
+void DeleteListUnits(var pf,var toDel){
+	i=0;
+	while(i<toDel.size()){
+		pf->delete(toDel[i]);
+		++i;
+		}
+}
+
+
+
+var getConclusionFormul(var formula,var name){
+	var namedll="what.dll";
+	if(DLLS.indexOf(namedll)<0){
+		LoadDLL(namedll);
+		SendDLL(namedll,"WAY:"+WAY);
+		}
+	what="?: get equality for ("+formula+") unknown {"+name+"}";
+	SendDLL(namedll,what);
+	R=RecvDLL(namedll);
+	if(!R.size())return 0;
+	R=R[0];
+	return R;
+}
+
+
+// Quantums.code	:-|

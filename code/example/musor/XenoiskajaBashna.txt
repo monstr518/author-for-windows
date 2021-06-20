@@ -1,0 +1,148 @@
+//Хенайская башня. 4 кольца.
+
+//-------------------------------------------------------------------------
+class Xenoi{
+	static var initStart(int n);
+	static var getEtalon(int n,int t);
+	static void trans(var*m,int a,int b);
+	static var XOD(var m);
+	static void Game();
+	static var vid(var m);
+};
+
+
+var Xenoi::initStart(int n){
+	var p=reserve(n);
+	for(int i=0;i<n;++i)p[i]=i+1;
+	return {p,reserve(n),reserve(n)};
+}
+
+
+var Xenoi::getEtalon(int n,int t){
+	var p=reserve(n);
+	for(int i=0;i<n;++i)p[i]=i+1;
+	var x={reserve(n),reserve(n),reserve(n)};
+	x[t]=p;
+	return x;
+}
+
+
+void Xenoi::trans(var*m,int a,int b){
+	if(a==b)OFF;
+	n=(*m)[0].size();
+	if((*m)[a][n-1]==0)OFF;
+	pos=-1;
+	pos2=n;
+	for(int i=0;i<n;++i)if((*m)[a][i]>0){
+		pos=i;
+		break;
+		}
+	if(pos<0)OFF;
+	for(i=0;i<n;++i)if((*m)[b][i]>0){
+		pos2=i;
+		break;
+		}
+	if(pos2<n)if((*m)[a][pos]>(*m)[b][pos2])OFF;
+	--pos2;
+	(*m)[b][pos2]=(*m)[a][pos];
+	(*m)[a][pos]=0;
+}
+
+
+var Xenoi::XOD(var m){
+	var a,b,S={0,1,2};
+	a=rozpad(S);
+	b=rozpad(S);
+	Xenoi::trans(&m,a,b);
+	return m;
+}
+
+
+
+void Xenoi::Game(){
+	var p=-1,n=4;//количество колец 4
+	var S=Xenoi::initStart(n);
+	var E=Xenoi::getEtalon(n,1);
+	SendUp({namevar:"S";});
+	define();
+	while(S!=E){
+		S=Xenoi::XOD(S);
+		define();
+		}
+	SendUp({message:"End";});
+}
+
+
+var Xenoi::vid(var m){
+	string s="";
+	for(i=0;i<3;++i){
+		if(i)s+=" | ";
+		for(j=0;j<m[i].size();++j)s+=m[i][j];
+		}
+	return s;
+}
+
+//-------------------------------------------------------------------------
+int main(){
+	GrafGame("Xenoi::Game");
+	define();
+	getstring();
+}
+
+
+void GrafGame(var NameFunctionGame){
+	nameDll="UGraf.dll";
+	LoadDLL(nameDll);
+	SendDLL(nameDll,"new");
+	var pos=getFunctionRoot(NameFunctionGame);
+	++pos;
+	int n=createNewLaver();
+	int p=createNewProcess(n,pos);
+	runLaver(n);
+	var message=getLaverMessage(n);
+	var namevar=message["namevar"];
+	//trace(namevar);
+	var S={};
+	var p=0;
+	SendDLL(nameDll,"MARKER(0,-,,>,start)");
+	do{
+		runLaver(n);
+		message=getLaverMessage(n);
+		//trace(message);
+		List=getValuesInLaver(n,namevar);
+		if(!List.size())break;
+		if(message["message"]=="End"){
+			p=getValueInLaver(n,0,"p");
+			SendDLL(nameDll,"MARKER("+p+",-,,>,end)");
+			trace("end:"+p);
+			continue;
+			}
+		for(i=0;i<List.size();++i){
+			for(int j=0;j<S.size();++j)if(S[j]==List[i])break;
+			p=getValueInLaver(n,i,"p");
+			if(p>=0){
+				str="NET("+p+",-,,>,"+j+")";
+				SendDLL(nameDll,str);
+				//trace(str);
+				}
+			if(j<S.size()){
+				LaverOFF(n,i);
+				continue;
+				}
+			S.push_back(List[i]);
+			trace(Xenoi::vid(List[i]));
+			setValueInLaver(n,i,"p",j);
+			}
+		}while(1);
+	//trace("------------------------------");
+	//trace(S);
+	trace("------------------------------");
+	SendDLL(nameDll,"GETWAY(start,end)");
+	str=RecvDLL(nameDll);
+	trace(str);
+	trace("------------------------------");
+	a=split(",",str);
+	for(i=0;i<a.size();++i)trace(Xenoi::vid(S[a[i]]));
+}
+
+

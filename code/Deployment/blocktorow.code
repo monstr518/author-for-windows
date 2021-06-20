@@ -1,0 +1,134 @@
+// blocktorow.code
+
+
+
+
+string getzvit(var row,var otstup){
+	if(!isset(otstup))otstup=1;
+	if(typeof(otstup)!="string"){
+		n=((int)otstup);
+		otstup="";
+		while(n>0){
+			otstup+="\n";
+			--n;
+			}
+		}
+	buffer="";
+	pos=0;
+	nfirst=0;
+	while(pos<row.size()){
+		sys={rowblock:{row[pos]}};
+		++pos;
+		do{
+			x=blocktorow(&sys);
+			if(typeof(x)=="string"){
+				--pos;
+				if(nfirst)buffer+=otstup;
+				nfirst=1;
+				buffer+=x;
+				buffer+="\n";
+				break;
+				}
+			if(pos>=row.size()){
+				sys.gotovo=2;
+				++pos;
+				}else {
+				sys.rowblock.push(row[pos]);
+				++pos;
+				}
+			}while(1);
+		}
+	return buffer;
+}
+
+
+
+var blocktorow(var sys){
+	if(!isset(sys->rowparams))sys->rowparams={};
+	if(!isset(sys->gotovo))sys->gotovo=0;
+	while(sys->rowparams.size()<sys->rowblock.size()){
+		str=sys->rowblock[sys->rowparams.size()];
+		sys->rowparams.push(analizespace(str));
+		}
+	maxy=0;
+	do{
+		if(sys->gotovo==1){
+			sys->rowblock.pop_back();
+			sys->gotovo=2;
+			}
+		sum=0;
+		i=0;
+		while(i<sys->rowblock.size()){
+			params=sys->rowparams[i];
+			sum+=params[0];
+			if(maxy<params[1])maxy=params[1];
+			++i;
+			}
+		sloj=0;
+		if(sys->rowblock.size()>1){
+			sloj=(80-sum)/(sys->rowblock.size()-1);
+			if(sloj<=0)sys->gotovo=1;
+			sloj=((int)sloj);
+			if(sloj<1)sys->gotovo=1;
+			}
+		}while(sys->gotovo==1);
+	if(!sys->gotovo)return 0;
+	row={};
+	i=0;
+	while(i<sys->rowblock.size()){
+		row.push(sys->rowblock[i].split("\n"));
+		++i;
+		}
+	srow={};
+	if(sloj>30)sloj=30;
+	i=0;
+	while(i<maxy){
+		sy="";
+		gruz=0;
+		n=0;
+		while(n<row.size()){
+			if(n)sy=sy.rovno(gruz+=sloj);
+			s="";
+			if(row[n].size()>i)s=row[n][i];
+			sy+=s;
+			gruz+=sys->rowparams[n][0];
+			++n;
+			}
+		srow.push(sy);
+		++i;
+		}
+	str="";
+	i=0;
+	while(i<maxy){
+		if(i)str+="\n";
+		str+=srow[i];
+		++i;
+		}
+	return str;
+}
+
+
+
+var analizespace(var s){
+	a=0;
+	t=0;
+	b=0;
+	i=0;
+	while(i<s.length()){
+		++t;
+		if(s[i]=='\n'){
+			++a;
+			if(t>b)b=t;
+			t=0;
+			}
+		++i;
+		}
+	if(t){
+		++a;
+		if(t>b)b=t;
+		}
+	return {b,a};
+}
+
+
+// blocktorow.code	:-|

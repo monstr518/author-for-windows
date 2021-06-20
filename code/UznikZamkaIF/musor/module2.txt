@@ -1,0 +1,399 @@
+
+
+void initSYS(SYS,func){
+	(*SYS)+={vars:{},AllNamesFunction:{},Plan:{},analizeCompleate:0,Izvesno:(map)0};
+	if(typeof(func)=="string")func=getFunction(func);
+	if(typeof(func)!="function"){
+		trace("Нужно указать объект функции или её имя!");
+		return;
+		}
+	SYS->function=func;
+	SYS->AllNamesFunction=getAllNamesIzFunction(&SYS->function);
+}
+
+
+
+void Zadanie(SYS){
+	SYS->AllNames=SYS->AllNamesFunction;
+	f=&SYS->function;
+	n=f->Root();
+	n=f->Up(n);
+	while(n!=f->Root()){
+		comand=f->getComand(n);
+		ListCommands={comand};
+		getInteriorCommand(&ListCommands);
+		while(ListCommands.size()){
+			comand=ListCommands.pop();
+trace(comand);
+			typeofcomand=comand.typeof();
+			if(typeofcomand=="return"){
+				//SYS->vars={};
+				q=comand.getRowSize();
+				if(q==1){
+					x=comand.getSub({0});
+					construction=PROGRAM("#="+SYS->returnValue);
+					construction.setSub({0},x);
+					AddConstruction(SYS,construction);
+					}
+				}
+			if(typeofcomand=="="){
+				AddConstruction(SYS,comand);
+				}
+			if(typeofcomand=="function"){
+				if((string)comand.getSub({0})=="trace"){
+					ok=isPrimitiveCommand(&comand);
+					if(ok)trace(eval(comand.getSub({1})));
+					}
+				}
+			while(SYS->Plan.size()){
+				A=SYS->Plan.pop_begin();
+				eval(A);
+				}
+			}
+		n=f->Up(n);
+		}
+	SYS->analizeCompleate=1;
+}
+
+
+
+int getInteriorCommand(ListCommands,nCommand,access){
+	if(!isset(access)){
+		if(ListCommands->size()!=1)return -1;
+		nCommand=0;
+		access={};
+		getInteriorCommand(ListCommands,&nCommand,&access);
+		//if(ListCommands->size()>1)trace(ListCommands->export());
+		return;
+		}
+	do{
+		p=0;
+		comand=&(*ListCommands)[*nCommand];
+		n=comand->getRowSize(*access);
+		for(i=0;i<n;++i){
+			access->push(i);
+			p=getInteriorCommand(ListCommands,nCommand,access);
+			access->pop();
+			if(p)break;
+			}
+		comand=&(*ListCommands)[*nCommand];
+		sub=comand->getSub(*access);
+		s=sub.typeof();
+		if(s=="++." || s=="--."){
+			sub2=sub.getSub({0});
+			if(sub2.typeof()=="var"){
+				ListCommands->push_begin(sub);
+				++*nCommand;
+				comand=&(*ListCommands)[*nCommand];
+				comand->setSub(*access,sub2);
+				return 1;
+				}
+			Q=PROGRAM("#+1");
+			Q.setSub({0},sub2);
+			comand->setSub(*access,Q);
+			}
+		if(s==".++" || s==".--"){
+			sub2=sub.getSub({0});
+			if(sub2.typeof()=="var"){
+				Q=PROGRAM(s==".++"?"++#":"--#");
+				Q.setSub({0},sub2);
+				ListCommands->push(Q);
+				comand->setSub(*access,sub2);
+				}			
+			}
+		}while(p);
+	return 0;
+}
+
+
+
+bool isPrimitiveCommand(X,access,R){
+	if(!isset(access)){
+		access={};
+		return isPrimitiveCommand(X,&access,0);
+		}
+	t=X->getSub(*access).typeof();
+	if(t=="var")return R;
+	n=X->getRowSize(*access);
+	for(i=0;i<n;++i){
+		RR=0;
+		if(!i)if(t=="function")RR=1;
+		if(i==1)if(t=="." || t=="->")RR=R;
+		access->push(i);
+		if(!isPrimitiveCommand(X,access,RR))return 0;
+		access->pop();
+		}
+	return 1;
+}
+
+
+
+var getStartValueList(SYS){
+	if(SYS->isset("StartValueList"))return SYS->StartValueList;
+	if(SYS->function.getNamesStart().empty())return SYS->StartValueList={};
+	Result=systemprosto(SYS);
+	if(typeof(Result)=="vector")return Result;
+	R=systemPara(SYS);
+	if(typeof(R)=="map"){
+		Result={};
+		startNames=SYS->function.getNamesStart();
+		for(i=0;i<startNames.size();++i){
+			Result.push(R[startNames[i]]);
+			}
+		return SYS->StartValueList=Result;
+		}
+
+	return SYS->StartValueList="Неоднозначно";
+}
+
+
+var systemprosto(SYS){
+	m=Vstavka(SYS);
+	startNames=SYS->function.getNamesStart();
+	Result={};
+	for(i=0;i<startNames.size();++i)if(m.isset(startNames[i]))Result.push(m[startNames[i]]);
+	if(Result.size()==startNames.size())return SYS->StartValueList=Result;
+	return 0;
+}
+
+
+map Vstavka(SYS){
+	m=(map)0;
+	Vidomo={};
+	ok=1;
+	while(ok){
+		ok=0;
+		for(i=0;i<SYS->vars.size();++i){
+			comand=&SYS->vars[i];
+			Q=getListAllVar(*comand);
+			if(Q.size()==1 && comand->getPower()==3)if(Vidomo.indexOf(Q[0])<0){
+				nameX=comand->getSub({0});
+				X=comand->getSub({1});
+				if(nameX.typeof()!="var"){
+					nameX=comand->getSub({1});
+					X=comand->getSub({0});
+					}
+				if(nameX.typeof()=="var"){
+					Vidomo.push((string)nameX);
+					m[(string)nameX]=eval(X);
+					ok=1;
+					}
+				}
+			U=Q-Vidomo;
+			if(U.size()==1){
+//trace((string)(*comand));
+				P=question("equality",(string)(*comand),U[0]);
+				if(P.size()!=1)continue;
+				K=PROGRAM(P[0]).getSub({1});
+				Q-=U;
+				for(ii=0;ii<Q.size();++ii)ReplaceVars(&K,Q[ii],m[Q[ii]]);
+				ok=1;
+				Vidomo.push(U[0]);
+				ReplacePow(&K,{});
+				m[U[0]]=eval(K);
+				}
+			}
+		}
+	return m;
+}
+
+
+void ReplacePow(K,access){
+	Q=K->getSub(access);
+	if(Q.typeof()=="function")if("pow"==(string)Q.getSub({0})){
+		ReplacePow(&Q,{1});
+		ReplacePow(&Q,{2});
+		X=PROGRAM("Match("+"pow".export()+",#,#)");
+		X.setSub({2},Q.getSub({1}));
+		X.setSub({3},Q.getSub({2}));
+		K->setSub(access,X);
+		return;
+		}
+	n=K->getRowSize(access);
+	for(i=0;i<n;++i)ReplacePow(K,access+{i});
+}
+
+
+
+void AddConstruction(SYS,comand){
+	OptimizatorConstruction(&comand);
+	root=comand.typeof();
+	power=comand.getPower();
+	if(root=="=" && power==3){
+		nameX=comand.getSub({0});
+		X=comand.getSub({1});
+		if(nameX.typeof()!="var"){
+			nameX=comand.getSub({1});
+			X=comand.getSub({0});
+			}
+		if(nameX.typeof()=="var" && X.typeof()!="var"){
+			SYS->Izvesno[(string)nameX]=eval(X);
+			Podstanovka(SYS,(string)nameX);
+trace(SYS->vars.export());
+			return;
+			}
+		}
+	newName=nameForRename="";
+	if(root=="="){
+		nameX=comand.getSub({0});
+		X=comand.getSub({1});
+		if(nameX.typeof()!="var"){
+			nameX=comand.getSub({1});
+			X=comand.getSub({0});
+			}
+		if(nameX.typeof()=="var"){
+			nameForRename=(string)nameX;
+			newName=GeneratorUniqueName(&SYS->AllNames);
+			comand.setSub({0},PROGRAM(newName));
+			comand.setSub({1},X);
+			}
+		}
+	if(nameForRename.length())RenameNameInSystem(SYS,nameForRename,newName);
+	SYS->vars.push(comand);
+}
+
+
+
+
+void RenameNameInSystem(SYS,nameForRename,newName){
+	table={};
+	for(i=0;i<SYS->vars.size();++i)table.push(getListAllVar((SYS->vars)[i]));
+	for(i=0;i<table.size();++i)if(table[i].indexOf(nameForRename)>=0)
+		ReplaceVars(&(SYS->vars)[i],nameForRename,newName);
+}
+
+
+void Podstanovka(SYS,nameY){
+	if(typeof(nameY)!="string")nameY=(string)nameY;
+	povtorno={nameY};
+	while(povtorno.size()){
+		nameY=povtorno.pop_begin();
+		Y=SYS->Izvesno[nameY];
+		for(i=0;i<SYS->vars.size();++i){
+			pp=&(SYS->vars)[i];
+			comand=*pp;
+			ok=ReplaceVars(pp,nameY,Y);
+			if(ok){
+				comand=*pp;
+				nameX=comand.getSub({0});
+				X=comand.getSub({1});
+				if(nameX.typeof()!="var"){
+					nameX=comand.getSub({1});
+					X=comand.getSub({0});
+					}
+				if(nameX.typeof()=="var")if(isPrimitiveCommand(&X)){
+					SYS->vars.erase(i);
+					--i;
+					nameX=(string)nameX;
+					SYS->Izvesno[nameX]=eval(X);
+					povtorno.push(nameX);
+					continue;
+					}
+				One=(getListAllVar(nameX)+getListAllVar(X));
+				if(One.size()==1){
+					One=One[0];
+					P=question("equality",(string)comand,One);
+					if(P.size()!=1)continue;
+					comand=*pp=PROGRAM(P[0]);
+					X=comand.getSub({1});
+					if(X.getPower()==1){
+						SYS->vars.erase(i);
+						--i;
+						SYS->Izvesno[One]=eval(X);
+						povtorno.push(One);
+						}
+					}
+				}
+			}
+		}
+}
+
+
+
+void OptimizatorConstruction(construction){
+	root=construction->typeof();
+	if(root=="=="){
+		A=construction->getSub({0});
+		B=construction->getSub({1});
+		*construction=PROGRAM("#=#");
+		construction->setSub({0},A);
+		construction->setSub({1},B);
+		root=="=";
+		}
+	if(root=="="){
+		power=construction->getPower();
+		if(power>=3){
+			S=getListAllVar(*construction);
+			if(!S.size()){
+				P=question("compare",*construction);
+				if(P.size()==1)if(P[0]=="no")*construction=PROGRAM("OFF");
+				return;
+				}
+			if(S.size()==1 && power>3){
+				nameVar=S[0];
+				P=question("equality",(string)(*construction),nameVar);
+				if(P.size()==1)*construction=PROGRAM(P[0]);
+				return;
+				}
+			if(S.size()>1 && power>3){
+				for(i=0;i<2;++i){
+					A=construction->getSub({i});
+					if(A.getPower()>1){
+						P=question("optimize",(string)A);
+						if(P.size()==1)construction->setSub({i},PROGRAM(P[0]));
+						}
+					}
+				}
+			}
+		}
+}
+
+
+
+
+
+
+
+
+void DominoOptimizeVar(SYS,nameVar){
+	//trace(nameVar);
+	for(i=0;i<SYS->vars.size();++i){
+		comand=&SYS->vars[i];
+		root=comand->typeof();
+		if(root=="="){
+			ok=0;
+			nameX=comand->getSub({0});
+			X=comand->getSub({1});
+			if(nameX.typeof()!="var"){
+				nameX=comand->getSub({1});
+				X=comand->getSub({0});
+				}
+			if(nameX.typeof()=="var")
+			if(nameVar==(string)nameX){
+				ok=1;
+				if(X.getPower()>1){
+					P=question("optimize",(string)X);
+					if(P.size()==1){
+						ok=2;
+						X=PROGRAM(P[0]);
+						}
+					}
+				}
+			if(ok){
+				comand->setSub({0},nameX);
+				comand->setSub({1},X);
+				if(X.getPower()==1){
+					if(SYS->AllNamesFunction.indexOf((string)nameX)<0)*comand=PROGRAM("1");
+					Podstanovka(SYS,nameX,X);
+					}
+				}
+			}
+		}
+	do{
+	n=SYS->vars.indexOf(PROGRAM("1"));
+	if(n>=0){
+		SYS->vars.erase(n);
+		}
+	}while(n>=0);
+}
+

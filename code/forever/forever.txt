@@ -1,0 +1,26 @@
+// Программа для распознавания вечных циклов.
+// Находит условия, при которых функция работает в ограниченном времени.
+
+#include "code\forever\instruments.txt"
+
+
+testf(){
+	x=1;
+	while(x)++x;
+}
+
+
+void forever(namefunction){
+	f=getFunction(namefunction);
+	trace(f);
+	Obj=getMapIF(f);
+	//trace(TransleateToText(Obj));
+	excludeNotCycles(Obj);
+	trace(TransleateToText(Obj));
+	getstring();
+}
+
+
+void main(){
+	forever("testf");
+}

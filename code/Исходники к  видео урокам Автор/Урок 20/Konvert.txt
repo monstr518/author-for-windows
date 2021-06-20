@@ -1,0 +1,83 @@
+#include "code\Deployment\Deployment.txt"
+
+void initGraf(){
+	G=(graf)0;
+	G.NET(0,1,"",1,1);
+	G.NET(0,1,"",1,4);
+	G.NET(1,1,"",1,2);
+	G.NET(1,1,"",1,4);
+	G.NET(1,1,"",1,3);
+	G.NET(2,1,"",1,3);
+	G.NET(2,1,"",1,4);
+	G.NET(3,1,"",1,4);
+	GLOBALS.G=G;
+}
+
+
+void main(){
+	initGraf();
+	SYS=(map)0;
+	Deployment(&SYS,"стартовое состояние",{});
+	// Deployment(&SYS,"метод текстового описания состояния","XtoString");
+	// Deployment(&SYS,"разварачивать до первого конечного состояния");
+	// Deployment(&SYS,"включить отображение новых состояний");
+	Deployment(&SYS,"признак конечного состояния","gotovo");
+	Deployment(&SYS,"подготовка параметров к методам изменения состояния",{"paramsForTrans"});
+	Deployment(&SYS,"методы изменения состояния",{"Trans"});
+
+	Deployment(&SYS,"файл задания",getThisFileName());
+	Deployment(&SYS,"имя модели","Konvert");
+	Deployment(&SYS,"сохранять через каждых секунд",60*5);
+	
+	Deployment(&SYS,"развернуть систему");
+
+	trace("Загрузка завершина.");
+
+	List=Deployment(&SYS,"взять все финальные состояния");
+	trace("Количество возможных путей: "+List.size());
+	Deployment(&SYS,"распечатка состояний по заданному пути",List);
+	trace();
+
+	trace(
+		"На разворачивание системы ушло времени: " +
+		Deployment(&SYS,"сколько времени ушло на разворачивание?")
+		);
+
+	getstring();
+}
+
+
+
+var paramsForTrans(S){
+	v={};
+	t=10;
+	if(S->size()>0)t=(*S)[S->size()-1];
+	if(t==10){
+		for(n=0;n<5;++n)v.push({n});
+		return v;
+		}
+	G=&GLOBALS.G;
+	W=G->getNET(t,1,"",1,#);
+	for(x=0;x<W.size();++x){
+		ok=1;
+		n=W[x][0];
+		for(i=0;i<S->size()-1;++i){
+			if((*S)[i]==t && (*S)[i+1]==n)ok=0;
+			if((*S)[i+1]==t && (*S)[i]==n)ok=0;
+			}
+		if(ok)v.push({n});
+		}
+	return v;
+}
+
+
+void Trans(S,n){
+	S->push(n);
+}
+
+
+
+bool gotovo(S){
+	return S->size()>=9;
+}
+

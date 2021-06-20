@@ -1,0 +1,9 @@
+// Демонстрация приоритетов в define.
+
+void main(){
+	int i=rozpad({-3,-2,-1,0,1,2,3});
+	if(i<0)define(); else define();
+	trace(i);
+	define(-1);
+	getstring();
+}

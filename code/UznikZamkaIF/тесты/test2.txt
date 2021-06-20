@@ -1,0 +1,25 @@
+#include "code\UznikZamkaIF\master.txt"
+
+
+
+void main(){
+	nikras();
+	trace();
+	SYS=0;
+	MasterUznik(&SYS,"подопытная функция","nikras");
+	//MasterUznik(&SYS,"возвращает значение",(double)5);
+	//trace(MasterUznik(&SYS,"параметры задания"));
+	MasterUznik(&SYS,"задний ход");
+	//trace(MasterUznik(&SYS,"параметры задания"));
+
+	getstring();
+}
+
+
+var nikras(){
+	trace("1) Привет.");
+	trace("2) Мы находимся внутри функции nikras().");
+	trace("3) Пока.");
+}
+
+

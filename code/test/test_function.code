@@ -1,0 +1,24 @@
+// test_function.code
+
+
+
+
+void main(){
+	f=getFunction(getThisFunctionName());
+	if(1)OK;
+	if(1)OK;
+	if(1)OK;
+	if(1)OK;
+	if(1)OK;
+	pos=f.Next(f.Root());
+	pos=f.insertDown(pos);
+	f.setIF(pos,"1");
+	pos=f.insertDown(pos,((bool)1));
+	f.setComand(pos,"OK");
+	trace(f.toString());
+	trace(f.export());
+	getstring();
+}
+
+
+// test_function.code	:-|

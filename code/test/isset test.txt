@@ -1,0 +1,23 @@
+
+
+f(a){
+	trace("call ok!");
+	trace(isset(a));
+	if(!isset(a))trace("not set a.");
+	trace(a);
+}
+
+
+int main(){
+	f("OK");
+	trace("--------------------");
+	a=PROGRAM("x=5");
+	b=PROGRAM("x=5+2");
+	S=(set) {};
+	S.insert(a);
+	S.insert(b);
+	trace(S);
+	getstring();
+}
+
+

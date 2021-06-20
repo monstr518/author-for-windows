@@ -1,0 +1,75 @@
+void gen(){
+	if(GameObj[2][0]=="X"){
+		if(GameObj[1][0]==0){
+			if(GameObj[0][2]=="X")ok=GameObj[0][0]=="0";else {
+				if(GameObj[2][1]==0)ok=((bool)1);else {
+					if(GameObj[2][1]=="0")ok=((bool)1);else {
+						if(GameObj[0][2]=="0")ok=((bool)0);else ok=GameObj[0][0]=="0";
+						}
+					}
+				}
+			}else {
+			if(GameObj[0][1]==0){
+				if(GameObj[0][2]=="0")ok=GameObj[0][0]!="0";else {
+					if(GameObj[2][1]==0)ok=((bool)1);else ok=GameObj[1][2]!="0";
+					}
+				}else {
+				if(GameObj[0][0]=="0"){
+					if(GameObj[1][0]=="0")ok=GameObj[0][2]==0;else ok=((bool)0);
+					}else ok=((bool)1);
+				}
+			}
+		}else {
+		if(GameObj[0][0]=="0"){
+			if(GameObj[1][1]=="0")ok=GameObj[0][2]=="X";else {
+				if(GameObj[0][2]=="0"){
+					if(GameObj[2][2]=="X"){
+						if(GameObj[2][0]==0)ok=GameObj[0][1]=="X";else ok=((bool)0);
+						}else ok=((bool)1);
+					}else {
+					if(GameObj[2][1]=="X"){
+						if(GameObj[2][2]==0)ok=((bool)1);else ok=GameObj[2][0]==0;
+						}else {
+						if(GameObj[2][0]=="0")ok=GameObj[0][1]==0;else ok=GameObj[1][0]!="0";
+						}
+					}
+				}
+			}else {
+			if(GameObj[0][0]==0){
+				if(GameObj[0][1]=="0")ok=GameObj[0][2]!="0";else {
+					if(GameObj[0][1]==0){
+						if(GameObj[0][2]=="X")ok=GameObj[1][2]!="X";else {
+							if(GameObj[2][0]=="0")ok=GameObj[1][0]!="0";else {
+								if(GameObj[2][2]=="0")ok=((bool)1);else {
+									if(GameObj[2][1]==0)ok=GameObj[1][1]!="0";else {
+										if(GameObj[0][2]==0){
+											if(GameObj[1][2]=="0")ok=((bool)1);else ok=GameObj[1][0]==0;
+											}else ok=((bool)1);
+										}
+									}
+								}
+							}
+						}else {
+						if(GameObj[2][0]=="0"){
+							if(GameObj[0][2]=="0")ok=((bool)1);else {
+								if(GameObj[2][2]==0)ok=GameObj[1][0]==0;else ok=((bool)1);
+								}
+							}else ok=GameObj[2][1]!="X";
+						}
+					}
+				}else {
+				if(GameObj[2][0]=="0"){
+					if(GameObj[2][1]=="X"){
+						if(GameObj[2][2]=="0")ok=GameObj[0][2]==0;else ok=GameObj[1][1]==0;
+						}else ok=GameObj[2][1]==0;
+					}else {
+					if(GameObj[2][2]=="0")ok=GameObj[0][1]!="X";else {
+						if(GameObj[1][1]==0)ok=((bool)1);else {
+							if(GameObj[0][1]==0)ok=((bool)1);else ok=GameObj[2][1]=="X";
+							}
+						}
+					}
+				}
+			}
+		}
+}

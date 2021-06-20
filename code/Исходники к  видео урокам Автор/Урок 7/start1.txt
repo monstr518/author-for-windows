@@ -1,0 +1,16 @@
+#include <module.txt>
+
+string namefunction(a,b){
+	trace("Произошел вызов функции из стартового файла.");
+	trace("Передано параметры: a="+a+" и b="+b);
+	return "Мне плевать сколько будет (" + a + "+" + b + ").";
+}
+
+
+main(){
+	result=namefunction(5,4);
+	trace();
+	// result=runFunction(WAY+"\\module","namefunction",{5,4});
+	trace(result);
+	getstring();
+}

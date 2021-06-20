@@ -1,0 +1,63 @@
+
+Main(){
+do{
+do{
+	while(1){
+		if(A)continue 2;
+		if(B)break;
+		if(C)break 2;
+		}
+F;
+}while(2);
+}while(3);
+	Exit;
+}
+
+
+
+
+
+/*
+Main(){
+	while(1){
+		if(A)continue;
+		if(B)break;
+		if(C)break;
+		OK;
+		}
+	Exit;
+}
+
+=========>
+
+SXEMA: int Main(){
+	10:if(C);{90,100}
+	20:if(B);{80,10}
+	30:if(A);{70,20}
+	40:Exit;{60}
+	50:if(1);{30,40}
+start:	60:;{50}
+	70:;{50}
+	80:;{40}
+	90:;{40}
+	100:OK;{50}
+}
+
+=========>
+
+SXEMA: int Main(){
+	10:if(C);{110,120}
+	20:if(B);{100,10}
+	30:if(A);{90,20}
+	40:Exit;{60}
+	50:if(1);{30,40}
+start:	60:;{50}
+	70:break;{120}
+	80:break;{10}
+	90:;{50}
+	100:;{80}
+	110:;{70}
+	120:OK;{50}
+}
+
+*/

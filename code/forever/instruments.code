@@ -1,0 +1,110 @@
+// instruments.code
+
+
+
+
+var getMapIF(var functionObj){
+	table=new {f:functionObj,tableifs:((map)({})),type:"map-ifs"};
+	pos=functionObj.Root();
+	prevpos=functionObj.Next(pos);
+	if(typeof(prevpos)=="vector"){
+		table->error={cod:"badroot"};
+		return table;
+		}
+	table->tableifs[pos]={name:"root",pos:prevpos,up:{}};
+	voleus={};
+	voleus.push(&table->tableifs[pos].pos);
+	while(voleus.size()){
+		voleu=voleus.pop();
+		pos=( *voleu);
+		while(pos!=functionObj.Root()){
+			if(table->tableifs.isset(pos))break;
+			prevpos=pos;
+			pos=functionObj.Next(pos);
+			if(typeof(pos)=="vector"){
+				if(pos.size()>2){
+					table->error={cod:">2",pos:prevpos};
+					return table;
+					}
+				if(!functionObj.isIF(prevpos)){
+					table->error={cod:"notif",pos:prevpos};
+					return table;
+					}
+				table->tableifs[prevpos]={else:pos[1],name:"if",then:pos[0],up:{}};
+				voleus.push(&table->tableifs[prevpos].then);
+				voleus.push(&table->tableifs[prevpos].else);
+				pos=prevpos;
+				break;
+				}
+			}
+		( *voleu)=pos;
+		}
+	Keys=table->tableifs.getKeys();
+	i=0;
+	while(i<Keys.size()){
+		t=table->tableifs[Keys[i]];
+		if(t.name=="root")table->tableifs[t.pos].up.push(Keys[i]);else {
+			table->tableifs[t.then].up.push(Keys[i]);
+			if(t.then!=t.else)table->tableifs[t.else].up.push(Keys[i]);
+			}
+		++i;
+		}
+	return table;
+}
+
+
+
+void excludeNotCycles(var table){
+	ok=1;
+	while(ok){
+		ok=0;
+		Keys=table->tableifs.getKeys();
+		i=0;
+		while(i<Keys.size()){
+			t=table->tableifs[Keys[i]];
+			if(t.name!="if");else {if(t.then!=t.else);else {
+				if(t.then==Keys[i]){
+					table->error={cod:"tupik",pos:Keys[i]};
+					ok=0;
+					break;
+					}
+				ok=1;
+				table->tableifs.erase(Keys[i]);
+				up=table->tableifs[t.then].up;
+				up-={Keys[i]};
+				up+=t.up;
+				table->tableifs[t.then].up=((vector)((set)up));
+				j=0;
+				while(j<t.up.size()){
+					t2=table->tableifs[t.up[j]];
+					if(t2.name=="root")table->tableifs[t.up[j]].pos=t.then;
+					if(t2.name=="if"){
+						table->tableifs[t.up[j]].then=t.then;
+						table->tableifs[t.up[j]].else=t.then;
+						}
+					++j;
+					}
+				}}
+			++i;
+			}
+		}
+}
+
+
+
+string TransleateToText(var Obj){
+	if(Obj->isset("error")){
+		cod=Obj->error.cod;
+		if(cod=="badroot")return "—тартовый узел не один";
+		f=Obj->f;
+		pos=Obj->error.pos;
+		if(cod==">2")return "Ѕольше двух разветвлений из узла с командой: "+f.getCommand(pos);
+		if(cod=="notif")return "Ќе условное развервление из узла с командой: "+f.getCommand(pos);
+		if(cod=="tupik")return "”словный переход попадает в себ€ по обом веткам в узле с командой: "+f.getCommand(pos);
+		return "undefined cod error!";
+		}
+	return ((string)Obj->tableifs);
+}
+
+
+// instruments.code	:-|

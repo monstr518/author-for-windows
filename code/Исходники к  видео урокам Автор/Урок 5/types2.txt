@@ -1,0 +1,34 @@
+// Сложные типы данных
+/*
+	string
+	vector
+	set
+	map
+	interval
+	function
+	program
+*/
+
+main(){
+	int s="ABCDEFG\"H\\U";
+	trace(s);
+/*
+	trace( {1,2,3,4,"5",1} );
+	trace( (set) {1,2,3,2,"5",1} );
+
+	m={x:1,y:15};
+	m["z"] = 80;
+	trace(m);
+
+	trace( (1;57] );
+
+	f=getFunction(getThisFunctionName());
+	trace(f);
+
+	p=PROGRAM("1+1*2");
+	trace(p);
+	//trace(p.getSub({1}));
+*/
+
+	getstring();
+}

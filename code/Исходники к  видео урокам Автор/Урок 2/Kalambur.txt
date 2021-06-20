@@ -1,0 +1,23 @@
+// Программа извлекает список команд из узлов схемы алгоритма себя.
+
+main(){
+	f=getFunction(getThisFunctionName());
+	pos=f.Root();
+	activ={pos};
+	s=(set){ };
+	while(!activ.empty()){
+		pos=activ.pop_back();
+		if(!s.insert(pos))continue;
+		pos=f.Next(pos);
+		if(typeof(pos)=="vector"){
+			activ+=pos;
+			continue;
+			}else activ.push(pos);
+		}
+	s=(vector)s;
+	for(i=0;i<s.size();++i){
+		pos=s[i];
+		if(!f.isEmpty(pos))trace(f.getComand(pos));
+		}
+	getstring();
+}

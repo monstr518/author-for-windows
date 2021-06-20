@@ -1,0 +1,8 @@
+
+int main2(){
+	trace("Call function.");
+	trace("press enter for exit:");
+	getstring();
+}
+
+

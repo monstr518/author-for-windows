@@ -1,0 +1,9 @@
+
+main(){
+	waymodule=WAY+"\\instalmode";
+	include(waymodule+".txt");
+	Spirit("goinstal",{getThisFunctionName(),getThisFileName()});
+	if(!isset(name))return;
+	trace("Здравствуйте. Я "+name);
+	getstring();
+}

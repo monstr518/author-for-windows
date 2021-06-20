@@ -1,0 +1,18 @@
+
+
+void main(){
+	var pos=getFunctionRoot("f");
+	do{
+	++pos;
+	trace(pos.toString());
+	}while(!pos.isRoot());
+
+}
+
+
+void f(){
+	trace("Hellou world!!!");
+	int i=10;
+	++i;
+	trace(i);
+}

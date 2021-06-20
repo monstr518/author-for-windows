@@ -1,0 +1,233 @@
+#include "code\Deployment\Deployment.txt"
+
+//----------------------------------------------------------------------------------------------
+void main(){
+	S={game:{{0,0,0},{0,0,0},{0,0,0}},xod:1,n:0};
+	SYS=(map)0;
+	Deployment(&SYS,"стартовое состо€ние",S);
+	Deployment(&SYS,"им€ модели","KrestikiNoliki");
+	Deployment(&SYS,"врем€ ожидани€",60*15);
+	Deployment(&SYS,"номер версии",2);
+	Deployment(&SYS,"файл задани€",getThisFileName());
+	Deployment(&SYS,"метод текстового описани€ состо€ни€","toStringStan");
+	Deployment(&SYS,"признак допустимого состо€ни€","oksystem");
+	Deployment(&SYS,"метод сравнени€ двух игровых состо€ний","compareme");
+	Deployment(&SYS,"метод нагл€дного приобразовани€ системы согласно шага развити€","Correctir");
+	Deployment(&SYS,"методы изменени€ состо€ни€",{"hodit"});
+	Deployment(&SYS,"подготовка параметров к методам изменени€ состо€ни€",{"svobodno"});
+	if(!Deployment(&SYS,"развернуть систему")){
+		trace("ѕревышено врем€ ожидани€.");
+		trace("ƒл€ продолжени€ разварачивани€ системы запустите программу повторно.");
+		getstring();
+		return;
+		}
+	trace("«агрузка развЄрнутой системы игровых состо€ний завершена.");
+
+	Prorabotka(&SYS,getFunction("Diagnoz"));
+	trace("јнализ на победител€ в игре завершон.");
+	UstanovkaNETS(&SYS,getFunction("Ustanovka"),"ok");
+	trace("”становка переходов к найлутьшим состо€ни€м завершена.");
+	//printerSYS(&SYS);
+
+	n=ComputeSpaceWAYS(&SYS,"ok");
+	trace(" оличество возможных путей: "+n);
+/*
+	ComputeAllWAYS(&SYS,"ok");
+	trace("¬се возможные пути найдены.");
+	PrintSolutesCompact(&SYS);
+*/
+	getstring();
+}
+
+
+// ¬ернЄт координаты всех возможных ходаов.
+var svobodno(S){
+	p=&S->game;
+	v={};
+	for(x=0;x<3;++x)
+	for(y=0;y<3;++y)if(!(*p)[x][y])v.push({x,y});
+	return v;
+}
+
+// —делает ход с указанными координатами.
+void hodit(S,x,y){
+	S->game[x][y]=S->xod;
+	S->xod=3-S->xod;
+	++S->n;
+}
+
+
+// ¬озможен ли ход из данной комбинации?
+bool oksystem(S){
+	n=pobeda(S);
+	return !n;
+}
+
+// Ќагл€дное приобразование системы согласно шага развити€
+void Correctir(X,P){
+	if(otclonenie1(X,&P)){*X=P;return;}
+	P2=P;
+	A=verticalrepoz(P.game);
+	P2.game=A;
+	if(otclonenie1(X,&P2)){*X=P2;return;}
+	B=horizontalrepoz(P.game);
+	P2.game=B;
+	if(otclonenie1(X,&P2)){*X=P2;return;}
+	P2.game=verticalrepoz(B);
+	if(otclonenie1(X,&P2)){*X=P2;return;}
+	povorot1(&P.game);
+	if(otclonenie1(X,&P)){*X=P;return;}
+	P2=P;
+	A=verticalrepoz(P.game);
+	P2.game=A;
+	if(otclonenie1(X,&P2)){*X=P2;return;}
+	B=horizontalrepoz(P.game);
+	P2.game=B;
+	if(otclonenie1(X,&P2)){*X=P2;return;}
+	P2.game=verticalrepoz(B);
+	if(otclonenie1(X,&P2)){*X=P2;return;}
+	trace("Error!");
+}
+
+bool otclonenie1(A,B){
+	n=0;
+	for(x=0;x<3;++x)
+	for(y=0;y<3;++y)if(A->game[x][y]!=B->game[x][y])++n;
+	return n<=1;
+}
+
+// —равнение двух игровых состо€ний, учитыва€ симетрию их.
+bool compareme(A,B){
+	if(A->n!=B->n)return 0;
+	//if(A->xod!=B->xod)return 0;
+	t=B->game;
+	if(A->game==t)return 1;
+	t2=verticalrepoz(t);
+	if(A->game==t2)return 1;
+	t3=horizontalrepoz(t);
+	if(A->game==t3)return 1;
+	t4=verticalrepoz(t3);
+	if(A->game==t4)return 1;
+	povorot1(&t);
+	if(A->game==t)return 1;
+	t2=verticalrepoz(t);
+	if(A->game==t2)return 1;
+	t3=horizontalrepoz(t);
+	if(A->game==t3)return 1;
+	t4=verticalrepoz(t3);
+	if(A->game==t4)return 1;
+	return 0;
+}
+
+
+// ѕоворот матрици по главной диагонали.
+void povorot1(P){
+	Q=*P;
+	for(x=0;x<3;++x)
+	for(y=0;y<3;++y)(*P)[x][y]=Q[y][x];
+}
+
+
+// ѕоворот матрици вокруг вертикали.
+var verticalrepoz(P){
+	for(y=0;y<3;++y){
+		u=P[0][y];
+		P[0][y]=P[2][y];
+		P[2][y]=u;
+		}
+	return P;
+}
+
+
+// ѕоворот матрици вокруг горизонтали.
+var horizontalrepoz(P){
+	for(x=0;x<3;++x){
+		u=P[x][0];
+		P[x][0]=P[x][2];
+		P[x][2]=u;
+		}
+	return P;
+}
+
+
+
+// ¬ернЄт номер игрока, который победил в данной комбинации.
+// 0 - нет ни чей победы в данной комбинации.
+var pobeda(S){
+	p=&S->game;
+	for(x=0;x<3;++x){
+		a=0;
+		b=0;
+		for(y=0;y<3;++y){
+			if((*p)[x][y]==1)++a;
+			if((*p)[x][y]==2)++b;
+			}
+		if(a==3)return 1;
+		if(b==3)return 2;
+		a=0;
+		b=0;
+		for(y=0;y<3;++y){
+			if((*p)[y][x]==1)++a;
+			if((*p)[y][x]==2)++b;
+			}
+		if(a==3)return 1;
+		if(b==3)return 2;
+		}
+	a=0;
+	b=0;
+	for(x=0;x<3;++x){
+		if((*p)[x][x]==1)++a;
+		if((*p)[x][x]==2)++b;
+		}
+	if(a==3)return 1;
+	if(b==3)return 2;
+	a=0;
+	b=0;
+	for(x=0;x<3;++x){
+		if((*p)[x][2-x]==1)++a;
+		if((*p)[x][2-x]==2)++b;
+		}
+	if(a==3)return 1;
+	if(b==3)return 2;
+	return 0;
+}
+
+
+
+string toStringStan(S){
+	str="";
+	m={'.','X','0'};
+	for(y=0;y<3;++y){
+		for(x=0;x<3;++x)str+=m[S->game[y][x]];
+		str+="\n";
+		}
+	return str;
+}
+
+
+void Diagnoz(X,S){
+	if(!S.size()){
+		X->win=pobeda(X);
+		//if(X->win)X->win=3-X->win;
+		return;
+		}
+	m={0,0,0};
+	for(i=0;i<S.size();++i)m[S[i]->win]=1;
+	if(m[X->xod])X->win=X->xod; else
+	if(m[0])X->win=0; else X->win=3-X->xod;
+}
+
+
+var Ustanovka(X,S){
+	R={};
+	for(i=0;i<S.size();++i){
+		if(S[i]->win==X->win)R.push(i);
+		}
+	return R;
+}
+
+
+// 3**9=19683
+// 9!=362880
+// ¬озможных состо€ний игрового пол€ с учЄтом симетрии: 765
+//  оличество возможных игр, проход€щих по состо€ни€м с учЄтом симетрии: 26830

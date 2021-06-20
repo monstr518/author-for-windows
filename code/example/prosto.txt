@@ -1,0 +1,43 @@
+// простейшая самообучающаяся программа поиска простых чисел.
+
+void main(){
+	m={2,3,5,7,11,13};
+	trace("Введите целое положительное число:");
+	n=(int)getstring();
+	if(n<0){
+		trace("Нужно >= 0 !");
+		getstring();
+		return;
+		}
+	ok=0;
+	if(n==0 || n==1)ok=1;
+	for(i=0;i<m.size();++i){
+		if(n==m[i]){ok=1;break;}
+		if(n<m[i])break;
+		}
+	if(i==m.size()){
+		u=m[i-1];
+		oknew=0;
+		do{
+			++u;
+			uok=1;
+			for(i=0;i<m.size();++i)if(!(u%m[i])){uok=0;break;}
+			if(uok){
+				oknew=1;
+				m+={u};
+				if(u==n)ok=1;
+				}
+			}while(n>u);
+		if(oknew){
+			f=getFunction(getThisFunctionName());
+			pos=f.Root();
+			pos=f.Next(pos);
+			str="m="+m.export();
+			//trace(str);
+			f.setComand(pos,str);
+			}
+		}
+	if(ok)trace("Число "+n+" простое.");else trace("Число "+n+" не простое.");
+	trace("Нажми Enter.");
+	getstring();
+}

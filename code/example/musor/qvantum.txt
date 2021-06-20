@@ -1,0 +1,109 @@
+// Программа для роботы с квантумоми.
+// Демонстритует возможность интерпретации второго порядка.
+
+//-------------------------------------------------------------------------------------------------------
+void main(){
+	smal_interpretator("f"); // имя функции для интерпретации
+}
+
+
+void f(){
+	var t=Quantum("All")+5; // "All"  "E"  "max"  "min"
+	var m=reserve(10);
+	m[t]=t*2+10-5; // любая формула f(t);
+	trace("Result massive:");
+	trace(m.export());
+	trace("Press enter for exit:");
+	getstring();
+}
+
+
+
+
+//-------------------------------------------------------------------------------------------------------
+void smal_interpretator(string namef){
+	var pos=getFunctionRoot(namef);
+	++pos;
+	int n=createNewLaver();
+	int p=createNewProcess(n,pos);
+	string s;
+	var qvantum;
+	while(recurse(n,p,"",&s)==0){
+		str=getLaverFormul(n,p,"")+";";
+		evalLaver(n,p,str);
+		++pos;
+		setLaverPos(n,p,pos);
+		}
+	str=getLaverFormul(n,p,"")+";";
+	evalLaver(n,p,str);
+	++pos;
+	setLaverPos(n,p,pos);
+	int a=str.indexOf(" ")+1;
+	int b=str.indexOf("=");
+	string namevalue=str.substr(a,b-a);
+	qvantum=getValueInLaver(n,p,namevalue);
+	string mname,formula;
+	bool ok=0;
+	do{
+		str=getLaverFormul(n,p,"")+";";
+		evalLaver(n,p,str);
+		++pos;
+		setLaverPos(n,p,pos);
+		if(getLaverReverseFormul(n,p,"")=="#=#")
+		if(getLaverReverseFormul(n,p,"0")=="#[#]")
+		if(getLaverReverseFormul(n,p,"01")==namevalue){
+			mname=getLaverReverseFormul(n,p,"00");
+			formula=getLaverFormul(n,p,"1");
+			ok=1;
+			}
+		}while(!ok);
+	//trace({"namevalue: "+namevalue,"mname: "+mname,"formula: "+formula,"qvantum: "+qvantum});//
+	var typevalue;
+	str="setValueInLaver("+getThisLaverNumber()+","+getThisProcessNumber()+",\"typevalue\",typeof("+mname+"));";
+	evalLaver(n,p,str);
+	if(typevalue!="vector")return;
+	var size;
+	str="setValueInLaver("+getThisLaverNumber()+","+getThisProcessNumber()+",\"size\","+mname+".size());";
+	evalLaver(n,p,str);
+	formula=formula.replaceAll(namevalue,"iterator");
+	formula="result=("+formula+");";
+	//trace(formula);//
+	var iterator,result;
+	if(qvantum==Quantum("max"))iterator=size-1;
+	if(qvantum==Quantum("min"))iterator=0;
+	if(qvantum==Quantum("E") || qvantum==Quantum("All"))iterator=rozpad( [0;size).getN() );
+	if(qvantum==Quantum("E"))define();
+	eval(formula);
+	//trace(result);//
+	str=mname+"["+iterator+"]="+result+";";
+	evalLaver(n,p,str);
+	define();
+	var posend=getFunctionRoot(namef);
+	do{
+		++pos;
+		setLaverPos(n,p,pos);
+		str=getLaverFormul(n,p,"")+";";
+		evalLaver(n,p,str);
+		}while(pos!=posend);
+}
+
+
+
+int recurse(int n,int i,string s,string*str){
+	int k=0;
+	t=getLaverReverseFormul(n,i,s);
+	if(t=="Quantum"){
+		*str=s;
+		return 1;
+		}
+	bool isF=(t.indexOf("(")>=0);
+	do{
+		int p=t.indexOf("#");
+		if(p<0)return 0;
+		t=t.substr(p+1);
+		bool u=recurse(n,i,s+k,str);
+		if(u && isF)return 2;
+		if(u)return u;
+		++k;
+		}while(1);
+}

@@ -1,0 +1,77 @@
+
+
+bool isEqualeTree(A,B){
+	n=A.getRowSize();
+	if(n!=B.getRowSize())return 0;
+	if(n==0)return A==B;
+	type=A.typeof();
+	if(type!=B.typeof())return 0;
+	if(n==2)if({"+","*","||","&&","|","&","==","!="}.find(type)>=0){
+		ok=isEqualeTree(A.getSub({0}),B.getSub({0}));
+		if(ok)ok=isEqualeTree(A.getSub({1}),B.getSub({1}));
+		if(ok)return 1;
+		ok=isEqualeTree(A.getSub({0}),B.getSub({1}));
+		if(ok)ok=isEqualeTree(A.getSub({1}),B.getSub({0}));
+		return ok;
+		}
+	for(i=0;i<n;++i)if(!isEqualeTree(A.getSub({i}),B.getSub({i})))return 0;
+	return 1;
+}
+
+
+bool CommandIsMask(cod,mask,map){
+	if(isset(map))if(typeof(*map)!="map")*map=(map)0;
+	type=mask.typeof();
+	if(type=="#")return 1;
+	if(type=="var"){
+		if(isset(map)){
+			if(map->find((string)mask))return isEqualeTree((*map)[(string)mask],cod);
+			(*map)[(string)mask]=cod;
+			}
+		return 1;
+		}
+	typeCode=cod.typeof();
+	if(typeCode!=type)return 0;
+	if(type=="digit")return (mask==cod);
+	if(type=="Cast")if(mask.typeof("type")!=cod.typeof("type"))return 0;
+	//trace(type);
+	n=cod.getRowSize();
+	if(type=="function"){
+		n2=mask.getRowSize();
+		for(i=0;i<n && i<n2;++i)if(!CommandIsMask(cod.getSub({i}),mask.getSub({i}),map))return 0;
+		if(n2<n){
+			for(;i<n;++i)if(cod.getSub({i}).typeof()!="#")return 0;
+			return 1;
+			}
+		for(;i<n2;++i)if(mask.getSub({i}).typeof()!="#")return 0;
+		return 1;
+		}
+	if(n==2)if({"+","*","||","&&","|","&","==","!="}.find(type)>=0){
+		map2=(map)0;
+		ok=CommandIsMask(cod.getSub({0}),mask.getSub({0}),&map2);
+		if(ok)ok=CommandIsMask(cod.getSub({1}),mask.getSub({1}),&map2);
+		if(ok){
+			*map+=map2;
+			return 1;
+			}
+		ok=CommandIsMask(cod.getSub({0}),mask.getSub({1}),map);
+		if(ok)ok=CommandIsMask(cod.getSub({1}),mask.getSub({0}),map);
+		return ok;
+		}
+	for(i=0;i<n;++i)if(!CommandIsMask(cod.getSub({i}),mask.getSub({i}),map))return 0;
+	return 1;
+}
+
+
+
+
+void main(){
+	mask=PROGRAM("#=f(t+x,1+u)+x+u");
+	cod=PROGRAM("n=ff(10+12*p,2+1)+p*12+2");
+	map=0;
+	ok=CommandIsMask(cod,mask,&map);
+	trace(ok?"Подходит":"Неподходит");
+	trace(map.export());
+	getstring();
+}
+

@@ -1,0 +1,38 @@
+
+Main(){
+	if(count(ARGS)>1){
+		include(ARGS[1]);
+		main();
+		uninclude(ARGS[1]);
+		return;
+		}
+	string t="1234567890ABCDEFG",S={0,1,2,8},M={a:1;b:{7,{w:"tyeuir";}};};
+	var *u;
+	u=&S[3];
+	trace(*u);
+	u=&M["b"][1]["w"];
+	trace(*u);
+	trace(*&M["c"]);
+	//M["c"]=101;
+	trace(isset(&M["c"]));
+	trace(M["c"]);
+	i=10;
+	trace(outAllMemory());
+	eval("var i=0;eval(\"i=10;i+=5;\");i++;trace(i);");
+	eval("p=rozpad( [-8;15).getZ() )+10;if(p%2)OFF;if(p%3)OFF;");
+	trace(p);
+	p=[-8;15);
+	u=&p;trace(u->getZ());
+	s="1234567890ABCDEF";
+	trace(s.findOf("0A"));
+	v={4,6,2,4,6,7,65,54,24,0,41};
+	trace(v.findOf(41));
+	m={a:1;b:2;c:3;d:4;};
+	m.erase("d");
+	m.erase("b");
+	trace(m.getKeys());
+
+}
+
+
+

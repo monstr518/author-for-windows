@@ -1,0 +1,20 @@
+// master.txt
+
+#include <code\subjects\subject1.txt>
+#include <code\subjects\subject2.txt>
+#include <code\subjects\subject3.txt>
+
+
+var master(params){
+	moduleNames=getAllModules();
+	full=WAY+"\\code\\subjects\\";
+	meName=getThisFileName();
+	Result={};
+	for(i=0;i<moduleNames.size();++i)
+	if(moduleNames[i].substr(0,full.size())==full && moduleNames[i]!=meName){
+		//trace(moduleNames[i]);
+		R=runFunction(moduleNames[i],"Subject",{params});
+		if(typeof(R)=="vector")Result+=R;
+		}
+	return Result;
+}

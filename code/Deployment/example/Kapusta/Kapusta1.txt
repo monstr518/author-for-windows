@@ -1,0 +1,61 @@
+#include "code\Deployment\Deployment.txt"
+
+//----------------------------------------------------------------------------------------------
+void main(){
+	SYS=(map)0;
+	Deployment(&SYS,"стартовое состо€ние",{1,1,1,1});
+	Deployment(&SYS,"метод текстового описани€ состо€ни€","toStringStan");
+	Deployment(&SYS,"признак конечного состо€ни€","gotovo");
+	Deployment(&SYS,"признак допустимого состо€ни€","oksystem");
+	Deployment(&SYS,"методы изменени€ состо€ни€",{"perepravil"});
+	Deployment(&SYS,"подготовка параметров к методам изменени€ состо€ни€",{"chengperepravil"});
+	//Deployment(&SYS,"включить отображение новых состо€ний");
+	Deployment(&SYS,"развернуть систему");
+	Deployment(&SYS,"распечатка системы");
+	way=Deployment(&SYS,"вз€ть последовательность случайного кратчайшего пути");
+	Deployment(&SYS,"распечатка состо€ний по заданному пути",way);
+	getstring();
+}
+
+
+// ћетод дл€ подготовки параметров к методу изменени€ состо€ни€
+var chengperepravil(S){
+	v={};
+	for(i=0;i<S->size();++i)if((*S)[0]==(*S)[i])v.push({i});
+	return v;
+}
+
+
+// методы изменени€ состо€ни€
+void perepravil(S,n){
+	p=(*S)[0];
+	p=1-p;
+	(*S)[0]=p;
+	if(!n)return;
+	(*S)[n]=p;
+}
+
+
+// 1 - допустимое состо€ние, 0 - недопустимое состо€ние.
+bool oksystem(S){
+	if( (*S)[1]==(*S)[2] )if((*S)[0]!=(*S)[1])return 0;
+	if( (*S)[3]==(*S)[2] )if((*S)[0]!=(*S)[2])return 0;
+	return 1;
+}
+
+
+// ¬ернет 1, когда S=={0,0,0,0}
+bool gotovo(S){
+	for(i=0;i<S->size();++i)if((*S)[i])return 0;
+	return 1;
+}
+
+
+// ¬ернЄт строку, по которой видно, кто на каком берегу.
+string toStringStan(S){
+	m={"я"," апуста"," оза","¬олк"};
+	a={};
+	b={};
+	for(i=0;i<m.size();++i)((*S)[i]?a:b).push(m[i]);
+	return a.implode(", ").rovno(23)+" | "+b.implode(", ").rovno(23);
+}

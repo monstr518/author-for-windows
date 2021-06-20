@@ -1,0 +1,24 @@
+#include <code\test\test2.txt>
+
+
+main(){
+	x=getThisModule();
+	trace(typeof(x));
+	trace(x.getWay()+"\\"+x.getName());
+
+	trace(x.NeedSave());
+	trace(x.FindFunction("main").export());
+	trace(x.getAllFunctions().size());
+	trace("NUsers:" + x.NUsers());
+	w=x.getAllInclude();
+	if(w.size())trace(w[0].getName());
+	trace(x.getUsers().export());
+	y=x.create("code\\B.txt");
+	trace(y.getWay()+"\\"+y.getName());
+	x.add(y);
+	x.erase(y);
+
+	getstring();
+}
+
+

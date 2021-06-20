@@ -1,0 +1,101 @@
+// dataout.code
+
+
+
+
+var BuildNavorotData(var p_data,var n){
+	nameX="X";
+	if(n)nameX+=n;
+	++n;
+	type=typeof((*p_data));
+	if(type=="map"){
+		text=nameX+"=(map)0;";
+		keys=p_data->getKeys();
+		i=0;
+		for(;i<keys.size();++i){
+			key=keys[i];
+			one=getPrimitiveData(&(*p_data)[key],n);
+			if(typeof(one)=="vector"){
+				text+=one[0]+";";
+				one=one[1];
+				}
+			text+=nameX+"["+key.export()+"]="+one+";";
+			}
+		}
+	if(type=="set"){
+		text=nameX+"=(set)0;";
+		i=0;
+		for(;i<p_data->size();++i){
+			A=(*p_data)[i];
+			one=getPrimitiveData(&A,n);
+			if(typeof(one)=="vector"){
+				text+=one[0]+";";
+				one=one[1];
+				}
+			text+=nameX+".insert("+one+");";
+			}
+		}
+	if(type=="vector"){
+		text=nameX+"={};";
+		i=0;
+		for(;i<p_data->size();++i){
+			A=(*p_data)[i];
+			one=getPrimitiveData(&A,n);
+			if(typeof(one)=="vector"){
+				text+=one[0]+";";
+				one=one[1];
+				}
+			text+=nameX+".push("+one+");";
+			}
+		}
+	if(type=="graph"){
+		text=nameX+"=(graph)0;";
+		text+=p_data->toString(nameX);
+		}
+	return {text,nameX};
+}
+
+
+
+var getPrimitiveData(var p_data,var n){
+	type=typeof((*p_data));
+	if({"void","bool","int"}.in(type))return ((string)(*p_data));
+	if({"float","double","digit"}.in(type)){
+		X=eval(((string)(*p_data)));
+		if(typeof(X)==type)return ((string)(*p_data));else return "("+type+")"+(*p_data);
+		}
+	if(type=="char")return "'"+((*p_data)=='\\'?"\\\\":(*p_data))+"'";
+	if(type=="string")return p_data->export();
+	if(type=="vector"){
+		X=eval(p_data->export());
+		if(X==(*p_data))return p_data->export();
+		}
+	if(type=="set"){
+		X=eval("(set)"+p_data->export());
+		if(X==(*p_data))return "(set)"+p_data->export();
+		}
+	if(type=="map"){
+		X=eval(p_data->export());
+		if(X==(*p_data))return p_data->export();
+		}
+	if(type=="program"){
+		text=((string)(*p_data)).export();
+		text="PROGRAM("+text+")";
+		return text;
+		}
+	return BuildNavorotData(p_data,n);
+}
+
+
+
+var dataout(var data){
+	text=getPrimitiveData(&data,0);
+	if(typeof(text)=="string")text="return "+text;
+	if(typeof(text)=="vector")text=text[0]+"return "+text[1];
+	F=((function)0);
+	F.import(PROGRAM(text));
+	return F;
+}
+
+
+// dataout.code	:-|

@@ -1,0 +1,46 @@
+// программа создаёт обект и пользуетса им.
+
+
+class User{
+	int Nuser;
+	var m;
+	User(int);
+	~User();
+	void traceme();
+	string toString();
+};
+
+
+User::User(int i){
+	this->Nuser=i;
+	int t=15;
+	this->m=reserve(t);
+	i=rozpad([0;t).getN());
+	this->m[i]=2*i+1;
+	define();
+}
+
+
+void User::traceme(){
+	trace(this->m);
+}
+
+
+User::~User(){
+	trace("call destructor");
+}
+
+
+string User::toString(){
+	var t=this->m;
+	return t.export();
+}
+
+
+void main(){
+	User* U=new User(5);
+	U->traceme();
+	trace(U->toString());
+	delete U;
+}
+

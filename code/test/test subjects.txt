@@ -1,0 +1,31 @@
+#include "subjects\subject1.txt"
+
+
+
+int main(){
+	problem={
+		RowA:{1,2,51};
+		RowB:{15,20};
+		};
+	var result=Subject(problem);
+	if(typeof(result)=="vector"){
+		if(result.size()==0){
+			trace("cen not find result for this problem.");
+			getstring();
+			return;
+			}
+		}else{
+		trace(result);
+		getstring();
+		return;
+		}
+	line="-----------------------------------------------------------------------";
+	trace(line);
+	for(int i=0;i<result.size();++i){
+		//trace((string)PROGRAM(result[i]));
+		trace(result[i]);
+		trace(line);
+		}
+	getstring();
+}
+

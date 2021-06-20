@@ -1,0 +1,38 @@
+
+var fact(n){
+	if(n<=1)return (digit)1;
+	return fact(n-1)*n;
+}
+
+
+var Pow(x,n){
+	t=(digit)1;
+	for(i=0;i<n;++i)t*=x;
+	return t;
+}
+
+void main(){
+	x=(digit)"532897432698.48093230403431";
+	y=(digit)"111111111111.11111111111112";
+	trace((string)x + " + ");
+	trace((string)y + " = ");
+	trace(x+y);
+/*
+	x.setAccuracy(100);
+	trace(x/3);
+	x/=3;
+	x.round(97);
+	trace(x);
+	
+/*
+	x=4; //3000;
+	trace((string)x+"! = "+fact(x));
+	x=2;
+	y=8;//1000;
+	trace((string)x+"**"+y+" = "+Pow(x,y));
+	x=(digit)5;
+	y=(digit)7;
+	trace((string)x+x.equale(y)+y);
+*/
+	getstring();
+}

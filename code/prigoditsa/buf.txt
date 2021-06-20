@@ -1,0 +1,124 @@
+#include <maska.txt>
+
+
+var buffer(command,number,data){
+	if(command=="list"){
+		R={};
+		mask=PROGRAM("if(a==n)");
+		f=getFunction(getThisFunctionName());
+		ids=f.getIDs();
+		for(i=0;i<ids.size();++i){
+			table=0;
+			ok=CommandIsMask(f.getCommand(ids[i]),mask,&table);
+			if(!ok)continue;
+			ok=0;
+			if((string)table.a=="number")ok=table.n;
+			if((string)table.n=="number")ok=table.a;
+			if(typeof(ok)=="int")continue;
+			R.push(eval(ok));
+			}
+		return R;
+		}
+	if(command=="add"){
+		f=getFunction(getThisFunctionName());
+		n=f.run("list").max();
+		if(!isset(n))n=0;
+		++n;
+		pos=f.Root();
+		pos=f.insertUp(pos);
+		namevar="X";
+		f.setIF(pos,"number=="+n);
+		pos=f.insertDown(pos,0);
+		type=typeof(number);
+		if(type=="vector" || type=="map")f.setCommand(pos,namevar+"="+number.export());
+		if(type=="graf"){
+			namevar="G";
+			pos=f.insertDown(pos,0);
+			f.setCommand(pos,namevar+"=(graf)0");
+			f2=PROGRAM(number.export(namevar)).toFunction();
+			pos=f.insertDown(pos);
+			f.insertSub(pos,f2);
+			}
+		pos=f.insertDown(pos,0);
+		f.setCommand(pos,"return "+namevar);
+		return n;
+		}
+	if(command=="delete"){
+		if(typeof(number)!="int")return;
+		mask=PROGRAM("if(a=="+number+")");
+		f=getFunction(getThisFunctionName());
+		ids=f.getIDs();
+		ok2=0;
+		for(i=0;i<ids.size();++i){
+			table=0;
+			ok=CommandIsMask(f.getCommand(ids[i]),mask,&table);
+			if(!ok)continue;
+			if((string)table.a=="number"){ok2=1;break;}
+			}
+		if(!ok2)return;
+		f.terminateIF(ids[i]);
+		return;
+		}
+	if(command=="set"){
+		f=getFunction(getThisFunctionName());
+		f.run("delete",number);
+		f.run("add",data);
+		return;
+		}
+	if(command!="get")return;
+	if(number==1){
+		G=(graf)0;
+		G.MARKER(0,1,"is",1,"type");
+		G.MARKER(1,1,"is",1,"цифра");
+		G.MARKER(2,1,"is",1,"строка");
+		G.MARKER(2,1,"is",1,"текст");
+		G.MARKER(2,1,"name",1,"string");
+		G.MARKER(3,1,"is",1,"множество");
+		G.MARKER(3,1,"name",1,"vector");
+		G.MARKER(3,1,"свойство",1,"уникальное");
+		G.MARKER(4,1,"is",1,"пустота");
+		G.MARKER(4,1,"name",1,"void");
+		G.MARKER(5,1,"is",1,"ассоциация");
+		G.MARKER(5,1,"name",1,"map");
+		G.MARKER(6,1,"is",1,"команда");
+		G.MARKER(6,1,"name",1,"program");
+		G.MARKER(7,1,"is",1,"функция");
+		G.MARKER(7,1,"name",1,"function");
+		G.MARKER(8,1,"is",1,"граф");
+		G.MARKER(8,1,"name",1,"graf");
+		G.MARKER(8,1,"свойство",1,"дерево");
+		G.NET(0,1,"",0,1);
+		G.NET(0,1,"",0,2);
+		G.NET(0,1,"",0,3);
+		G.NET(0,1,"",0,4);
+		G.NET(0,1,"",0,5);
+		G.NET(0,1,"",0,6);
+		G.NET(0,1,"",0,7);
+		G.NET(0,1,"",0,8);
+		G.MARKER(10,1,"name",1,"int");
+		G.MARKER(11,1,"name",1,"float");
+		G.MARKER(12,1,"name",1,"double");
+		G.MARKER(13,1,"name",1,"digit");
+		G.NET(1,1,"",0,10);
+		G.NET(1,1,"",0,11);
+		G.NET(1,1,"",0,12);
+		G.NET(1,1,"",0,13);
+		G.MARKER(20,1,"is",1,"массив");
+		G.MARKER(21,1,"is",1,"список");
+		G.MARKER(22,1,"is",1,"очередь");
+		G.MARKER(23,1,"is",1,"стек");
+		G.NET(3,1,"",0,20);
+		G.NET(3,1,"",0,21);
+		G.NET(3,1,"",0,22);
+		G.NET(3,1,"",0,23);
+		return G;
+		}
+}
+
+
+void main(){
+	X=buffer("get",buffer("list")[#]);
+	trace(X.export());
+	buffer("set",1,{1,4,7,6,8,90,12});
+	getstring();
+}

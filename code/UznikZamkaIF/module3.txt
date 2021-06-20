@@ -1,0 +1,43 @@
+// Методы для решения систем уравнений.
+
+var getStartValueList(SYS){
+	if(SYS->isset("StartValueList"))return SYS->StartValueList;
+	if(SYS->function.getNamesStart().empty())return SYS->StartValueList={};
+	if(SYS->FineData.size()==1){
+		SYS->activeN=0;
+		Result=SborkaFor(SYS,SYS->function.getNamesStart());
+		if(typeof(Result)=="vector")return SYS->StartValueList=Result;
+		Result=systemPara(SYS);
+		if(typeof(Result)=="map"){
+			SYS->Izvesno+=Result;
+			Result=SborkaFor(SYS,SYS->function.getNamesStart());
+			if(typeof(Result)=="vector")return SYS->StartValueList=Result;
+			}
+		}
+	return SYS->StartValueList="Неоднозначно";
+}
+
+
+vector SborkaFor(SYS,S){
+	Result={};
+	for(i=0;i<S.size();++i){
+		if(!SYS->FineData[SYS->activeN].Izvesno.isset(S[i]))return 0;
+		Result.push(SYS->FineData[SYS->activeN].Izvesno[S[i]]);
+		}
+	return Result;
+}
+
+
+
+
+var systemPara(SYS){
+	UniqueSystem=SYS->vars;
+	//trace(UniqueSystem.export());
+	sustem=0;
+	SustemMaster(&sustem,"задать систему уравнений",UniqueSystem);
+	SustemMaster(&sustem,"решить");
+	return SustemMaster(&sustem,"взять известные значения");
+}
+
+
+

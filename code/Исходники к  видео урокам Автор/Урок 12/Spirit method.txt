@@ -1,0 +1,29 @@
+
+void meMethod(namef){
+	f=getFunction(namef);
+	pos=f.Root();
+	pos=f.Next(pos);
+	pos=f.Next(pos);
+	if(f.isBodyIF(pos)){
+		n=(int)(string)f.getCommand(pos).getSub({0});
+		f.terminateIF(pos,!(bool)n);
+		}
+}
+
+
+main(){
+	Spirit("meMethod",getThisFunctionName());
+	if(0){
+		name="Коля";
+		age=20;
+		password="antilopa";
+		}else{
+		name="Юля";
+		age=25;
+		password="anakonda";
+		}
+	trace("Меня зовут "+name);
+	trace("Мне "+age+" лет");
+	trace("Мой пароль: "+password);
+	getstring();
+}

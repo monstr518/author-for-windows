@@ -1,0 +1,17 @@
+// sustem.code
+
+
+
+
+void main(){
+	trace("Welcome in lenguage Author!");
+	trace("Please read file: out.html.");
+	echo("Ёто ваш первый запуск €зыка јвтор. ѕоздравл€ю.<br/>");
+	echo("ƒл€ запуска файла с кодом программы перетащите его на файл author.exe.<br/>");
+	echo("язык запоминает последний запущенный файл и вызывает его при запуске без параметров.<br/>");
+	trace("Press enter for quit.");
+	getstring();
+}
+
+
+// sustem.code	:-|

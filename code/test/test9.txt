@@ -1,0 +1,24 @@
+
+f(a){
+	trace(a);
+}
+
+int main(){
+
+	var f={w:54;u:98;h:{7,3,5,9,4}};
+	a={p:&f;x:100;z:50;m:{t:5}};
+	v=&a.p->h[2];
+	*v=100;
+	trace(f);
+
+	x=new {q:15,v:0};
+	trace(*&x->q);
+	s="0123456789";
+	s[5]='!';
+	w=&s;
+	trace(w->export());
+	f("OK!!!");
+	getstring();
+}
+
+

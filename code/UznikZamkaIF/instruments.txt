@@ -1,0 +1,77 @@
+
+
+
+var inteligentCompareProgs(A,findProgram){
+	if(typeof(findProgram)=="string")findProgram=PROGRAM(findProgram);
+	List={};
+	if(typeof(findProgram)!="program")return List;
+	t=A.typeof();
+	if(t=="="){
+		X=PROGRAM("#==#");
+		X.setSub({0},A.getSub({0}));
+		X.setSub({1},A.getSub({1}));
+		A=X;
+		}
+	ok=compareProgsStrogo(A,findProgram,&List);
+	if(ok)return List;
+	t=findProgram.typeof();
+	semetry=(t=="==" || t=="!=");
+	if(!semetry)return {};
+	X=findProgram.getSub({0});
+	Y=findProgram.getSub({1});
+	findProgram.setSub({1},X);
+	findProgram.setSub({0},Y);
+	ok=compareProgsStrogo(A,findProgram,&List);
+	if(!ok)return {};
+	List.revers();
+	return List;
+}
+
+
+
+bool compareProgsStrogo(programA,findProgram,List){
+	*List={};
+	access={};
+	Limits={};
+	R=0;
+	while(1){
+		grani=programA.getRowSize(access);
+		pbn=findProgram.getRowSize(access);
+		pa=programA.typeof(access);
+		pb=findProgram.typeof(access);
+		if(pb!="#"){
+			if(grani!=pbn)break;
+			}
+		Limits.push(grani);
+		start=-1;
+		if(pb=="#"){
+			List->push(programA.getSub(access));
+			start=grani;
+			}else{
+			if(pa!=pb)return 0;
+			if(pa=="var"){
+				if(programA.getSub(access)!=findProgram.getSub(access))return 0;
+				}
+			}
+		access.push(start);
+		povtor=1;
+		while(povtor){
+			if(access.empty())break;
+			povtor=0;
+			p=access[access.size()-1];
+			++p;
+			if(p>=Limits[Limits.size()-1]){
+				access.pop_back();
+				Limits.pop_back();
+				povtor=1;
+				}
+			}
+		if(povtor){
+			R=1;
+			break;
+			}
+		access[access.size()-1]=p;
+		}
+	return R;
+}
+

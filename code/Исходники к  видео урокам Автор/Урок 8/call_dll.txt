@@ -1,0 +1,10 @@
+// программа подключает test.dll и вызывает его хелп строку.
+
+void main(){
+	LoadDLL("test.dll");
+	SendDLL("test.dll","HELP");
+	trace(Recv1DLL("test.dll"));
+	trace(DLLS);
+	unLoadDLL("test.dll");
+	getstring();
+}

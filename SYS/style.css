@@ -1,0 +1,16 @@
+body {
+	font: normal 16px Arial, Sans-serif;
+	color: #c0c0c0;
+	background-color:#000000;
+}
+
+.center{text-align:center}
+
+.red{color: #D00000;}
+.yellow{color: #F0F000;}
+.white{color: #F0F0F0;}
+.green{color: #00F000;}
+.blue{color: #0000F0;}
+.normal{color: #00F0F0;}
+.fiolet{color: #F000F0;}
+// text-indent: 20px; /* Отступ первой строки в пикселах */

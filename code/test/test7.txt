@@ -1,0 +1,19 @@
+
+int main(){
+	if(ControlOFF()){
+		trace("OK");
+		OFF;
+		trace("NoPROBLEM");
+		}
+	ClearPsetOFF();
+	if(ControlOFF()){
+		trace("OK");
+		OFF;
+		trace("NoPROBLEM");
+		}
+	ClearPsetOFF();
+	trace("press enter for exit:");
+	getstring();
+}
+
+

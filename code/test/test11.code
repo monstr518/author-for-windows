@@ -1,0 +1,32 @@
+// test11.code
+
+
+
+
+var f6532786374(){
+	trace("call:"+getThisFunctionName());
+	return "Helloy!";
+}
+
+
+
+var f904397452847583(var str){
+	trace("str=="+str);
+	trace("call:"+getThisFunctionName());
+	return "Helloy! "+str;
+}
+
+
+
+int main(){
+	S=getAllModuleFunctions(getThisFileName());
+	i=0;
+	while(i<S.size()){
+		if(S[i]!=getThisFunctionName())trace(runFunction(getThisFileName(),S[i],{"paramsOK"}));
+		++i;
+		}
+	getstring();
+}
+
+
+// test11.code	:-|

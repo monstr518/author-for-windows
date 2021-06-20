@@ -1,0 +1,28 @@
+// sustem.code
+
+#include <code\UznikZamkaIF\smodule1.txt>
+
+
+
+var SustemMaster(var SYS,var comand,var param1){
+	nabor={"задать систему уравнений","взять систему уравнений","решить","взять известные значения","сколько ушло секунд?","сколько ушло времени?","взять отчёт"};
+	cheng=nabor.indexOf(comand);
+	if(cheng==0)initSustemEquations(SYS,param1);
+	if(cheng==1)return SYS->sustem;
+	if(cheng==2)Work(SYS);
+	if(cheng==3){
+		if(!SYS->isset("ValuesTable"))return ((map)0);
+		return SYS->ValuesTable;
+		}
+	if(cheng==4)return SYS->endTime-SYS->startTime;
+	if(cheng==5)return timeFormat(SustemMaster(SYS,nabor[4]));
+	if(cheng==6){
+		s="Система уравнений: "+SustemMaster(SYS,nabor[1]).export()+"\n";
+		s+="Решение: "+SustemMaster(SYS,nabor[3])+"\n";
+		s+="Затрачено времени: "+SustemMaster(SYS,nabor[5]);
+		return s;
+		}
+}
+
+
+// sustem.code	:-|

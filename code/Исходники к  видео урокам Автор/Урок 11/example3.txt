@@ -1,0 +1,21 @@
+
+void Defined(n,params){
+	for(i=0;i<params.size();++i){
+		massiv=getValuesInLaver(n,params[i]);
+		setValueInLaver(n,0,params[i],massiv);
+		}
+	nalter=getVariantov(n);
+	for(i=1;i<nalter;++i)LaverOFF(n,i);
+}
+
+
+void main(){
+	m={1,3,5,7,9};
+	trace(m.export());
+	m=rozpad(m);
+	m+=10;
+	trace(m);
+	define( 0, "Defined", {"m"} );
+	trace(m.export());
+	getstring();
+}

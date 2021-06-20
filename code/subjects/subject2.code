@@ -1,0 +1,162 @@
+// subject2.code
+
+#include <code\instruments\instruments1.txt>
+
+
+
+var findPoProshce(var conditions){
+	skladnosti={};
+	i=0;
+	for(;i<conditions.size();++i){
+		proga=0;
+		proga=PROGRAM(conditions[i]);
+		n=0;
+		if(typeof(proga)=="program")n=proga.getPower();
+		skladnosti.push(n);
+		}
+	p=0;
+	i=1;
+	for(;i<conditions.size();++i)if(skladnosti[p]>skladnosti[i])p=i;
+	return conditions[p];
+}
+
+
+
+var getCondition(var R,var nameV,var name){
+	conditions={};
+	t=0;
+	while(t<R.size()){
+		if(R[t].find(nameV)>=0)conditions.push(R[t]);
+		++t;
+		}
+	if(conditions.empty())return "pusto!";
+	condition=findPoProshce(conditions);
+	condition=PROGRAM(condition);
+	ReplaceVars(&condition,nameV,name);
+	return condition;
+}
+
+
+
+var getMethod(var table,var methods,var j){
+	List={};
+	i=0;
+	for(;i<table.size();++i){
+		if(table[i].indexOf(methods[j])<0)List+={table[i]};
+		}
+	Obshce={};
+	i=0;
+	for(;i<methods.size();++i){
+		ok=1;
+		t=0;
+		for(;t<List.size();++t)if(List[t].indexOf(methods[i])<0)ok=0;
+		if(ok)Obshce+={methods[i]};
+		}
+	if(!Obshce.size())return "pusto!";
+	method=findPoProshce(Obshce);
+	return method;
+}
+
+
+
+var Subject(var params){
+	if(params=="help"||params=="interface")return "{inputRow:{},outputRow:{},names:{input:\"x\"}}";
+	if(!(params.find("inputRow")&&params.find("outputRow")))return "see interface";
+	var Results={};
+	name="x";
+	if(params.find("names")){if(params.names.find("input"))name=params.names.input;}
+	methods=((set)({}));
+	table={};
+	i=0;
+	while(i<params.inputRow.size()&&i<params.outputRow.size()){
+		problem={input:params.inputRow[i],name:name,output:params.outputRow[i]};
+		R=master(problem);
+		table+={R};
+		methods+=R;
+		++i;
+		}
+	methods=((vector)methods);
+	prioritet={};
+	i=0;
+	while(i<methods.size()){
+		n=0;
+		j=0;
+		while(j<table.size()){
+			if(table[j].indexOf(methods[i])>=0)++n;
+			++j;
+			}
+		prioritet.push(n);
+		++i;
+		}
+	j=0;
+	i=1;
+	while(i<methods.size()){
+		if(prioritet[i]>prioritet[j])j=i;
+		++i;
+		}
+	if(prioritet[j]==table.size()){
+		i=0;
+		while(i<methods.size()){
+			if(prioritet[i]==table.size()){
+				str=methods[i];
+				if(str!=name)str=name+"="+str;
+				Results.push(str);
+				}
+			++i;
+			}
+		return Results;
+		}
+	problem={RowA:{},RowB:{}};
+	i=0;
+	while(i<table.size()){
+		if(table[i].indexOf(methods[j])>=0)problem.RowA+={params.inputRow[i]};else problem.RowB+={params.inputRow[i]};
+		++i;
+		}
+	R=master(problem);
+	if(methods[j]==name){
+		condition=getCondition(R,"B",name);
+		if(condition=="pusto!")return Results;
+		condition="if("+condition+")";
+		method=getMethod(table,methods,j);
+		if(method=="pusto!")return Results;
+		Results.push(condition+name+"="+method+";");
+		return Results;
+		}
+	condition=getCondition(R,"A",name);
+	if(condition=="pusto!")return Results;
+	method=methods[j];
+	method2=getMethod(table,methods,j);
+	if(method2=="pusto!"){
+		problem={inputRow:{},names:{input:name},outputRow:{}};
+		i=0;
+		while(i<table.size()){
+			if(table[i].indexOf(methods[j])<0){
+				problem.inputRow+={params.inputRow[i]};
+				problem.outputRow+={params.outputRow[i]};
+				}
+			++i;
+			}
+		R=master(problem);
+		if(R.size())method2=findPoProshce(R);
+		}
+	if(method2=="pusto!")return Results;
+	proga=PROGRAM(method2);
+	if(proga.isProsto()){
+		method3=method2;
+		if(proga.typeof()=="=")method3=proga.getSub({1});
+		str=name+"="+condition+"?"+method+":"+method3+";";
+		Results.push(str);
+		}
+	condition="if("+condition+")";
+	proga1=PROGRAM(method);
+	if(proga1.typeof()!="=")method=name+"="+method;
+	str=condition+method+";";
+	if(proga.typeof()!="=")method2=name+"="+method2;
+	if(method2.substr(method2.size()-1,1)!=";")method2+=";";
+	str+=" else "+method2;
+	Results.push(str);
+	return Results;
+}
+
+
+// subject2.code	:-|

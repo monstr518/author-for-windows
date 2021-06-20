@@ -1,0 +1,194 @@
+// module2.code
+
+
+
+
+var GetNumberUnitMarkerFinal(var SYS){
+	nets=SYS->G.getMARKER(# ,0,"",0,"FINISH");
+	if(nets.size())return nets[0][0];
+	return "Íåò FINISHà!";
+}
+
+
+
+var WhotListWaysToX(var SYS,var X){
+	G= &SYS->G;
+	ways={};
+	FinderWaysToX(&ways,G,{},0,X);
+	return ways;
+}
+
+
+
+void FinderWaysToX(var ways,var G,var way,var A,var X){
+	t=0;
+	for(;t<way.size();++t)if(way[t]==A)return;
+	way.push(A);
+	if(A==X){
+		ways->push(way);
+		return;
+		}
+	W=G->getNET(A,0,# ,1,# );
+	t=0;
+	for(;t<W.size();++t){
+		FinderWaysToX(ways,G,way,W[t][1],X);
+		}
+}
+
+
+
+var WhotListProxoditPoX(var SYS,var X){
+	G= &SYS->G;
+	ways={};
+	FinderWaysProxoditPoX(&ways,G,{},0,X,0);
+	return ways;
+}
+
+
+
+void FinderWaysProxoditPoX(var ways,var G,var way,var A,var X,var ok){
+	way.push(A);
+	if(A==X)ok=1;
+	W=G->getNET(A,0,# ,1,# );
+	t=0;
+	for(;t<W.size();++t){
+		FinderWaysProxoditPoX(ways,G,way,W[t][1],X,ok);
+		}
+	if( !t&&ok)ways->push(way);
+}
+
+
+
+var getAllObjektsForStep(var SYS,var nStep){
+	if(!nStep)return {0};
+	G= &SYS->G;
+	List={0};
+	Level=0;
+	while(1){
+		S=((set)0);
+		i=0;
+		for(;i<List.length();++i){
+			nets=G->getNET(List[i],0,"",1,# );
+			j=0;
+			for(;j<nets.length();++j)S.insert(nets[j][0]);
+			}
+		List=((vector)S);
+		++Level;
+		if(Level>=nStep)break;
+		}
+	return List;
+}
+
+
+
+var getStringObjects(var SYS,var List){
+	row={};
+	i=0;
+	for(;i<List.length();++i){
+		str="";
+		X= &SYS->m[List[i]];
+		if(isset(SYS->functions.toString))str=SYS->functions.toString.run(X);else str=getAuthorForm(X);
+		row.push(str);
+		}
+	formatZvitov=0;
+	if(isset(SYS->formatZvitov))formatZvitov=SYS->formatZvitov;
+	if(formatZvitov)return getzvit(row);
+	str="";
+	i=0;
+	for(;i<row.length();++i){
+		if(i)str+="\n";
+		str+=row[i];
+		}
+	return str;
+}
+
+
+
+int computeCountAllShotWays(var SYS){
+	FindWAYS(SYS);
+	if(!isset(SYS->tableWAY))return 0;
+	G= &SYS->G;
+	table= &SYS->tableWAY;
+	Xmap=((map)0);
+	units={0};
+	Xmap[0]=1;
+	pos=2;
+	countA=1;
+	countB=0;
+	while(units.size()){
+		n=units.pop_begin();
+		nws=Xmap[n];
+		W=G->getNET(n,0,# ,1,# );
+		next={};
+		t=0;
+		for(;t<W.size();++t)next.push(W[t][1]);
+		next=((vector)((set)next));
+		t=0;
+		for(;t<next.size();++t){
+			k=next[t];
+			if(isset((*table)[k])){if((*table)[k]==pos){
+				s=nws;
+				if(Xmap.isset(k))s+=Xmap[k];
+				Xmap[k]=s;
+				if(units.findOf(k)>=0)continue;
+				units.push(k);
+				++countB;
+				}}
+			}
+		--countA;
+		if(!countA){
+			++pos;
+			countA=countB;
+			countB=0;
+			}
+		}
+	return nws;
+}
+
+
+
+var GetParametersForWay(var SYS,var way){
+	R={};
+	i=1;
+	for(;i<way.size();++i){
+		X= &SYS->m[way[i-1]];
+		Q= &SYS->m[way[i]];
+		ok=0;
+		t=0;
+		for(;t<SYS->functions.methods.size();++t){
+			methodX=SYS->functions.parameters[t];
+			args=methodX.run(X);
+			methodX=SYS->functions.methods[t];
+			j=0;
+			for(;j<args.size();++j){
+				Y=( *X);
+				methodX.run1({&Y}+args[j]);
+				if(( *Y)==( *Q)){
+					R.push({t}+args[j]);
+					ok=1;
+					break 2;
+					}
+				}
+			}
+		if(!ok){
+			R.push("Error:"+(i-1)+"->");
+			}
+		}
+	return R;
+}
+
+
+
+var getAllFinalSYS(var SYS){
+	v={};
+	nets=SYS->G.getMARKER(# ,0,"",0,"FINISH");
+	i=0;
+	while(i<nets.size()){
+		v.push(nets[i][0]);
+		++i;
+		}
+	return v;
+}
+
+
+// module2.code	:-|

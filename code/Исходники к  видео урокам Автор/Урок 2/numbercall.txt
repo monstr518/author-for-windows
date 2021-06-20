@@ -1,0 +1,12 @@
+// программа подщёта количества собственных запусков.
+
+void main(){
+	i=0;
+	f=getFunction(getThisFunctionName()); // "main"
+	pos=f.Root(); // Узел НачалоКонец
+	pos=f.Next(pos);
+	++i;
+	trace("Количество вызовов данной функции: "+i);
+	f.setComand(pos,"i="+i);
+	getstring();
+}

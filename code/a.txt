@@ -1,0 +1,41 @@
+
+
+void main(){
+/*
+	f = function (a,b,...) {
+		n=10;
+		trace("OK");
+		(...)=>{trace(arguments.export());}(1,2,3);
+		(...)=>{trace(arguments.export());}.run1({1,2,3,4});
+		(...)=>{trace(arguments.export());}.run(1,2,3,4,5);
+		return n;
+	};
+	trace(f.run());
+	trace(f.exportText());
+	X=PROGRAM("()=>{a=1;b=0;}");
+	trace(X.getSub({0,1}));
+	t=f.toTerm();
+	trace(t);
+*/
+/*
+	X=Ajax({url:"google.com",method:"GET",context:""});
+	trace(X[0]);
+	trace("-------------");
+	trace(X[1]);
+	trace("-------------");
+	trace(X[2]);
+*/
+
+	text=readFile("code\\json1.json");
+	trace(text);
+	result = JSON("parse",text);
+	trace(result.export());
+	result.meLine = {"OK","OK2","OK3",{}};
+	text=JSON("stringify",result);
+	trace(text);
+
+
+
+}
+
+
