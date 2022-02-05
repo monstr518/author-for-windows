@@ -339,7 +339,8 @@ class CallFunc :public Sufix{
 	void JSON(V_CVARIANT&VCV,CVARIANT*&V);
 	
 
-	void interval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
+	void forchar(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
+	void forinterval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void forstring(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void forset(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);

@@ -732,6 +732,7 @@ string Interval::toString(){
 	s+=";";
 	s+=B->toString();
 	s+=b?"]":")";
+	if(dynamic_cast<Cast*>(up))s = "("+s+")";
 	return s;
 }
 

@@ -3,7 +3,7 @@
 
 //--------------------------------------------------------------------------------------------------
 CInterval::CInterval(){A=B=a=b=0;}
-CInterval::CInterval(bool aa,double AA,double BB,bool bb){A=AA;B=BB;a=aa;b=bb;}
+CInterval::CInterval(int aa,double AA,double BB,int bb){A=AA;B=BB;a=aa;b=bb;}
 
 CInterval::CInterval(const CInterval&t){*this=t;}
 
@@ -29,13 +29,18 @@ bool CInterval::operator <  (const CInterval&t) const {return B<t.A;}
 CInterval::operator string(){
 	control();
 	string s;
-	s+=a?"[":"(";
+	bool is8;
+	s+=(a==1)?"[":"(";
 	int t=A;
+	is8 = a&2;
+	if(is8)s+="#"; else
 	if(A==(double)t)s+=SCANER::toString(t);else s+=SCANER::toString(A);
 	s+=";";
 	t=B;
+	is8 = b&2;
+	if(is8)s+="#"; else
 	if(B==(double)t)s+=SCANER::toString(t);else s+=SCANER::toString(B);
-	s+=b?"]":")";
+	s+=(b==1)?"]":")";
 	return s;
 }
 
@@ -43,6 +48,7 @@ CInterval::operator string(){
 void CInterval::toString(string&s){s=(string)*this;}
 
 void CInterval::control(){
+	if((a&2) || (b&2))return;
 	if(A<=B)return;
 	double D=A;
 	A=B;

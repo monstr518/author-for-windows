@@ -930,6 +930,7 @@ int Sufix::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 }
 
 
+
 int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	TRAVERS*T=Border(Pset,M);
 	if(T){V=T->X;return T->free;}
@@ -968,34 +969,58 @@ int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 			CV->avtoSet("int");
 			CV->DATA.intVal=i;
 			}
-		CV->TransformType("int");
-		i=CV->DATA.intVal;
-		if(S->isType("vector"))if(i<0){
-			i+=S->DATA.vectorVal->size();
-			CV->DATA.intVal=i;
-			}
-		CV->TransformType("string");
-		Pset->sub->adres+=(string)"."+*CV->DATA.ps;
-		if(S->isType("vector")){
-			if(i>=0&&i<S->DATA.vectorVal->size())V=&(*S->DATA.vectorVal)[i];
-			}else if(i>=0&&i<S->DATA.setVal->size()){
-			S_CVARIANT::iterator it=S->DATA.setVal->begin();
-			int p;
-			for(p=0;it!=S->DATA.setVal->end();++it,++p)if(p==i)break;
-			V=&*it;
-			}
-		v=0;
-		if(!V){//send: out of range
-			if(this->up)cout<<"out of range in: "<<this->up->toString().c_str()<<endl;
-			Algorithm*X=this->up,*Y=NULL;
-			while(X){
-				Y=X;
-				X=X->up;
+		if(CV->isType("interval")){
+			CInterval *CI = CV->DATA.intervalVal;
+			if(S->isType("vector")){
+				CI->control();
+				int t=CI->A;
+				if(CI->A==(double)t){
+					if(CI->a==0)++t;
+					}else ++t;
+				if(t<0)t=0;
+				if(CI->a&2)t=0;
+				int finaln = CI->B;
+				if(CI->B==(double)finaln){
+					if(CI->b==0)--finaln;
+					}
+				int maxfinaln = S->DATA.vectorVal->size()-1;
+				if(CI->b&2)finaln=maxfinaln;
+				if(finaln>maxfinaln)finaln=maxfinaln;
+				V=new(CVARIANT);
+				V->avtoSet("vector");
+				for(i=t;i<=finaln;++i)V->DATA.vectorVal->push_back((*S->DATA.vectorVal)[i]);
+				v=1;
 				}
-			if(this->up!=Y)if(Y)cout<<Y->toString().c_str()<<endl;
-			V=new(CVARIANT);
-			V->avtoSet("void");
-			v=1;
+			} else {
+			CV->TransformType("int");
+			i=CV->DATA.intVal;
+			if(S->isType("vector"))if(i<0){
+				i+=S->DATA.vectorVal->size();
+				CV->DATA.intVal=i;
+				}
+			CV->TransformType("string");
+			Pset->sub->adres+=(string)"."+*CV->DATA.ps;
+			if(S->isType("vector")){
+				if(i>=0&&i<S->DATA.vectorVal->size())V=&(*S->DATA.vectorVal)[i];
+				}else if(i>=0&&i<S->DATA.setVal->size()){
+				S_CVARIANT::iterator it=S->DATA.setVal->begin();
+				int p;
+				for(p=0;it!=S->DATA.setVal->end();++it,++p)if(p==i)break;
+				V=&*it;
+				}
+			v=0;
+			if(!V){//send: out of range
+				if(this->up)cout<<"out of range in: "<<this->up->toString().c_str()<<endl;
+				Algorithm*X=this->up,*Y=NULL;
+				while(X){
+					Y=X;
+					X=X->up;
+					}
+				if(this->up!=Y)if(Y)cout<<Y->toString().c_str()<<endl;
+				V=new(CVARIANT);
+				V->avtoSet("void");
+				v=1;
+				}
 			}
 		}
 	if(S->isType("string")){
@@ -1253,6 +1278,9 @@ int Interval::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	if(L->ExtraExit)return 0;
 	if(!CVB)return 0;
 	CVARIANT IA=*CVA,IB=*CVB;
+	bool isa8,isb8;
+	isa8 = IA.isType("void");
+	isb8 = IB.isType("void");
 	IA.TransformType("double");
 	IB.TransformType("double");
 	double ia,ib;
@@ -1260,7 +1288,7 @@ int Interval::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	ib=IB.DATA.dblVal;
 	V=new(CVARIANT);
 	V->avtoSet("interval");
-	(*V->DATA.intervalVal)=CInterval(a,ia,ib,b);
+	(*V->DATA.intervalVal)=CInterval(a+2*isa8,ia,ib,b+2*isb8);
 	V->DATA.intervalVal->control();
 	if(ba)if(CVA){
 		Pset->sub->Bloki.erase(A);

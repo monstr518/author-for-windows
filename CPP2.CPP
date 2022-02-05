@@ -3,10 +3,43 @@
 #include "main.h"
 
 
+//--------------------------------------------------------------------------------------------------
+void CallFunc::forchar(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
+	char thisChar = thisVal->DATA.bVal;
+	string skobki = "([{}])";
+	bool isSkobki = (skobki.find(thisChar)!=-1);
+	if(name=="isSkobki"){
+		V=new(CVARIANT);
+		V->avtoSet("bool");
+		V->DATA.boolVal = isSkobki;
+		return;
+		}
+	if(!isSkobki)isSkobki = (thisChar=='<' || thisChar=='>');
+	string Open = "([{<";
+	bool isOpen = (Open.find(thisChar)!=-1);
+	if(name=="isOpen"){
+		V=new(CVARIANT);
+		if(!isSkobki)return;
+		V->avtoSet("bool");
+		V->DATA.boolVal = isOpen;
+		return;
+		}
+	if(name=="isClose"){
+		V=new(CVARIANT);
+		if(!isSkobki)return;
+		V->avtoSet("bool");
+		V->DATA.boolVal = !isOpen;
+		return;
+		}
+}
+
+
+
+
 
 //--------------------------------------------------------------------------------------------------
-void CallFunc::interval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
-	if(name=="getZ"||name=="getN"){
+void CallFunc::forinterval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
+	if(name=="getZ" || name=="getN"){
 		bool b=(name=="getN");
 		CVARIANT CV;
 		CV.avtoSet("int");
@@ -48,16 +81,21 @@ void CallFunc::interval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV)
 		V->DATA.boolVal=(name=="a" || name=="limA")?X->a:X->b;
 		}
 	if(name=="setA" || name=="setB")if(VCV.size()>0){
+		bool is8 = VCV[0].isType("void");
 		VCV[0].TransformType("double");
 		CInterval*X=thisVal->DATA.intervalVal;
 		double*n=(name=="setA")?&X->A:&X->B;
 		*n=VCV[0].DATA.dblVal;
+		if(is8){
+			char*x=(name=="setA")?&X->a:&X->b;
+			*x|=2;
+			}
 		}
 	if(name=="setLimA" || name=="setLimB")if(VCV.size()>0){
 		VCV[0].TransformType("bool");
 		CInterval*X=thisVal->DATA.intervalVal;
-		bool*x=(name=="setLimA")?&X->a:&X->b;
-		*x=VCV[0].DATA.boolVal;
+		char*x=(name=="setLimA")?&X->a:&X->b;
+		*x|=(VCV[0].DATA.boolVal?1:0);
 		}
 	if(name=="U" || name=="notU")if(VCV.size()>0){
 		if(!VCV[0].isType("interval"))return;
@@ -77,6 +115,9 @@ void CallFunc::interval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV)
 		*V->DATA.intervalVal=Y;
 		}
 }
+
+
+
 
 
 void CallFunc::forstring(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){

@@ -38,10 +38,10 @@
 class CInterval{
 public:
 	double A,B;
-	bool a,b;
+	char a,b;
 
 	CInterval();
-	CInterval(bool,double,double,bool);
+	CInterval(int,double,double,int);
 	CInterval(const CInterval&);
 
 	CInterval& operator = (const CInterval&);

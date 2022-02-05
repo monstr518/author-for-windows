@@ -1686,7 +1686,8 @@ void CallFunc::mc(I*Pset,string&tt,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M
 		thisVal=M->getUnLink(Pset,t,ok);
 		}
 	if(!thisVal)return;
-	if(thisVal->isType("interval"))interval(thisVal,name,V,VCV);
+	if(thisVal->isType("char"))forchar(thisVal,name,V,VCV);
+	if(thisVal->isType("interval"))forinterval(thisVal,name,V,VCV);
 	if(thisVal->isType("string"))forstring(thisVal,name,V,VCV);
 	if(thisVal->isType("vector"))forvector(thisVal,name,V,VCV);
 	if(thisVal->isType("set"))forset(thisVal,name,V,VCV);
