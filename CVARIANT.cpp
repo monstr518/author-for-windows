@@ -283,7 +283,7 @@ CVARIANT& CVARIANT::operator = (const CVARIANT&t){
 	def_copy("vector",V_CVARIANT,vectorVal);
 	def_copy("deque",deque_CVARIANT,dequeVal);
 	def_copy("set",S_CVARIANT,setVal);
-	def_copy("map",M_CVARIANT,mapVal);
+	def_copy("map",M_SV,mapVal);
 	def_copy("interval",CInterval,intervalVal);
 	def_copy("function",CFunction,functionVal);
 	if(t.isType("program")){
@@ -439,10 +439,10 @@ void CVARIANT::toString(string&s) const{
 	if(!DATA.ps)return;
 	if(isType("map")){
 		s+="map";
-		M_CVARIANT::iterator it=DATA.mapVal->begin();
+		M_SV::iterator it=DATA.mapVal->begin();
 		for(;it!=DATA.mapVal->end();++it){
 			s+="[";
-			it->first.toString(s);
+			s+=it->first;
 			s+="=";
 			it->second.toString(s);
 			s+="]";
@@ -687,11 +687,11 @@ bool CVARIANT::OPETATOR(CVARIANT*A,CVARIANT*B,const char*c){
 		}
 	if(A->isType("map")){
 		if(is("+=")){
-			M_CVARIANT::iterator it=B->DATA.mapVal->begin();
+			M_SV::iterator it=B->DATA.mapVal->begin();
 			for(;it!=B->DATA.mapVal->end();++it)(*A->DATA.mapVal)[it->first]=it->second;
 			}
 		if(is("-=")){
-			M_CVARIANT::iterator it=B->DATA.mapVal->begin(),jt;
+			M_SV::iterator it=B->DATA.mapVal->begin(),jt;
 			for(;it!=B->DATA.mapVal->end();++it){
 				jt=A->DATA.mapVal->find(it->first);
 				if(jt!=A->DATA.mapVal->end())A->DATA.mapVal->erase(jt);
@@ -843,7 +843,11 @@ void CVARIANT::TransformType(const char*nameType){
 		Ntype=0;
 		avtoSet(nameType);
 		V_CVARIANT::iterator it=List.begin();
-		for(;it!=List.end();++it)(*DATA.mapVal)[*it]=CVARIANT();
+		for(;it!=List.end();++it){
+			string str;
+			it->toString(str);
+			(*DATA.mapVal)[str]=CVARIANT();
+			}
 		return;
 		}
 	if(isType("function")){
@@ -946,7 +950,7 @@ void CVARIANT::avtoSet(string&type){
 	def_co("vector",V_CVARIANT,vectorVal);
 	def_co("deque",deque_CVARIANT,dequeVal);
 	def_co("set",S_CVARIANT,setVal);
-	def_co("map",M_CVARIANT,mapVal);
+	def_co("map",M_SV,mapVal);
 	def_co("interval",CInterval,intervalVal);
 	def_co("function",CFunction,functionVal);
 	if(isType("program")){

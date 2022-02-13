@@ -46,11 +46,9 @@ ControlerDLL::~ControlerDLL(){
 
 
 void ControlerDLL::Load(string s){
-	M_CVARIANT&GM=*Main->GlobalSpace.Map.DATA.mapVal;
+	M_SV&GM=*Main->GlobalSpace.Map.DATA.mapVal;
 	CVARIANT A;
-	A.avtoSet("string");
-	*A.DATA.ps="WAY";
-	A=GM[A];
+	A=GM["WAY"];
 	string w=*A.DATA.ps+"\\SYS\\DLLS\\"+s;
 	//cout<<w.c_str()<<endl;
 
@@ -90,11 +88,9 @@ string ControlerDLL::Recv(string s){
 
 
 void ControlerDLL::ReWriteVar(){
-	M_CVARIANT&GM=*Main->GlobalSpace.Map.DATA.mapVal;
+	M_SV&GM=*Main->GlobalSpace.Map.DATA.mapVal;
 	CVARIANT S;
-	S.avtoSet("string");
-	*S.DATA.ps="DLLS";
-	CVARIANT*R=&GM[S];
+	CVARIANT*R=&GM["DLLS"];
 	R->avtoSet("vector");
 	M_SXDLL::iterator it=Main->CDLL.dlls.begin();
 	for(;it!=Main->CDLL.dlls.end();++it){

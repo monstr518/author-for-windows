@@ -58,7 +58,7 @@ public:
 	string toString();
 	bool isSET();
 	CVARIANT Analysis();
-	void synthesis(M_CVARIANT*);
+	void synthesis(M_SV*);
 };
 
 typedef vector<Type> V_TIP;
@@ -380,6 +380,7 @@ public:
 
 
 class AccesMasiv :public Sufix{
+	bool subAccessOne(MAIN*M,Laver*L,I*Pset,CVARIANT*&CV,CVARIANT*&S,CVARIANT*&V,int&v,int a);
 public:
 	Algorithm*P;//parametr
 	//n: 3-[] 4-{}

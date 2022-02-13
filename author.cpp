@@ -34,31 +34,27 @@ void main(int argc, char* argv[]){
 	MAIN Main;
 	{
 	Main.GlobalSpace.Map.avtoSet("map");
-	M_CVARIANT&GM=*Main.GlobalSpace.Map.DATA.mapVal;
+	M_SV&GM=*Main.GlobalSpace.Map.DATA.mapVal;
 	CVARIANT A,B;
 	A.avtoSet("string");
 	B.avtoSet("string");
 	*A.DATA.ps="WAY";
 	*B.DATA.ps=s;
-	GM[A]=B;
+	GM["WAY"]=B;
 	B.avtoSet("vector");
 	int t;
 	for(t=0;t<argc;++t){
 		*A.DATA.ps=argv[t];
 		B.DATA.vectorVal->push_back(A);
 		}
-	*A.DATA.ps="ARGS";
-	GM[A]=B;
-	*A.DATA.ps="isOtladka";
+	GM["ARGS"]=B;
 	B.avtoSet("bool");
 	B.DATA.boolVal=isOtladka;
-	GM[A]=B;
+	GM["isOtladka"]=B;
 	B.avtoSet("map");
-	*A.DATA.ps="GLOBALS";
-	GM[A]=B;
-	*A.DATA.ps="DLLS";
+	GM["GLOBALS"]=B;
 	B.avtoSet("vector");
-	GM[A]=B;
+	GM["DLLS"]=B;
 	}
 	s+="\\SYS\\main.txt";
 	i=Main.IncludeFILE(s.c_str());

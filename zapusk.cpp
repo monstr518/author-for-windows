@@ -215,16 +215,14 @@ I::~I(){
 
 I* I::OFFtoStop(MAIN*M){
 	FRAGMENT*&F=Fundament,*F2;
-	CVARIANT S,E;
-	S.avtoSet("string");
-	E.avtoSet("string");
-	*S.DATA.ps="this-f";
-	*E.DATA.ps="stopoff*";
+	string S,E;
+	S="this-f";
+	E="stopoff*";
 	while(F->Next.empty()){
 		while(F->Memorys.size()){
 			CVARIANT*X=*F->Memorys.rbegin();
-			M_CVARIANT*map=X->DATA.mapVal;
-			M_CVARIANT::iterator it=map->begin();
+			M_SV*map=X->DATA.mapVal;
+			M_SV::iterator it=map->begin();
 			for(;it!=map->end();++it){
 				if(it->first==S){
 					delete sub;
@@ -296,17 +294,17 @@ void MAIN::RUN(V_CVARIANT*VCV){
 		}
 	Laver*L=tableLavers[FreeLaver]=new Laver(FreeLaver);
 	I*me=new I(FreeLaver);
-	CVARIANT *A,S,NF;
+	CVARIANT *A,NF;
 	A=new(CVARIANT);
 	A->avtoSet("map");
-	S.avtoSet("string");
+	string S;
 	NF.avtoSet("string");
-	*S.DATA.ps="this-f";
+	S="this-f";
 	*NF.DATA.ps="f:"+name;
 	(*A->DATA.mapVal)[S]=NF;
 	int i;
 	if(VCV)for(i=1;i<VCV->size()&&i-1<f->names.size();++i){
-		*S.DATA.ps=f->names[i-1];
+		S=f->names[i-1];
 		(*A->DATA.mapVal)[S]=(*VCV)[i];
 		}
 	L->Head.Memorys.push_back(A);
@@ -588,10 +586,9 @@ void MAIN::ProgresMemory(I*Pset,CVARIANT&A,CVARIANT&t){
 			subI*sub=me->posicse[j];
 			M_AlgoT::iterator it=sub->Bloki.begin();
 			for(;it!=sub->Bloki.end();++it){
-				M_CVARIANT::iterator jt=t.DATA.mapVal->begin();
+				M_SV::iterator jt=t.DATA.mapVal->begin();
 				for(;jt!=t.DATA.mapVal->end();++jt)if(it->second.X==&jt->second){
-					const CVARIANT*K=&jt->first;
-					CVARIANT*V=&(*A.DATA.mapVal)[*K];
+					CVARIANT*V=&(*A.DATA.mapVal)[jt->first];
 					it->second.X=V;
 					if(sub==Pset->sub){
 						int k;
@@ -637,10 +634,8 @@ int MAIN::PAGECLOSE(I*Pset,int stop){
 		}
 	bool b=0;
 	if(H){
-		CVARIANT*V=*H->Memorys.rbegin(),S;
-		S.avtoSet("string");
-		*S.DATA.ps="this-f";
-		b=V->DATA.mapVal->find(S)!=V->DATA.mapVal->end();
+		CVARIANT*V=*H->Memorys.rbegin();
+		b=V->DATA.mapVal->find("this-f")!=V->DATA.mapVal->end();
 		if(b&&stop)return 0;
 		//cout<<FragmentOneToString(H->Memorys.rbegin()->DATA.mapVal).c_str()<<endl;
 		delete *H->Memorys.rbegin();
@@ -652,12 +647,11 @@ int MAIN::PAGECLOSE(I*Pset,int stop){
 
 
 
-string MAIN::FragmentOneToString(M_CVARIANT*MC){
+string MAIN::FragmentOneToString(M_SV*MC){
 	string str;
-	M_CVARIANT::iterator it=MC->begin();
+	M_SV::iterator it=MC->begin();
 	for(;it!=MC->end();++it){
-		const CVARIANT*A=&it->first;
-		str+=*A->DATA.ps;
+		str+=it->first;
 		str+="	: ";
 		string s;
 		it->second.toString(s);
@@ -708,24 +702,25 @@ void MAIN::getMapKeys(I*Pset,CVARIANT*&R,string&ss,bool create){
 			if(!R)break;
 			}
 		if(R->isType("map")){
-			M_CVARIANT&GM=*R->DATA.mapVal;
+			M_SV&GM=*R->DATA.mapVal;
 			CVARIANT A;
 			A.avtoSet("string");
 			*A.DATA.ps=t;
 			ss+="."+t;
-			if(!create)if(GM.find(A)==GM.end()){
+			
+			if(!create)if(GM.find(t)==GM.end()){
 				CVARIANT P=A;
 				A.TransformType("int");
-				CVARIANT P2=A;
-				P2.TransformType("string");
+				A.TransformType("string");
 				bool ok=1;
-				if(P2==P)if(GM.find(A)!=GM.end())ok=0;
+				if(A==P)if(GM.find(t)!=GM.end())ok=0;
 				if(ok){
 					R=NULL;
 					break;
 					}
 				}
-			R=&GM[A];
+			
+			R=&GM[t];
 			continue;
 			}
 		if(R->isType("vector")){
@@ -760,11 +755,8 @@ CVARIANT* MAIN::getUnLink(I*Pset,string&s,bool&needKill){
 			t=s;
 			s="";
 			}
-		M_CVARIANT&GM=*GlobalSpace.Map.DATA.mapVal;
-		CVARIANT A;
-		A.avtoSet("string");
-		*A.DATA.ps=t;
-		R=&GM[A];
+		M_SV&GM=*GlobalSpace.Map.DATA.mapVal;
+		R=&GM[t];
 		isGlobal=1;
 		}
 	int p=s.find(".");
@@ -852,11 +844,8 @@ CVARIANT* MAIN::getUnLink2(I*Pset,string&s){
 		if(n<0)break;
 		}
 	if(!CV)return NULL;
-	CVARIANT S;
-	S.avtoSet("string");
-	*S.DATA.ps=name;
 	CVARIANT*R;
-	if(!L->rop)R=&(*CV->DATA.mapVal)[S];else{
+	if(!L->rop)R=&(*CV->DATA.mapVal)[name];else{
 		int nvf=0;
 		for(j=0;j<VF.size();++j)nvf+=VF[j]->Memorys.size();
 		bool isFind=0;
@@ -898,7 +887,7 @@ CVARIANT* MAIN::getUnLink2(I*Pset,string&s){
 				}
 			}
 		if(isFind)CV=Pset->Fundament->Memorys[0];
-		R=&(*CV->DATA.mapVal)[S];
+		R=&(*CV->DATA.mapVal)[name];
 		}
 	string ss=s;
 	MAIN::getMapKeys(Pset,R,ss,0);
@@ -908,18 +897,15 @@ CVARIANT* MAIN::getUnLink2(I*Pset,string&s){
 
 
 
-bool MAIN::isset(I*Pset,const CVARIANT&V){
+bool MAIN::isset(I*Pset,const string&V){
 	FRAGMENT*H=Pset->Fundament;
-	CVARIANT S;
-	S.avtoSet("string");
-	*S.DATA.ps="this-f";
 	while(H){
 		int i;
 		for(i=H->Memorys.size()-1;i>=0;--i){
 			CVARIANT*C=H->Memorys[i];
-			M_CVARIANT*MC=C->DATA.mapVal;
+			M_SV*MC=C->DATA.mapVal;
 			if(MC->find(V)!=MC->end())return 1;
-			if(MC->find(S)!=MC->end()){H=NULL;break;}
+			if(MC->find("this-f")!=MC->end()){H=NULL;break;}
 			}
 		if(!H)break;
 		H=H->Prev;

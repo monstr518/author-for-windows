@@ -309,12 +309,12 @@ public:
 	void Mahine(int);
 	int PAGECLOSE(I*,int stop=1);
 	void ProgresMemory(I*,CVARIANT&,CVARIANT&);
-	string FragmentOneToString(M_CVARIANT*);
+	string FragmentOneToString(M_SV*);
 
 	//string getLink(CVARIANT*);
 	CVARIANT*getUnLink(I*,string&,bool&);
 	CVARIANT*getUnLink2(I*,string&);
-	bool isset(I*,const CVARIANT&);
+	bool isset(I*,const string&);
 	void getMapKeys(I*,CVARIANT*&,string&,bool create=1);
 
 	void L_IS(Laver*,Function*);

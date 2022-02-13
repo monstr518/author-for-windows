@@ -1073,9 +1073,7 @@ int Assemble::Load(const char*way,char*s,bool nedsav){
 	ff->name=sway.substr(a,b-a);
 	SCANER::noProbel(s);
 	CVARIANT K;
-	K.avtoSet("string");
-	*K.DATA.ps="WAY";
-	K=(*GlobalSpace->Map.DATA.mapVal)[K];
+	K=(*GlobalSpace->Map.DATA.mapVal)["WAY"];
 	K.TransformType("string");
 	string WAY=*K.DATA.ps;
 	sway=ff->way.substr(0,WAY.size());

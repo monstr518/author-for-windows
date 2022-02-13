@@ -185,13 +185,11 @@ void CallFunc::outAllMemory(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	string str;
 	int i;
 	for(i=CELS.size()-1;i>=0;--i){
-		CVARIANT&A=CELS[i],S;
-		M_CVARIANT*MC=A.DATA.mapVal;
-		S.avtoSet("string");
-		*S.DATA.ps="this-f";
+		CVARIANT&A=CELS[i];
+		M_SV*MC=A.DATA.mapVal;
 		static const char*line="------------------------------------------------------------\n";
 		static const char*line2="============================================================\n";
-		if(MC->find(S)!=MC->end())str+=line2;else str+=line;
+		if(MC->find("this-f")!=MC->end())str+=line2;else str+=line;
 		str+=M->FragmentOneToString(MC);
 		}
 	V=new(CVARIANT);
@@ -561,9 +559,7 @@ void CallFunc::RecvDLL(string name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 
 void CallFunc::getNamesAllDll(CVARIANT*&V,MAIN*M){
 	CVARIANT A;
-	A.avtoSet("string");
-	*A.DATA.ps="WAY";
-	A=(*M->GlobalSpace.Map.DATA.mapVal)[A];
+	A=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
 	string t=*A.DATA.ps+"\\SYS\\DLLS\\*.dll";
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
@@ -800,18 +796,19 @@ void CallFunc::getListLaver(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 			if(!me->stop)break;
 			}
 		FRAGMENT*H=L->IS[L->adaptationMap[nProcess]]->Fundament;
-		CVARIANT K;
-		K.avtoSet("string");
-		*K.DATA.ps="this-f";
 		V=new(CVARIANT);
 		V->avtoSet("vector");
 		while(H){
 			int i;
 			for(i=H->Memorys.size()-1;i>=0;--i){
-				M_CVARIANT*map=H->Memorys[i]->DATA.mapVal;
-				M_CVARIANT::iterator it=map->begin();
-				for(;it!=map->end();++it)if(it->first==K)H=NULL;else 
-					V->DATA.vectorVal->push_back(it->first);
+				M_SV*map=H->Memorys[i]->DATA.mapVal;
+				M_SV::iterator it=map->begin();
+				for(;it!=map->end();++it)if(it->first=="this-f")H=NULL;else {
+					CVARIANT S;
+					S.avtoSet("string");
+					*S.DATA.ps=it->first;
+					V->DATA.vectorVal->push_back(S);
+					}
 				if(!H)break;
 				}
 			if(!H)break;
@@ -919,24 +916,24 @@ void CallFunc::PROGRAM(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 			string type,condition,body,eelse;
 			V_CVARIANT*VBody=NULL,*VElse=NULL;
 			Algorithm*Condition=NULL,*Body=NULL,*Else=NULL;
-			M_CVARIANT*table=VCV[0].DATA.mapVal;
-			CVARIANT K,*Va;
-			K.avtoSet("string");
+			M_SV*table=VCV[0].DATA.mapVal;
+			CVARIANT *Va;
+			string K;
+			K="type";
 			Va=NULL;
-			*K.DATA.ps="type";
 			if(table->find(K)!=table->end())Va=&(*table)[K];
 			if(Va)if(Va->isType("string"))type=*Va->DATA.ps;
 			Va=NULL;
-			*K.DATA.ps="condition";
+			K="condition";
 			if(table->find(K)!=table->end())Va=&(*table)[K];
 			if(Va){
 				if(Va->isType("string"))condition=*Va->DATA.ps;
 				if(Va->isType("program"))Condition=Va->DATA.programVal;
 				}
 			Va=NULL;
-			*K.DATA.ps="body";
+			K="body";
 			if(table->find(K)!=table->end())Va=&(*table)[K];else{
-				*K.DATA.ps="then";
+				K="then";
 				if(table->find(K)!=table->end())Va=&(*table)[K];
 				}
 			if(Va){
@@ -945,7 +942,7 @@ void CallFunc::PROGRAM(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 				if(Va->isType("vector"))VBody=Va->DATA.vectorVal;
 				}
 			Va=NULL;
-			*K.DATA.ps="else";
+			K="else";
 			if(table->find(K)!=table->end())Va=&(*table)[K];
 			if(Va){
 				if(Va->isType("string"))eelse=*Va->DATA.ps;
@@ -1071,10 +1068,10 @@ void CallFunc::ControlOFF(I*Pset,MAIN*M,CVARIANT*&V){
 		}
 	if(!FR)return;
 	CVARIANT*X=*FR->Memorys.rbegin();
-	CVARIANT S,E;
-	S.avtoSet("string");
+	CVARIANT E;
+	string S;
 	E.avtoSet("int");
-	*S.DATA.ps="stopoff*";
+	S="stopoff*";
 	V=new(CVARIANT);
 	V->avtoSet("bool");
 	if(X->DATA.mapVal->find(S)==X->DATA.mapVal->end()){
@@ -1093,9 +1090,8 @@ void CallFunc::ControlOFF(I*Pset,MAIN*M,CVARIANT*&V){
 void CallFunc::ClearPsetOFF(I*Pset,MAIN*M){
 	if(Pset->Fundament->Memorys.empty())return;
 	CVARIANT*X=*Pset->Fundament->Memorys.rbegin();
-	CVARIANT S;
-	S.avtoSet("string");
-	*S.DATA.ps="stopoff*";
+	string S;
+	S="stopoff*";
 	if(X->DATA.mapVal->find(S)==X->DATA.mapVal->end())return;
 	X->DATA.mapVal->erase(S);
 }
@@ -1157,12 +1153,12 @@ void CallFunc::runFunction(I*Pset,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 		Pset->posicse.push_back(Pset->sub);
 		Pset->sub->Return=this;
 		Pset->sub->pos=fun->sxema->HeadEnd->down[0];
-		CVARIANT K,NF;
-		K.avtoSet("string");
+		CVARIANT NF;
+		string K;
 		NF.avtoSet("string");
 		CVARIANT*CEL=new(CVARIANT);
 		CEL->avtoSet("map");
-		*K.DATA.ps="this-f";
+		K="this-f";
 		*NF.DATA.ps="f:"+fun->name;
 		(*CEL->DATA.mapVal)[K]=NF;
 		V_CVARIANT H;
@@ -1172,7 +1168,7 @@ void CallFunc::runFunction(I*Pset,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 			}
 		int i;
 		for(i=0;i<fun->names.size()&&i<H.size();++i){
-			*K.DATA.ps=fun->names[i];
+			K=fun->names[i];
 			(*CEL->DATA.mapVal)[K]=H[i];
 			}
 		Pset->Fundament->Memorys.push_back(CEL);
@@ -1235,8 +1231,8 @@ void CallFunc::Spirit(I*Pset,V_CVARIANT&VCV,MAIN*M){
 		kill=0;
 		if(VCV[0].isType("string")){
 			Function*f=M->getFunction(Pset,*VCV[0].DATA.ps);
-			CVARIANT K,NF,*U;
-			K.avtoSet("string");
+			CVARIANT NF,*U;
+			string K;
 			NF.avtoSet("string");
 			U=new(CVARIANT);
 			U->avtoSet("bool");
@@ -1255,12 +1251,12 @@ void CallFunc::Spirit(I*Pset,V_CVARIANT&VCV,MAIN*M){
 				CVARIANT*CEL;
 				CEL=new(CVARIANT);
 				CEL->avtoSet("map");
-				*K.DATA.ps="this-f";
+				K="this-f";
 				*NF.DATA.ps="f:"+f->getPsetWay()+*VCV[0].DATA.ps;
 				(*CEL->DATA.mapVal)[K]=NF;
 				int i;
 				for(i=0;i<f->names.size() && i+1<VCV.size();++i){
-					*K.DATA.ps=f->names[i];
+					K=f->names[i];
 					(*CEL->DATA.mapVal)[K]=VCV[i+1];
 					}
 				Pset->Fundament->Memorys.push_back(CEL);
@@ -1492,11 +1488,11 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 	if(VCV.size()!=1)return;
 	if(!VCV[0].isType("map"))return;
-	M_CVARIANT*table = VCV[0].DATA.mapVal;
-	CVARIANT X,*Value;
-	X.avtoSet("string");
+	M_SV*table = VCV[0].DATA.mapVal;
+	CVARIANT *Value;
+	string X;
 
-	*X.DATA.ps="method";
+	X="method";
 	string method = "GET";
 	if(table->find(X) != table->end()){
 		Value = &(*table)[X];
@@ -1504,14 +1500,14 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 		method = *Value->DATA.ps;
 		}
 
-	*X.DATA.ps="url";
+	X="url";
 	if(table->find(X) == table->end())return;
 	string host_name;
 	Value = &(*table)[X];
 	Value->TransformType("string");
 	host_name = *Value->DATA.ps;
 
-	*X.DATA.ps="port";
+	X="port";
 	int port = 80;
 	if(table->find(X) != table->end()){
 		Value = &(*table)[X];
@@ -1520,13 +1516,13 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 		}
 
 	string context;
-	*X.DATA.ps="context";
+	X="context";
 	if(table->find(X) != table->end()){
 		Value = &(*table)[X];
 		Value->TransformType("string");
 		context = *Value->DATA.ps;
 		} else {
-		*X.DATA.ps="text";
+		X="text";
 		if(table->find(X) != table->end()){
 			Value = &(*table)[X];
 			Value->TransformType("string");
@@ -1535,7 +1531,7 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 		}
 
 	string headers;
-	*X.DATA.ps="headers";
+	X="headers";
 	if(table->find(X) != table->end()){
 		Value = &(*table)[X];
 		Value->TransformType("string");
@@ -1545,8 +1541,9 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 	string text = Ajax(host_name,port,method,headers,context);
 	//printf("%s", text.c_str());
 
-	*X.DATA.ps=text;
-	V = new CVARIANT(X);
+	V = new CVARIANT();
+	V->avtoSet("string");
+	*V->DATA.ps=text;
 	int pos = text.find("\r\n\r\n");
 	if(pos<0)return;
 	string body = text.substr(pos+4);
@@ -1555,12 +1552,14 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 	string fstr = text.substr(0,posx);
 	string heads = text.substr(posx+2,pos-(posx+2));
 	V->avtoSet("vector");
-	*X.DATA.ps=fstr;
-	V->DATA.vectorVal->push_back(X);
-	*X.DATA.ps=heads;
-	V->DATA.vectorVal->push_back(X);
-	*X.DATA.ps=body;
-	V->DATA.vectorVal->push_back(X);
+	CVARIANT S;
+	S.avtoSet("string");
+	*S.DATA.ps=fstr;
+	V->DATA.vectorVal->push_back(S);
+	*S.DATA.ps=heads;
+	V->DATA.vectorVal->push_back(S);
+	*S.DATA.ps=body;
+	V->DATA.vectorVal->push_back(S);
 }
 
 

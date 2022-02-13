@@ -60,9 +60,7 @@ void MAIN::unloadOverlay(const char*fulname){
 
 File* MAIN::findModule(string module){
 	CVARIANT K;
-	K.avtoSet("string");
-	*K.DATA.ps="WAY";
-	K=(*GlobalSpace.Map.DATA.mapVal)[K];
+	K=(*GlobalSpace.Map.DATA.mapVal)["WAY"];
 	K.TransformType("string");
 	string WAY=*K.DATA.ps;
 	if(module.substr(0,WAY.size())==WAY)module=module.substr(WAY.size()+1);
@@ -120,9 +118,7 @@ int MAIN::IncludeFILE(const char*fulname){
 		return 0;
 		}
 	CVARIANT K;
-	K.avtoSet("string");
-	*K.DATA.ps="WAY";
-	K=(*GlobalSpace.Map.DATA.mapVal)[K];
+	K=(*GlobalSpace.Map.DATA.mapVal)["WAY"];
 	K.TransformType("string");
 	string WAY=*K.DATA.ps;
 	string W=fulname;
@@ -219,9 +215,7 @@ int MAIN::CompareFileTime(const char*fileName,string&strFN){//0-error  1-code  -
 void MAIN::outHTML(string&HTML,string fname){
 	if(HTML.empty())return;
 	CVARIANT A;
-	A.avtoSet("string");
-	*A.DATA.ps="isOtladka";
-	A=(*GlobalSpace.Map.DATA.mapVal)[A];
+	A=(*GlobalSpace.Map.DATA.mapVal)["isOtladka"];
 	string s;
 	if(A.DATA.boolVal)s="../"+s;
 	//s=*A.DATA.ps;
@@ -260,9 +254,7 @@ File::~File(){
 
 string File::toString(){
 	CVARIANT K;
-	K.avtoSet("string");
-	*K.DATA.ps="WAY";
-	K=(*Main->GlobalSpace.Map.DATA.mapVal)[K];
+	K=(*Main->GlobalSpace.Map.DATA.mapVal)["WAY"];
 	K.TransformType("string");
 	string WAY=*K.DATA.ps;
 	string x="// "+name+".code";
@@ -306,9 +298,7 @@ void File::controlSave(){
 		return;
 		}
 	CVARIANT K;
-	K.avtoSet("string");
-	*K.DATA.ps="WAY";
-	K=(*Main->GlobalSpace.Map.DATA.mapVal)[K];
+	K=(*Main->GlobalSpace.Map.DATA.mapVal)["WAY"];
 	K.TransformType("string");
 	string WAY=*K.DATA.ps;
 	WAY+="\\"+g;
@@ -357,9 +347,7 @@ Function* File::FindFunction(string fullname,bool create){
 
 string File::toPsets(){
 	CVARIANT K;
-	K.avtoSet("string");
-	*K.DATA.ps="WAY";
-	K=(*Main->GlobalSpace.Map.DATA.mapVal)[K];
+	K=(*Main->GlobalSpace.Map.DATA.mapVal)["WAY"];
 	K.TransformType("string");
 	string WAY=*K.DATA.ps;
 	int n=WAY.size()+1;

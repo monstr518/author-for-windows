@@ -115,8 +115,8 @@ CallFunc::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 		f=M->getFunction(Pset,name);
 		}
 	if(f){//if(VCV.size()==f->names.size())
-		CVARIANT K,NF,*VO;
-		K.avtoSet("string");
+		CVARIANT NF,*VO;
+		string K;
 		NF.avtoSet("string");
 		L->ExtraExit=1;
 		VO=new(CVARIANT);
@@ -131,22 +131,20 @@ CallFunc::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 		CVARIANT*CEL;
 		CEL=new(CVARIANT);
 		CEL->avtoSet("map");
-		*K.DATA.ps="this-f";
 		*NF.DATA.ps="f:"+f->getPsetWay()+name;
-		(*CEL->DATA.mapVal)[K]=NF;
+		(*CEL->DATA.mapVal)["this-f"]=NF;
 		int i,namesSize,VCVSize;
 		namesSize=f->names.size();
 		VCVSize=VCV.size();
 		for(i=0;i<namesSize;++i){
-			*K.DATA.ps=f->names[i];
+			K=f->names[i];
 			(*CEL->DATA.mapVal)[K]=(i<VCVSize?VCV[i]:CVARIANT());
 			}
 		if(f->argumentsON){
 			CVARIANT ARGS;
 			ARGS.avtoSet("vector");
 			for(;i<VCVSize;++i)ARGS.DATA.vectorVal->push_back(VCV[i]);
-			*K.DATA.ps="arguments";
-			(*CEL->DATA.mapVal)[K]=ARGS;
+			(*CEL->DATA.mapVal)["arguments"]=ARGS;
 			}
 		Pset->Fundament->Memorys.push_back(CEL);
 		}
@@ -245,11 +243,11 @@ int Base::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&X){
 		return 1;
 		}
 	//find var:
-	CVARIANT S,S2;
+	CVARIANT S;
 	S.avtoSet("string");
 	//*S.DATA.ps="this-f";
-	S2.avtoSet("string");
-	*S2.DATA.ps=text;
+	string S2;
+	S2=text;
 	Laver*L=M->tableLavers[Pset->Laver];
 	if(!L->needNameFunction){
 		int pos;
@@ -263,7 +261,7 @@ int Base::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&X){
 			}
 		CVARIANT*DataTable=Pset->sub->ActivF->DataTable;
 		if(DataTable){
-			M_CVARIANT*MDT=DataTable->DATA.mapVal;
+			M_SV*MDT=DataTable->DATA.mapVal;
 			if(MDT->find(S2)!=MDT->end()){
 				X=&(*MDT)[S2];
 				return 0;
@@ -304,7 +302,7 @@ int Base::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&X){
 			}
 		}
 	//find in global space:
-	M_CVARIANT*GM=M->GlobalSpace.Map.DATA.mapVal;
+	M_SV*GM=M->GlobalSpace.Map.DATA.mapVal;
 	if(GM->find(S2)!=GM->end()){
 		Pset->sub->adres="::"+text;
 		X=&(*GM)[S2];
@@ -329,19 +327,17 @@ int Base::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&X){
 
 int Base::findVar(I*Pset,MAIN*M,CVARIANT*&X,string text,int&pos,bool create){
 	FRAGMENT*H=Pset->Fundament;
-	CVARIANT S,S2;
-	S.avtoSet("string");
-	*S.DATA.ps="this-f";
-	S2.avtoSet("string");
-	*S2.DATA.ps=text;
-	M_CVARIANT::iterator it;
+	string S,S2;
+	S="this-f";
+	S2=text;
+	M_SV::iterator it;
 	bool isFind=0,ok=1;
 	pos=0;
 	while(H){
 		int i;
 		for(i=H->Memorys.size()-1;i>=0;--i){
 			CVARIANT*C=H->Memorys[i];
-			M_CVARIANT*MC=C->DATA.mapVal;
+			M_SV*MC=C->DATA.mapVal;
 			it=MC->find(S2);
 			if(it!=MC->end()){isFind=1;pos=i;break;}
 			if(MC->find(S)!=MC->end()){H=NULL;break;}
@@ -379,7 +375,7 @@ int Base::findVar(I*Pset,MAIN*M,CVARIANT*&X,string text,int&pos,bool create){
 					//cout<<M->FragmentOneToString(H->Memorys.rbegin()->DATA.mapVal).c_str()<<endl;//
 					H->Memorys.pop_back();
 					delete tmp;
-					M_CVARIANT*MC=Pset->Fundament->Memorys[0]->DATA.mapVal;
+					M_SV*MC=Pset->Fundament->Memorys[0]->DATA.mapVal;
 					it=MC->find(S2);
 					if(it!=MC->end()){isFind=1;break;}
 					}
@@ -931,37 +927,10 @@ int Sufix::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 
 
 
-int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
-	TRAVERS*T=Border(Pset,M);
-	if(T){V=T->X;return T->free;}
-	Laver*L=M->tableLavers[Pset->Laver];
-	CVARIANT*CV=NULL,*S=NULL;
-	int rop=L->rop;
-	L->rop=0;
-	int b=P->ZapuskTree(Pset,M,CV),i,a,v; // pos
-	L->rop=rop;
-	if(L->ExtraExit)return 0;
-	if(!CV)b=0;
-	if(!b){
-		CVARIANT*CV2=new(CVARIANT);
-		if(CV)*CV2=*CV;else CV2->avtoSet("void");
-		CV=CV2;
-		b=1;
-		}
-	++L->rop;
-	a=X->ZapuskTree(Pset,M,S);
-	--L->rop;
-	if(L->ExtraExit)return 0;
-	if(!S){
-		V=new(CVARIANT);
-		V->avtoSet("void");
-		return 1;
-		}
-	if(S->isType("void")){
-		V=new(CVARIANT);
-		V->avtoSet("void");
-		return 1;
-		}
+
+bool AccesMasiv::subAccessOne(MAIN*M,Laver*L,I*Pset,CVARIANT*&CV,CVARIANT*&S,CVARIANT*&V,int&v,int a){
+	bool isInSet = 0;
+	int i;
 	if(S->isType("vector")||S->isType("set")){
 		if(CV->isType("void")){
 			int n=(S->isType("vector"))?S->DATA.vectorVal->size():S->DATA.setVal->size();
@@ -1007,6 +976,7 @@ int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 				int p;
 				for(p=0;it!=S->DATA.setVal->end();++it,++p)if(p==i)break;
 				V=&*it;
+				isInSet = 1;
 				}
 			v=0;
 			if(!V){//send: out of range
@@ -1024,6 +994,23 @@ int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 			}
 		}
 	if(S->isType("string")){
+		bool isLoop=0;
+		if(CV->isType("string"))isLoop=(*CV->DATA.ps=="*");
+		if(isLoop){
+			CVARIANT*P=S;
+			string s=*S->DATA.ps;
+			if(!s.find("*")){
+				s=s.substr(1);
+				Pset->sub->adres=s;
+				V=M->getUnLink2(Pset,s);
+				v=0;
+				}else{
+				V=new(CVARIANT);
+				V->avtoSet("void");
+				v=1;
+				}
+			return isInSet;
+			}
 		CV->TransformType("int");
 		i=CV->DATA.intVal;
 		if(i>=0&&i<S->DATA.ps->size()){
@@ -1045,10 +1032,11 @@ int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 		}
 	if(S->isType("map")){
 		bool u=L->rop>0;
-		if(S->DATA.mapVal->find(*CV)!=S->DATA.mapVal->end())u=1;
+		CV->TransformType("string");
+		string adr = *CV->DATA.ps;
+		if(S->DATA.mapVal->find(adr)!=S->DATA.mapVal->end())u=1;
 		if(u){
-			V=&(*S->DATA.mapVal)[*CV];
-			CV->TransformType("string");
+			V=&(*S->DATA.mapVal)[adr];
 			Pset->sub->adres+=(string)"."+*CV->DATA.ps;
 			v=0;
 			}else{
@@ -1057,6 +1045,72 @@ int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 			v=1;
 			}
 		}
+	return isInSet;
+}
+
+
+
+
+int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
+	TRAVERS*T=Border(Pset,M);
+	if(T){V=T->X;return T->free;}
+	Laver*L=M->tableLavers[Pset->Laver];
+	CVARIANT*CV=NULL,*S=NULL;
+	int rop=L->rop;
+	L->rop=0;
+	int b=P->ZapuskTree(Pset,M,CV),a,v; // pos
+	L->rop=rop;
+	if(L->ExtraExit)return 0;
+	if(!CV)b=0;
+	if(!b){
+		CVARIANT*CV2=new(CVARIANT);
+		if(CV)*CV2=*CV;else CV2->avtoSet("void");
+		CV=CV2;
+		b=1;
+		}
+	++L->rop;
+	a=X->ZapuskTree(Pset,M,S);
+	--L->rop;
+	if(L->ExtraExit)return 0;
+	if(!S){
+		V=new(CVARIANT);
+		V->avtoSet("void");
+		return 1;
+		}
+	if(S->isType("void")){
+		V=new(CVARIANT);
+		V->avtoSet("void");
+		return 1;
+		}
+
+	bool isInSet = 0;
+	bool isVectorAccess = CV->isType("vector");
+	if(isVectorAccess){
+		CVARIANT*Data = S;
+		V = Data;
+		v = a;
+		int aa = a;
+		bool first = 1,isInSetX;
+		V_CVARIANT::iterator it = CV->DATA.vectorVal->begin();
+		for(;it!=CV->DATA.vectorVal->end();++it){
+			CVARIANT*Q = it;
+			isInSetX = subAccessOne(M,L,Pset,Q,Data,V,v,aa);
+			if(isInSetX)isInSet = 1;
+			if(aa && !first){
+				if(Data)delete Data;
+				}
+			first = 0;
+			Data = V;
+			aa = v;
+			}
+		} else isInSet = subAccessOne(M,L,Pset,CV,S,V,v,a);
+
+	if(isInSet && L->rop){
+		if(!v || !V)V = new CVARIANT();
+		v=1;
+		V->avtoSet("void");
+		}
+
 	if(b)if(CV){
 		Pset->sub->Bloki.erase(P);
 		delete CV;
@@ -1110,13 +1164,11 @@ int AComposition::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	M_SA::iterator it=table.begin();
 	for(;it!=table.end();++it){
 		string k=it->first;
-		CVARIANT*CV=NULL,K;
-		K.avtoSet("string");
-		*K.DATA.ps=k;
+		CVARIANT*CV=NULL;
 		int b=it->second->ZapuskTree(Pset,M,CV);
 		Laver*L=M->tableLavers[Pset->Laver];
 		if(L->ExtraExit)return 0;
-		if(CV)(*V->DATA.mapVal)[K]=*CV;
+		if(CV)(*V->DATA.mapVal)[k]=*CV;
 		if(b)if(CV){
 			Pset->sub->Bloki.erase(it->second);
 			delete CV;
@@ -1134,9 +1186,8 @@ int CreateVar::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	FRAGMENT*F=Pset->Fundament;
 	while(F->Memorys.empty())F=F->Prev;
 	CVARIANT*CV=*F->Memorys.rbegin();
-	CVARIANT A,B,*C=NULL;
-	A.avtoSet("string");
-	*A.DATA.ps=name;
+	CVARIANT B,*C=NULL;
+	string A=name;
 	B.avtoSet("int");
 	Laver*L=M->tableLavers[Pset->Laver];
 	if(!Init)(*CV->DATA.mapVal)[A]=B;else{

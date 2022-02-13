@@ -391,14 +391,11 @@ CVARIANT* JSON::ONE::toCVARIANT(){
 		}
 	if(isType("table")){
 		X->avtoSet("map");
-		CVARIANT K;
-		K.avtoSet("string");
 		V_JSON::iterator it = Values.begin();
 		V_S::iterator jt = Keys.begin();
 		for(;it!=Values.end() && jt!=Keys.end();++it,++jt){
-			*K.DATA.ps = *jt;
 			CVARIANT*V = (*it)->toCVARIANT();
-			(*X->DATA.mapVal)[K] = *V;
+			(*X->DATA.mapVal)[*jt] = *V;
 			if(V)delete V;
 			}
 		}
@@ -417,6 +414,10 @@ JSON::ONE* JSON::ONE::getONE(CVARIANT*X){
 		OBJONE->avtoSet("int");
 		OBJONE->intVal = X->DATA.intVal;
 		}
+	if(X->isType("float")){
+		OBJONE->avtoSet("double");
+		OBJONE->doubleVal = X->DATA.fltVal;
+		}
 	if(X->isType("double")){
 		OBJONE->avtoSet("double");
 		OBJONE->doubleVal = X->DATA.dblVal;
@@ -434,11 +435,9 @@ JSON::ONE* JSON::ONE::getONE(CVARIANT*X){
 		}
 	if(X->isType("map")){
 		OBJONE->avtoSet("table");
-		M_CVARIANT::iterator it = X->DATA.mapVal->begin();
+		M_SV::iterator it = X->DATA.mapVal->begin();
 		for(;it!=X->DATA.mapVal->end();++it){
-			CVARIANT K = it->first;
-			K.TransformType("string");
-			OBJONE->Keys.push_back(*K.DATA.ps);
+			OBJONE->Keys.push_back(it->first);
 			OBJONE->Values.push_back( getONE(&it->second) );
 			}
 		}

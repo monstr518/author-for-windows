@@ -262,6 +262,15 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 					V=NULL;
 					}
 				}
+			if(X->isType("set")){
+				strok=0;
+				forset(X,name,V,VCV);
+				if(V){
+					s=*V->DATA.ps;
+					delete V;
+					V=NULL;
+					}
+				}
 			if(X->isType("map")){
 				strok=0;
 				formap(X,name,V,VCV);
@@ -704,7 +713,7 @@ void CallFunc::forset(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
 		return;
 		}
 	if(name=="export"){
-		string e="{";
+		string e="(set){";
 		S_CVARIANT::iterator it=thisVal->DATA.setVal->begin();
 		int i;
 		for(i=0;it!=thisVal->DATA.setVal->end();++it,++i){
@@ -765,14 +774,17 @@ void CallFunc::formap(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
 	if(name=="getKeys"){
 		V=new(CVARIANT);
 		V->avtoSet("vector");
-		M_CVARIANT::iterator it=thisVal->DATA.mapVal->begin();
+		M_SV::iterator it=thisVal->DATA.mapVal->begin();
 		for(;it!=thisVal->DATA.mapVal->end();++it){
-			V->DATA.vectorVal->push_back(it->first);
+			CVARIANT S;
+			S.avtoSet("string");
+			*S.DATA.ps=it->first;
+			V->DATA.vectorVal->push_back(S);
 			}
 		}
 	if(name=="erase" || name=="delete")if(VCV.size()>0){
-		if(!VCV[0].isType("int"))VCV[0].TransformType("string");
-		thisVal->DATA.mapVal->erase(VCV[0]);
+		VCV[0].TransformType("string");
+		thisVal->DATA.mapVal->erase(*VCV[0].DATA.ps);
 		}
 	if(name=="empty"){
 		V=new(CVARIANT);
@@ -780,20 +792,29 @@ void CallFunc::formap(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
 		V->DATA.boolVal=thisVal->DATA.mapVal->empty();
 		}
 	if(name=="isset" || name=="find")if(VCV.size()>0){
-		if(!VCV[0].isType("int"))VCV[0].TransformType("string");
-		bool b=thisVal->DATA.mapVal->find(VCV[0])!=thisVal->DATA.mapVal->end();
+		VCV[0].TransformType("string");
+		bool b=thisVal->DATA.mapVal->find(*VCV[0].DATA.ps)!=thisVal->DATA.mapVal->end();
 		V=new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal=b;
 		}
 	if(name=="export"){
 		string e="{";
-		M_CVARIANT::iterator it=thisVal->DATA.mapVal->begin();
+		M_SV::iterator it=thisVal->DATA.mapVal->begin();
 		int i;
 		for(i=0;it!=thisVal->DATA.mapVal->end();++i,++it){
 			string s;
 			CVARIANT*X=&it->second;
 			bool strok=1;
+			if(X->isType("set")){
+				strok=0;
+				forset(X,name,V,VCV);
+				if(V){
+					s=*V->DATA.ps;
+					delete V;
+					V=NULL;
+					}
+				}
 			if(X->isType("vector")){
 				strok=0;
 				forvector(X,name,V,VCV);
@@ -823,11 +844,7 @@ void CallFunc::formap(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
 				}
 			if(strok)X->toString(s);
 			if(i)e+=",";
-			string s2;
-			CVARIANT P=it->first;
-			P.TransformType("string");
-			s2=*P.DATA.ps;
-			e+=SCANER::writeString(s2)+":"+s;
+			e+=SCANER::writeString(it->first)+":"+s;
 			}
 		e+="}";
 		V=new(CVARIANT);
@@ -962,6 +979,7 @@ void CallFunc::forfunction(I*Pset,CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVA
 			if(X->A)delete X->A;
 			X->A=A;
 			if(F->file)F->file->NeedSave=1;
+			if(F->Body){delete F->Body;F->Body=NULL;}
 			return;
 			}
 		if(!VCV[1].isType("string"))return;
@@ -1350,8 +1368,7 @@ void CallFunc::forfunction(I*Pset,CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVA
 		if(name=="run1")
 		if(VCV.size()>0)
 		if(VCV[0].isType("vector"))Args=VCV[0].DATA.vectorVal;
-		CVARIANT K,NF,*VO;
-		K.avtoSet("string");
+		CVARIANT NF,*VO;
 		NF.avtoSet("string");
 		Laver*L=M->tableLavers[Pset->Laver];
 		L->ExtraExit=1;
@@ -1367,20 +1384,17 @@ void CallFunc::forfunction(I*Pset,CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVA
 		CVARIANT*CEL;
 		CEL=new(CVARIANT);
 		CEL->avtoSet("map");
-		*K.DATA.ps="this-f";
 		*NF.DATA.ps="f:"+f->getPsetWay()+f->name;
-		(*CEL->DATA.mapVal)[K]=NF;
+		(*CEL->DATA.mapVal)["this-f"]=NF;
 		int i;
 		for(i=0;i<f->names.size() && i<Args->size();++i){
-			*K.DATA.ps=f->names[i];
-			(*CEL->DATA.mapVal)[K]=(*Args)[i];
+			(*CEL->DATA.mapVal)[f->names[i]]=(*Args)[i];
 			}
 		if(f->argumentsON){
 			CVARIANT ARGS;
 			ARGS.avtoSet("vector");
 			for(;i<Args->size();++i)ARGS.DATA.vectorVal->push_back((*Args)[i]);
-			*K.DATA.ps="arguments";
-			(*CEL->DATA.mapVal)[K]=ARGS;
+			(*CEL->DATA.mapVal)["arguments"]=ARGS;
 			}
 		Pset->Fundament->Memorys.push_back(CEL);
 		return;
@@ -2480,9 +2494,7 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			V=new(CVARIANT);
 			V->avtoSet("vector");
 			CVARIANT K;
-			K.avtoSet("string");
-			*K.DATA.ps="WAY";
-			K=(*M->GlobalSpace.Map.DATA.mapVal)[K];
+			K=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
 			K.TransformType("string");
 			int n=K.DATA.ps->size();
 			V_S::iterator it=file->modules.begin();
@@ -2502,9 +2514,7 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			V=new(CVARIANT);
 			V->avtoSet("vector");
 			CVARIANT K;
-			K.avtoSet("string");
-			*K.DATA.ps="WAY";
-			K=(*M->GlobalSpace.Map.DATA.mapVal)[K];
+			K=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
 			K.TransformType("string");
 			string g=*K.DATA.ps+"\\"+file->way+"\\"+file->name;
 			M_iFile::iterator it=M->Files.begin();
@@ -2529,9 +2539,7 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 				File*fme=M->Files[VCV[0].DATA.moduleVal->id];
 				++fme->Nusers;
 				CVARIANT K;
-				K.avtoSet("string");
-				*K.DATA.ps="WAY";
-				K=(*M->GlobalSpace.Map.DATA.mapVal)[K];
+				K=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
 				K.TransformType("string");
 				string WAY=*K.DATA.ps;
 				WAY=WAY+"\\"+fme->way+"\\"+fme->name;
@@ -2587,9 +2595,7 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			File*fme=M->Files[VCV[0].DATA.moduleVal->id];
 			--fme->Nusers;
 			CVARIANT K;
-			K.avtoSet("string");
-			*K.DATA.ps="WAY";
-			K=(*M->GlobalSpace.Map.DATA.mapVal)[K];
+			K=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
 			K.TransformType("string");
 			string WAY=*K.DATA.ps;
 			WAY=WAY+"\\"+fme->way+"\\"+fme->name;

@@ -25,7 +25,7 @@
 	typedef vector<CVARIANT*>		V_pCVARIANT;
 	typedef set<CVARIANT>			S_CVARIANT;		// ун≥кальна множина
 	typedef deque<CVARIANT>			deque_CVARIANT; // двосторонн€ черга
-	typedef map<CVARIANT,CVARIANT>	M_CVARIANT;		// таблиц€
+	//typedef map<CVARIANT,CVARIANT>	M_CVARIANT;		// таблиц€
 	typedef map<string,CVARIANT>	M_SV; // јссоциативна€ таблица
 #endif
 
@@ -113,7 +113,7 @@ public:
 		S_CVARIANT*		setVal;  // ун≥кальна множина
 		deque_CVARIANT*	dequeVal;// двосторонн€ черга
 		V_CVARIANT*		vectorVal;//vector CVARIANT
-		M_CVARIANT*		mapVal;  // таблиц€
+		M_SV*			mapVal;  // таблиц€
 		CInterval*		intervalVal;
 		CFunction*		functionVal;
 		Algorithm*		programVal;
