@@ -847,6 +847,7 @@ void CallFunc::formap(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV){
 			e+=SCANER::writeString(it->first)+":"+s;
 			}
 		e+="}";
+		if(e=="{}")e="(map){}";
 		V=new(CVARIANT);
 		V->avtoSet("string");
 		*V->DATA.ps=e;
