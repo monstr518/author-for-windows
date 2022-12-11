@@ -385,8 +385,7 @@ CVARIANT* JSON::ONE::toCVARIANT(){
 		V_JSON::iterator it = Values.begin();
 		for(;it!=Values.end();++it){
 			CVARIANT*Y = (*it)->toCVARIANT();
-			X->DATA.vectorVal->push_back(*Y);
-			if(Y)delete Y;
+			X->DATA.vectorVal->push_back(Y);
 			}
 		}
 	if(isType("table")){
@@ -428,9 +427,9 @@ JSON::ONE* JSON::ONE::getONE(CVARIANT*X){
 		}
 	if(X->isType("vector")){
 		OBJONE->avtoSet("array");
-		V_CVARIANT::iterator it = X->DATA.vectorVal->begin();
+		V_pCVARIANT::iterator it = X->DATA.vectorVal->begin();
 		for(;it!=X->DATA.vectorVal->end();++it){
-			OBJONE->Values.push_back( getONE(it) );
+			OBJONE->Values.push_back( getONE(*it) );
 			}
 		}
 	if(X->isType("map")){

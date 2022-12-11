@@ -124,8 +124,11 @@ CVARIANT CallFunc::Analysis(){
 	(*R.DATA.mapVal)["name"]=V;
 	V.avtoSet("vector");
 	int i;
-	for(i=0;i<params.size();++i)
-		V.DATA.vectorVal->push_back(params[i]->Analysis());
+	for(i=0;i<params.size();++i){
+		CVARIANT*X = new CVARIANT();
+		*X = params[i]->Analysis();
+		V.DATA.vectorVal->push_back(X);
+		}
 	(*R.DATA.mapVal)["args"]=V;
 	return R;
 }
@@ -184,8 +187,11 @@ CVARIANT AlgoSet::Analysis(){
 	(*R.DATA.mapVal)["vid"]=V;
 	V.avtoSet("vector");
 	int i;
-	for(i=0;i<nabor.size();++i)
-		V.DATA.vectorVal->push_back(nabor[i]->Analysis());
+	for(i=0;i<nabor.size();++i){
+		CVARIANT*X = new CVARIANT();
+		*X = nabor[i]->Analysis();
+		V.DATA.vectorVal->push_back(X);
+		}
 	(*R.DATA.mapVal)["args"]=V;
 	return R;
 }
@@ -252,7 +258,9 @@ CVARIANT CreateVar::Analysis(){
 				X.avtoSet("int");
 				X.DATA.intVal=0;
 				}
-			V.DATA.vectorVal->push_back(X);
+			CVARIANT*XX = new CVARIANT();
+			*XX = X;
+			V.DATA.vectorVal->push_back(XX);
 			}
 		(*R.DATA.mapVal)["size"]=V;
 		}

@@ -112,7 +112,7 @@ public:
 		string*			ps;
 		S_CVARIANT*		setVal;  // ун≥кальна множина
 		deque_CVARIANT*	dequeVal;// двосторонн€ черга
-		V_CVARIANT*		vectorVal;//vector CVARIANT
+		V_pCVARIANT*	vectorVal;//vector CVARIANT*
 		M_SV*			mapVal;  // таблиц€
 		CInterval*		intervalVal;
 		CFunction*		functionVal;
@@ -149,7 +149,6 @@ public:
 	static int getSizeType(const char*);
 	void INVERT(const char*);
 	void TransformType(const char*);
-	void TransformCollection(const char*);
 	static bool sBelongs(const char*s,char**);
 	CVARIANT*copy();
 

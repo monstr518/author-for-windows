@@ -289,7 +289,6 @@ class CallFunc :public Sufix{
 	void split(V_CVARIANT&VCV,CVARIANT*&V);
 	void size(V_CVARIANT&VCV,CVARIANT*&V);
 	void outAllMemory(I*,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M);
-	void in_array(V_CVARIANT&VCV,CVARIANT*&V);
 	void rozpad(I*,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M);
 	void outAllMTree(I*,CVARIANT*&V,MAIN*M);
 	void include(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M);
@@ -342,6 +341,7 @@ class CallFunc :public Sufix{
 	void forchar(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void forinterval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void forstring(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
+	void forpointer(I*Pset,CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,MAIN*M);
 	void forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void forset(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);
 	void formap(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);

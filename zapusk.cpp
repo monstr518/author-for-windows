@@ -520,9 +520,9 @@ void MAIN::Mahine(int activLaver){
 							Pset=LL->IS[k];
 							CVARIANT*X=NULL;
 							Base::findVar(Pset,this,X,Pset->DefineNames[i],pos);
-							RONE.DATA.vectorVal->push_back(X?*X:E);
+							RONE.DATA.vectorVal->push_back((X?*X:E).copy());
 							}
-						LL->ResultDEF.DATA.vectorVal->push_back(RONE);
+						LL->ResultDEF.DATA.vectorVal->push_back(RONE.copy());
 						RONE.DATA.vectorVal->clear();
 						}
 					Pset->DefineNames.clear();
@@ -691,7 +691,7 @@ void MAIN::getMapKeys(I*Pset,CVARIANT*&R,string&ss,bool create){
 			s="";
 			}
 		if(!b2){
-			if(!R->isType("string")){
+			if(!(R->isType("string") || R->isType("pointer"))){
 				R=NULL;
 				break;
 				}
@@ -728,7 +728,7 @@ void MAIN::getMapKeys(I*Pset,CVARIANT*&R,string&ss,bool create){
 			sscanf(t.c_str(),"%d",&n);
 			if(!n)if(t!="0")n=-1;
 			if(n>=0 && n<R->DATA.vectorVal->size()){
-				R=&(*R->DATA.vectorVal)[n];
+				R=(*R->DATA.vectorVal)[n];
 				continue;
 				}
 			}

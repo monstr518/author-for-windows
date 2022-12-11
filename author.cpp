@@ -45,7 +45,9 @@ void main(int argc, char* argv[]){
 	int t;
 	for(t=0;t<argc;++t){
 		*A.DATA.ps=argv[t];
-		B.DATA.vectorVal->push_back(A);
+		CVARIANT*X = new CVARIANT();
+		*X = A;
+		B.DATA.vectorVal->push_back(X);
 		}
 	GM["ARGS"]=B;
 	B.avtoSet("bool");

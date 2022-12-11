@@ -2213,7 +2213,12 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 				if(ok){
 					L_OT::iterator pos3=pos;
 					++pos3;
-					ok=(pos3->term=="(" || pos3->term=="{" || pos3->nfunc<4 || (pos3->nfunc==4 && pos3->term=="#"));
+					ok = (
+						pos3->term=="(" || 
+						pos3->term=="{" || 
+						pos3->nfunc<4 || 
+						((pos3->nfunc==4 || pos3->nfunc==6) && pos3->term=="#")
+						);
 					}
 				if(ok){
 					Cast*h=new(Cast);

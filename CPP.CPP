@@ -14,7 +14,6 @@ const char* CallFunc::m[]={
 	"count",
 	"outAllMemory",
 	"outAllMTree",
-	"in_array",
 	"rozpad",
 	"define",
 	"include",
@@ -124,8 +123,8 @@ void CallFunc::implode(V_CVARIANT&VCV,CVARIANT*&V){
 		int i;
 		for(i=0;i<B->DATA.vectorVal->size();++i){
 			if(i)str+=*A->DATA.ps;
-			(*B->DATA.vectorVal)[i].TransformType("string");
-			str+=*(*B->DATA.vectorVal)[i].DATA.ps;
+			(*B->DATA.vectorVal)[i]->TransformType("string");
+			str+=*(*B->DATA.vectorVal)[i]->DATA.ps;
 			}
 		V=new(CVARIANT);
 		V->avtoSet("string");
@@ -151,11 +150,15 @@ void CallFunc::split(V_CVARIANT&VCV,CVARIANT*&V){
 			u=b->find(a->c_str());
 			if(u<0)break;
 			*S.DATA.ps=b->substr(0,u);
-			V->DATA.vectorVal->push_back(S);
+			CVARIANT*X = new CVARIANT();
+			*X = S;
+			V->DATA.vectorVal->push_back(X);
 			*b=b->substr(u+a->length());
 			}
 		*S.DATA.ps=*b;
-		V->DATA.vectorVal->push_back(S);
+		CVARIANT*X = new CVARIANT();
+		*X = S;
+		V->DATA.vectorVal->push_back(X);
 		}
 }
 
@@ -198,19 +201,6 @@ void CallFunc::outAllMemory(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 }
 
 
-void CallFunc::in_array(V_CVARIANT&VCV,CVARIANT*&V){
-	if(VCV.size()>1){
-		CVARIANT*A,*B;
-		A=&VCV[0];
-		B=&VCV[1];
-		B->TransformType("vector");
-		bool t=find(B->DATA.vectorVal->begin(),B->DATA.vectorVal->end(),*A)!=B->DATA.vectorVal->end();
-		V=new(CVARIANT);
-		V->avtoSet("bool");
-		V->DATA.boolVal=t;
-		}
-}
-
 
 void CallFunc::rozpad(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(VCV.size()>0){
@@ -222,7 +212,7 @@ void CallFunc::rozpad(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 			I*U=new I(*Pset);
 			L->IS.push_back(U);
 			CVARIANT*CV=new(CVARIANT);
-			*CV=(*VCV[0].DATA.vectorVal)[i];
+			*CV=*(*VCV[0].DATA.vectorVal)[i];
 			U->sub->Bloki[this]=TRAVERS(CV,1);
 			}
 		V=new(CVARIANT);
@@ -440,12 +430,14 @@ void CallFunc::reserve(V_CVARIANT&VCV,CVARIANT*&V){
 		VCV[0].TransformType("int");
 		n=VCV[0].DATA.intVal;
 		}
-	CVARIANT H,U;
-	H.avtoSet("vector");
+	CVARIANT U;
+	V = new(CVARIANT);
+	V->avtoSet("vector");
 	if(VCV.size()>1)U=VCV[1];
-	for(;n>0;--n)H.DATA.vectorVal->push_back(U);
-	V=new(CVARIANT);
-	*V=H;
+	for(;n>0;--n){
+		CVARIANT*W = new CVARIANT();
+		V->DATA.vectorVal->push_back(W);
+		}
 }
 
 
@@ -499,9 +491,9 @@ void CallFunc::define(I*Pset,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 		}
 	Pset->numberDefine=x;
 	if(List){
-		V_CVARIANT::iterator it=List->DATA.vectorVal->begin();
+		V_pCVARIANT::iterator it=List->DATA.vectorVal->begin();
 		for(;it!=List->DATA.vectorVal->end();++it)
-			if(it->isType("string"))Pset->DefineNames.push_back(*it->DATA.ps);
+			if((*it)->isType("string"))Pset->DefineNames.push_back(*(*it)->DATA.ps);
 		}
 }
 
@@ -550,8 +542,10 @@ void CallFunc::RecvDLL(string name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 		sscanf(name.c_str(),"%d",&n);
 		V->avtoSet("vector");
 		for(;i<n;++i){
-			*S.DATA.ps=M->CDLL.Recv(*VCV[0].DATA.ps);
-			V->DATA.vectorVal->push_back(S);
+			*S.DATA.ps = M->CDLL.Recv(*VCV[0].DATA.ps);
+			CVARIANT*W = new CVARIANT();
+			*W = S;
+			V->DATA.vectorVal->push_back(W);
 			}
 		}
 }
@@ -568,10 +562,14 @@ void CallFunc::getNamesAllDll(CVARIANT*&V,MAIN*M){
 	V=new(CVARIANT);
 	V->avtoSet("vector");
 	*A.DATA.ps=FindFileData.cFileName;
-	V->DATA.vectorVal->push_back(A);
+	CVARIANT*W = new CVARIANT();
+	*W = A;
+	V->DATA.vectorVal->push_back(W);
 	while (FindNextFile(hFind,&FindFileData)){
 		*A.DATA.ps=FindFileData.cFileName;
-		V->DATA.vectorVal->push_back(A);
+		W = new CVARIANT();
+		*W = A;
+		V->DATA.vectorVal->push_back(W);
 		}
 	FindClose(hFind);
 }
@@ -605,7 +603,7 @@ void CallFunc::rand(V_CVARIANT&VCV,CVARIANT*&V){
 			double sum=0;
 			int i=0;
 			for(;i<VCV[0].DATA.vectorVal->size();++i){
-				CVARIANT*X=&(*VCV[0].DATA.vectorVal)[i];
+				CVARIANT*X=(*VCV[0].DATA.vectorVal)[i];
 				X->TransformType("double");
 				x=X->DATA.dblVal;
 				if(x<0)x=0;
@@ -751,15 +749,24 @@ void CallFunc::getValuesInLaver(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 		for(nProcess=0;nProcess<L->adaptationMap.size();++nProcess){
 			I*me=L->IS[L->adaptationMap[nProcess]];//,*Prev;
 			if(me->stop){
-				V->DATA.vectorVal->push_back(XV);
+				CVARIANT*W = new CVARIANT();
+				*W = XV;
+				V->DATA.vectorVal->push_back(W);
 				continue;
 				}
 			//Prev=Pset;
 			Pset=me;
 			CVARIANT*X=NULL;
 			int pos;
-			if(Base::findVar(Pset,M,X,*VCV[1].DATA.ps,pos))V->DATA.vectorVal->push_back(*X);
-				else V->DATA.vectorVal->push_back(XV);
+			if(Base::findVar(Pset,M,X,*VCV[1].DATA.ps,pos)){
+				CVARIANT*W = new CVARIANT();
+				*W = *X;
+				V->DATA.vectorVal->push_back(W);
+				}else {
+				CVARIANT*W = new CVARIANT();
+				*W = XV;
+				V->DATA.vectorVal->push_back(W);
+				}
 			//Pset=Prev;
 			}
 		}
@@ -804,9 +811,9 @@ void CallFunc::getListLaver(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 				M_SV*map=H->Memorys[i]->DATA.mapVal;
 				M_SV::iterator it=map->begin();
 				for(;it!=map->end();++it)if(it->first=="this-f")H=NULL;else {
-					CVARIANT S;
-					S.avtoSet("string");
-					*S.DATA.ps=it->first;
+					CVARIANT *S = new CVARIANT();
+					S->avtoSet("string");
+					*S->DATA.ps=it->first;
 					V->DATA.vectorVal->push_back(S);
 					}
 				if(!H)break;
@@ -914,7 +921,7 @@ void CallFunc::PROGRAM(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(VCV.size()>0){
 		if(VCV[0].isType("map")){
 			string type,condition,body,eelse;
-			V_CVARIANT*VBody=NULL,*VElse=NULL;
+			V_pCVARIANT*VBody=NULL,*VElse=NULL;
 			Algorithm*Condition=NULL,*Body=NULL,*Else=NULL;
 			M_SV*table=VCV[0].DATA.mapVal;
 			CVARIANT *Va;
@@ -968,7 +975,7 @@ void CallFunc::PROGRAM(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 				Sequence*SS=new Sequence();
 				int i;
 				for(i=0;i<VBody->size();++i){
-					CVARIANT*P=&(*VBody)[i];
+					CVARIANT*P=(*VBody)[i];
 					if(P->isType("program"))SS->nabor.push_back(P->DATA.programVal->copy());
 					if(P->isType("string")){
 						Algorithm*A=Assemble::getComand(M,*P->DATA.ps);
@@ -986,7 +993,7 @@ void CallFunc::PROGRAM(V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 				Sequence*SS=new Sequence();
 				int i;
 				for(i=0;i<VBody->size();++i){
-					CVARIANT*P=&(*VBody)[i];
+					CVARIANT*P=(*VBody)[i];
 					if(P->isType("program"))SS->nabor.push_back(P->DATA.programVal->copy());
 					if(P->isType("string")){
 						Algorithm*A=Assemble::getComand(M,*P->DATA.ps);
@@ -1100,12 +1107,12 @@ void CallFunc::ClearPsetOFF(I*Pset,MAIN*M){
 void CallFunc::getAllModules(MAIN*M,CVARIANT*&V){
 	V=new(CVARIANT);
 	V->avtoSet("vector");
-	CVARIANT S;
-	S.avtoSet("string");
 	M_iFile::iterator it=M->Files.begin();
 	for(;it!=M->Files.end();++it){
 		string s=it->second->way+"\\"+it->second->name;
-		*S.DATA.ps=s;
+		CVARIANT *S = new CVARIANT();
+		S->avtoSet("string");
+		*S->DATA.ps=s;
 		V->DATA.vectorVal->push_back(S);
 		}
 }
@@ -1118,8 +1125,6 @@ void CallFunc::getAllModuleFunctions(V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 		if(!f)return;
 		V=new(CVARIANT);
 		V->avtoSet("vector");
-		CVARIANT S;
-		S.avtoSet("string");
 		int i;
 		for(i=0;i<f->functions.size();++i){
 			Function*fun=f->functions[i];
@@ -1129,7 +1134,9 @@ void CallFunc::getAllModuleFunctions(V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 				full=C->name+"::"+full;
 				C=C->Space;
 				}
-			*S.DATA.ps=full;
+			CVARIANT *S = new CVARIANT();
+			S->avtoSet("string");
+			*S->DATA.ps=full;
 			V->DATA.vectorVal->push_back(S);
 			}
 		}
@@ -1161,7 +1168,7 @@ void CallFunc::runFunction(I*Pset,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 		K="this-f";
 		*NF.DATA.ps="f:"+fun->name;
 		(*CEL->DATA.mapVal)[K]=NF;
-		V_CVARIANT H;
+		V_pCVARIANT H;
 		if(VCV.size()>2){
 			VCV[2].TransformType("vector");
 			H=*VCV[2].DATA.vectorVal;
@@ -1169,7 +1176,7 @@ void CallFunc::runFunction(I*Pset,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 		int i;
 		for(i=0;i<fun->names.size()&&i<H.size();++i){
 			K=fun->names[i];
-			(*CEL->DATA.mapVal)[K]=H[i];
+			(*CEL->DATA.mapVal)[K]=*H[i];
 			}
 		Pset->Fundament->Memorys.push_back(CEL);
 		}
@@ -1198,11 +1205,11 @@ void CallFunc::issystemf(V_CVARIANT&VCV,CVARIANT*&V){
 		return;
 		}
 	V->avtoSet("vector");
-	CVARIANT S;
-	S.avtoSet("string");
 	int i;
 	for(i=0;m[i];++i){
-		*S.DATA.ps=m[i];
+		CVARIANT *S = new CVARIANT();
+		S->avtoSet("string");
+		*S->DATA.ps=m[i];
 		V->DATA.vectorVal->push_back(S);
 		}
 }
@@ -1329,13 +1336,18 @@ void CallFunc::Help(V_CVARIANT&VCV,CVARIANT*&V){
 	V=new(CVARIANT);
 	if(VCV.size()<1){
 		V->avtoSet("vector");
-		CVARIANT X;
-		X.avtoSet("string");
-		*X.DATA.ps="author";
+		CVARIANT *X;
+		X = new CVARIANT();
+		X->avtoSet("string");
+		*X->DATA.ps="author";
 		V->DATA.vectorVal->push_back(X);
-		*X.DATA.ps="ver";
+		X = new CVARIANT();
+		X->avtoSet("string");
+		*X->DATA.ps="ver";
 		V->DATA.vectorVal->push_back(X);
-		*X.DATA.ps="functions";
+		X = new CVARIANT();
+		X->avtoSet("string");
+		*X->DATA.ps="functions";
 		V->DATA.vectorVal->push_back(X);
 		return;
 		}
@@ -1351,11 +1363,12 @@ void CallFunc::Help(V_CVARIANT&VCV,CVARIANT*&V){
 		}
 	if(s=="functions"){
 		V->avtoSet("vector");
-		CVARIANT X;
-		X.avtoSet("string");
+		CVARIANT *X;
 		int i;
 		for(i=0;m[i];++i){
-			*X.DATA.ps=m[i];
+			X = new CVARIANT();
+			X->avtoSet("string");
+			*X->DATA.ps=m[i];
 			V->DATA.vectorVal->push_back(X);
 			}
 		}
@@ -1436,8 +1449,6 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 				if(*s=="Dir" || *s=="dir" || *s=="Dirs" || *s=="dirs")attr=2;
 				}
 			}
-		CVARIANT X;
-		X.avtoSet("string");
 		V=new(CVARIANT);
 		V->avtoSet("vector");
 		WIN32_FIND_DATA FindFileData;
@@ -1447,8 +1458,13 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 			do{
 				p=(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)?2:1;
 				if(attr&p){
-					*X.DATA.ps = FindFileData.cFileName;
-					if(*X.DATA.ps!="." && *X.DATA.ps!="..")V->DATA.vectorVal->push_back(X);
+					string ps = FindFileData.cFileName;
+					if(ps!="." && ps!=".."){
+						CVARIANT *X = new CVARIANT();
+						X->avtoSet("string");
+						*X->DATA.ps = ps;
+						V->DATA.vectorVal->push_back(X);
+						}
 					}
 				}while(FindNextFile(hf,&FindFileData) != 0);
 			FindClose(hf);
@@ -1552,13 +1568,18 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 	string fstr = text.substr(0,posx);
 	string heads = text.substr(posx+2,pos-(posx+2));
 	V->avtoSet("vector");
-	CVARIANT S;
-	S.avtoSet("string");
-	*S.DATA.ps=fstr;
+	CVARIANT *S;
+	S = new CVARIANT();
+	S->avtoSet("string");
+	*S->DATA.ps=fstr;
 	V->DATA.vectorVal->push_back(S);
-	*S.DATA.ps=heads;
+	S = new CVARIANT();
+	S->avtoSet("string");
+	*S->DATA.ps=heads;
 	V->DATA.vectorVal->push_back(S);
-	*S.DATA.ps=body;
+	S = new CVARIANT();
+	S->avtoSet("string");
+	*S->DATA.ps=body;
 	V->DATA.vectorVal->push_back(S);
 }
 
@@ -1602,7 +1623,6 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(name=="count"||name=="size")size(VCV,V);
 	if(name=="outAllMemory")outAllMemory(Pset,VCV,V,M);
 	if(name=="outAllMTree")outAllMTree(Pset,V,M);
-	if(name=="in_array")in_array(VCV,V);
 	if(name=="rozpad")rozpad(Pset,VCV,V,M);
 	if(name=="define")define(Pset,VCV,M,V);
 	if(name=="include")include(VCV,V,M);
@@ -1688,6 +1708,7 @@ void CallFunc::mc(I*Pset,string&tt,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M
 	if(thisVal->isType("char"))forchar(thisVal,name,V,VCV);
 	if(thisVal->isType("interval"))forinterval(thisVal,name,V,VCV);
 	if(thisVal->isType("string"))forstring(thisVal,name,V,VCV);
+	if(thisVal->isType("pointer"))forpointer(Pset,thisVal,name,V,VCV,M);
 	if(thisVal->isType("vector"))forvector(thisVal,name,V,VCV);
 	if(thisVal->isType("set"))forset(thisVal,name,V,VCV);
 	if(thisVal->isType("map"))formap(thisVal,name,V,VCV);

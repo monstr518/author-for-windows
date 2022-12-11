@@ -210,9 +210,15 @@ CVARIANT::CVARIANT(){Ntype=0;}
 CVARIANT::~CVARIANT(){clear();}
 void CVARIANT::clear(){
 	if(isType("string"))if(DATA.ps)delete DATA.ps;
+	if(isType("pointer"))if(DATA.ps)delete DATA.ps;
 	#define defdel(ss,uu)	if(isType(ss))if(DATA.uu){delete DATA.uu;return;}
 	defdel("deque",dequeVal);
 	defdel("map",mapVal);
+	if(isType("vector")){
+		V_pCVARIANT::iterator it = DATA.vectorVal->begin();
+		for(;it!=DATA.vectorVal->end();++it)
+			if(*it)delete *it;
+		}
 	defdel("vector",vectorVal);
 	defdel("set",setVal);
 	defdel("interval",intervalVal);
@@ -263,6 +269,7 @@ char* CVARIANT::name[]={
 	"graph",
 	"digit",
 	"module",
+	"pointer",
 	NULL
 };
 
@@ -280,7 +287,15 @@ CVARIANT& CVARIANT::operator = (const CVARIANT&t){
 	#define def_copy(ss,tclass,uu)	if(t.isType(ss)) \
 			{DATA.uu=new (tclass)(*t.DATA.uu);return *this;}
 	def_copy("string",string,ps);
-	def_copy("vector",V_CVARIANT,vectorVal);
+	def_copy("pointer",string,ps);
+	if(t.isType("vector")){
+		DATA.vectorVal = new V_pCVARIANT(*t.DATA.vectorVal);
+		int i,size = DATA.vectorVal->size();
+		for(i=0;i<size;++i){
+			(*DATA.vectorVal)[i] = (*t.DATA.vectorVal)[i]->copy();
+			}
+		return *this;
+		}
 	def_copy("deque",deque_CVARIANT,dequeVal);
 	def_copy("set",S_CVARIANT,setVal);
 	def_copy("map",M_SV,mapVal);
@@ -302,6 +317,7 @@ bool CVARIANT::operator == (const CVARIANT&t) const{
 	if(!Ntype)return 1;
 	#define def_compare(ss,uu)	if(isType(ss))return (*DATA.uu==*t.DATA.uu);
 	def_compare("string",ps);
+	def_compare("pointer",ps);
 	def_compare("vector",vectorVal);
 	def_compare("deque",dequeVal);
 	def_compare("set",setVal);
@@ -336,6 +352,7 @@ bool CVARIANT::operator >  (const CVARIANT&t) const{
 	fop("double",dblVal);
 	#define def_compare(ss,uu)	if(isType(ss))return (*DATA.uu>*t.DATA.uu);
 	def_compare("string",ps);
+	def_compare("pointer",ps);
 	def_compare("type",ps);
 	def_compare("vector",vectorVal);
 	def_compare("deque",dequeVal);
@@ -365,6 +382,7 @@ bool CVARIANT::operator <  (const CVARIANT&t) const{
 	fop("bool",boolVal);
 	#define def_compare(ss,uu)	if(isType(ss))return (*DATA.uu<*t.DATA.uu);
 	def_compare("string",ps);
+	def_compare("pointer",ps);
 	def_compare("type",ps);
 	def_compare("vector",vectorVal);
 	def_compare("deque",dequeVal);
@@ -415,6 +433,7 @@ CVARIANT& CVARIANT::operator ++ (){
 void CVARIANT::toString(string&s) const{
 	if(isType("void"))s+="#";
 	if(isType("string"))s+=SCANER::writeString(*DATA.ps);
+	if(isType("pointer"))s+=*DATA.ps;
 	char t[200]="";
 	if(isType("short"))		sprintf(t,"%d",DATA.iVal);
 	if(isType("int"))		sprintf(t,"%d",DATA.intVal);
@@ -471,10 +490,10 @@ void CVARIANT::toString(string&s) const{
 		}
 	if(isType("vector")){
 		s+="vector[";
-		V_CVARIANT::iterator it=DATA.vectorVal->begin();
+		V_pCVARIANT::iterator it=DATA.vectorVal->begin();
 		for(bool fi=0;it!=DATA.vectorVal->end();++it,fi=1){
 			if(fi)s+=',';
-			it->toString(s);
+			(*it)->toString(s);
 			}
 		s+="]";
 		return;
@@ -656,13 +675,15 @@ bool CVARIANT::OPETATOR(CVARIANT*A,CVARIANT*B,const char*c){
 		}
 	if(A->isType("vector")){
 		if(is("+=")){
-			V_CVARIANT::iterator it=B->DATA.vectorVal->begin();
-			for(;it!=B->DATA.vectorVal->end();++it)A->DATA.vectorVal->push_back(*it);
+			V_pCVARIANT::iterator it=B->DATA.vectorVal->begin();
+			for(;it!=B->DATA.vectorVal->end();++it){
+				A->DATA.vectorVal->push_back((*it)->copy());
+				}
 			}
 		if(is("-=")){
-			V_CVARIANT::iterator jt,it=B->DATA.vectorVal->begin();
+			V_pCVARIANT::iterator jt,it=B->DATA.vectorVal->begin();
 			for(;it!=B->DATA.vectorVal->end();++it){
-				jt=find(A->DATA.vectorVal->begin(),A->DATA.vectorVal->end(),*it);
+				jt=find_pointer(A->DATA.vectorVal->begin(),A->DATA.vectorVal->end(),**it);
 				if(jt==A->DATA.vectorVal->end())continue;
 				A->DATA.vectorVal->erase(jt);
 				}
@@ -670,11 +691,11 @@ bool CVARIANT::OPETATOR(CVARIANT*A,CVARIANT*B,const char*c){
 		if(is("*=")){
 			CVARIANT Q;
 			Q.avtoSet("vector");
-			V_CVARIANT::iterator jt,it=B->DATA.vectorVal->begin();
+			V_pCVARIANT::iterator jt,it=B->DATA.vectorVal->begin();
 			for(;it!=B->DATA.vectorVal->end();++it){
-				jt=find(A->DATA.vectorVal->begin(),A->DATA.vectorVal->end(),*it);
+				jt=find_pointer(A->DATA.vectorVal->begin(),A->DATA.vectorVal->end(),**it);
 				if(jt==A->DATA.vectorVal->end())continue;
-				Q.DATA.vectorVal->push_back(*jt);
+				Q.DATA.vectorVal->push_back((*jt)->copy());
 				}
 			*A=Q;
 			}
@@ -782,8 +803,8 @@ void CVARIANT::TransformType(const char*nameType){
 		if(isType("program"))str=SCANER::trim(str);
 		}
 	if(isType("vector")){
-		V_CVARIANT::iterator it=DATA.vectorVal->begin();
-		for(;it!=DATA.vectorVal->end();++it)List.push_back(*it);
+		V_pCVARIANT::iterator it=DATA.vectorVal->begin();
+		for(;it!=DATA.vectorVal->end();++it)List.push_back(**it);
 		b=n=DATA.vectorVal->size();
 		}
 	if(isType("set")){
@@ -819,7 +840,10 @@ void CVARIANT::TransformType(const char*nameType){
 	if(isType("vector")){
 		Ntype=0;
 		avtoSet(nameType);
-		*DATA.vectorVal=List;
+		DATA.vectorVal = new (V_pCVARIANT);
+		V_CVARIANT::iterator it = List.begin();
+		for(;it!=List.end();++it)
+			DATA.vectorVal->push_back(it->copy());
 		return;
 		}
 	if(isType("set")){
@@ -886,57 +910,6 @@ void CVARIANT::TransformType(const char*nameType){
 
 
 
-void CVARIANT::TransformCollection(const char*nameType){
-	if(isType(nameType))return;
-	if(isType("associative"))if(!strcmp(nameType,"map"))return;
-	int n=0,h=0;
-	V_CVARIANT*V;
-	S_CVARIANT::iterator i2;
-	deque_CVARIANT::iterator i3;
-	if(isType("vector")){
-		V=DATA.vectorVal;
-		n=V->size();
-		h=1;
-		}else
-	if(isType("set")){
-		S_CVARIANT*S;
-		S=DATA.setVal;
-		n=S->size();
-		i2=S->begin();
-		h=2;
-		}else
-	if(isType("deque")){
-		deque_CVARIANT*D;
-		D=DATA.dequeVal;
-		n=D->size();
-		i3=D->begin();
-		h=3;
-		}
-	if(!h)return;
-	CVARIANT*X,NEW;
-	NEW.avtoSet(nameType);
-	int i;
-	for(i=0;i<n;++i){
-		if(h==1)X=&(*V)[i]; else
-		if(h==2){
-			if(i)++i2;
-			X=&*i2;
-			} else
-		if(h==3){
-			if(i)++i3;
-			X=&*i3;
-			}
-		if(!strcmp(nameType,"vector"))NEW.DATA.vectorVal->push_back(*X); else
-		if(!strcmp(nameType,"set"))NEW.DATA.setVal->insert(*X); else
-			NEW.DATA.dequeVal->push_back(*X);
-		}
-	clear();
-	Ntype=NEW.Ntype;
-	DATA=NEW.DATA;
-	NEW.DATA.ps=NULL;
-}
-
-
 
 //выделение памяти для непремитивных типов.
 void CVARIANT::avtoSet(string&type){
@@ -946,8 +919,9 @@ void CVARIANT::avtoSet(string&type){
 	#define def_co(ss,tt,uu)	\
 		if(isType(ss)) DATA.uu=new(tt);
 	def_co("string",string,ps);
+	def_co("pointer",string,ps);
 	//def_co("type",string,ps);
-	def_co("vector",V_CVARIANT,vectorVal);
+	def_co("vector",V_pCVARIANT,vectorVal);
 	def_co("deque",deque_CVARIANT,dequeVal);
 	def_co("set",S_CVARIANT,setVal);
 	def_co("map",M_SV,mapVal);
@@ -996,6 +970,7 @@ int CVARIANT::getSizeType(const char*s){
 //преобразует любой тип в string
 string CVARIANT::getString(){
 	if(isType("string"))return *DATA.ps;
+	if(isType("pointer"))return *DATA.ps;
 	CVARIANT X(*this);
 	X.TransformType("string");
 	return *X.DATA.ps;

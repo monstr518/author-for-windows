@@ -89,12 +89,13 @@ string ControlerDLL::Recv(string s){
 
 void ControlerDLL::ReWriteVar(){
 	M_SV&GM=*Main->GlobalSpace.Map.DATA.mapVal;
-	CVARIANT S;
-	CVARIANT*R=&GM["DLLS"];
+		CVARIANT*R=&GM["DLLS"];
 	R->avtoSet("vector");
 	M_SXDLL::iterator it=Main->CDLL.dlls.begin();
 	for(;it!=Main->CDLL.dlls.end();++it){
-		*S.DATA.ps=it->first;
+		CVARIANT *S = new CVARIANT();
+		S->avtoSet("string");
+		*S->DATA.ps=it->first;
 		R->DATA.vectorVal->push_back(S);
 		}
 }
