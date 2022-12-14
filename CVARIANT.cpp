@@ -215,11 +215,14 @@ void CVARIANT::clear(){
 	defdel("deque",dequeVal);
 	defdel("map",mapVal);
 	if(isType("vector")){
-		V_pCVARIANT::iterator it = DATA.vectorVal->begin();
-		for(;it!=DATA.vectorVal->end();++it)
-			if(*it)delete *it;
+		if(DATA.vectorVal){
+			V_pCVARIANT::iterator it = DATA.vectorVal->begin();
+			for(;it!=DATA.vectorVal->end();++it)
+				if(*it)delete *it;
+			delete DATA.vectorVal;
+			}
+		return;
 		}
-	defdel("vector",vectorVal);
 	defdel("set",setVal);
 	defdel("interval",intervalVal);
 	defdel("function",functionVal);

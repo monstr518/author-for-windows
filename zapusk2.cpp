@@ -764,6 +764,7 @@ int AlgoSet::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	TRAVERS*T=Border(Pset,M);
 	if(T){V=T->X;return T->free;}
 	V_pCVARIANT problem;
+	V_I BS;
 	V=new(CVARIANT);
 	V->avtoSet("vector");
 	int i;
@@ -772,16 +773,20 @@ int AlgoSet::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 		int b=nabor[i]->ZapuskTree(Pset,M,CV);
 		Laver*L=M->tableLavers[Pset->Laver];
 		if(L->ExtraExit)return 0;
-		if(CV)V->DATA.vectorVal->push_back(CV->copy());else{
-			CVARIANT *P = new CVARIANT();
-			P->avtoSet("void");
-			V->DATA.vectorVal->push_back(P);
-			}
-		problem.push_back(b?CV:NULL);
+		problem.push_back(CV);
+		BS.push_back(b);
 		}
 	for(i=0;i<nabor.size();++i){
+		CVARIANT *P = problem[i];
+		int b = BS[i];
+		if(!P){
+			P = new CVARIANT();
+			P->avtoSet("void");
+			b=1;
+			}
+		if(!b)P = P->copy();
+		V->DATA.vectorVal->push_back(P);
 		Pset->sub->Bloki.erase(nabor[i]);
-		if(problem[i])delete problem[i];
 		}
 	Pset->sub->Bloki[this]=TRAVERS(V,1);
 	return 1;
