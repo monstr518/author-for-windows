@@ -190,5 +190,13 @@ SOURCE=.\zapusk2.cpp
 
 SOURCE=.\JSON.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\RegularExpressions.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\String.cpp
+# End Source File
 # End Target
 # End Project

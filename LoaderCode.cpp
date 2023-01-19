@@ -29,8 +29,8 @@ void LOADER::load(const char*name){
 	f.seekg(0, ios::end);    // go to the end
 	length = f.tellg();           // report location (this is the length)
 	f.seekg(0, ios::beg);    // go back to the beginning
-	text = new char[length];    // allocate memory for a buffer of appropriate dimension
-	memset(text,0,length);
+	text = new char[length+1];    // allocate memory for a buffer of appropriate dimension
+	memset(text,0,length+1);
 	f.read(text, length);       // read the whole file into the buffer
 	f.close();                    // close file handle
 }
