@@ -1,7 +1,7 @@
 
 Main(){
 	s="\\sys\\sustem.txt";
-	if(count(ARGS)>1){
+	if(ARGS.size()>1){
 		s=ARGS[1];
 		s2=s.substr(0,WAY.length());
 		if(s2==WAY)s=s.substr(WAY.length());
