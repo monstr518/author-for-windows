@@ -290,6 +290,8 @@ public:
 	ControlerDLL CDLL;
 	CRITICAL_SECTION CriticalSection1; // for cout
 
+	JSON* Data;
+
 	MAIN();
 	~MAIN();
 
@@ -320,6 +322,8 @@ public:
 	void L_IS(Laver*,Function*);
 	Function*getFunction(I*,string);
 	static unsigned long __stdcall fork(void*);
+
+	bool GoErrorMessage(string&,const char* NameError, const char* text, const char* NumberLine = NULL);
 };
 
 

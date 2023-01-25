@@ -267,7 +267,7 @@ bool Algorithm::isProsto(){
 }
 
 bool Algorithm::isIF(){
-	return dynamic_cast<IF*>(this);
+	return dynamic_cast<IF*>(this) != NULL;
 }
 
 string Algorithm::getAdress(){return "";}
@@ -1319,9 +1319,17 @@ void Assemble::Readterms(char*&s,L_OT&lot){
 			}
 		}while(ok);
 	if(t.term.empty()){
-		PHTML+="<font class='red'>Неизвестный оператор или неожиданный конец файла в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"UnknownOperator",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>Неизвестный оператор или неожиданный конец файла в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		lot.clear();
 		}
 }
@@ -1377,22 +1385,46 @@ bool Assemble::isCorectSkobki(L_OT&lot){
 			}
 		}
 	if(er==1){
-		PHTML+="<font class='red'>Лишняя скобка '";
-		PHTML+=it->term+"' в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,it->c));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"Bracket",
+			it->term.c_str(),
+			SCANER::toString(SCANER::findNumberStringLine(F.text,it->c))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>Лишняя скобка '";
+			PHTML+=it->term+"' в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,it->c));
+			PHTML+="</font><br/>\n";
+			}
 		}
 	if(er==2){
-		PHTML+="<font class='red'>Закрытая скобка '";
-		PHTML+=it->term.c_str();
-		PHTML+="' не соответствует открытой в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,it->c));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"CloseBracket",
+			it->term.c_str(),
+			SCANER::toString(SCANER::findNumberStringLine(F.text,it->c))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>Закрытая скобка '";
+			PHTML+=it->term.c_str();
+			PHTML+="' не соответствует открытой в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,it->c));
+			PHTML+="</font><br/>\n";
+			}
 		}
 	if(lifo.size()){
-		PHTML+="<font class='red'>Нехватает закрытых скобок к открытым \"";
-		PHTML+=lifo+"\" в строке: "+
-			SCANER::toString(SCANER::findNumberStringLine(F.text,final))+"</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NeedCloseBracket",
+			lifo.c_str(),
+			SCANER::toString(SCANER::findNumberStringLine(F.text,it->c))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>Нехватает закрытых скобок к открытым \"";
+			PHTML+=lifo+"\" в строке: "+
+				SCANER::toString(SCANER::findNumberStringLine(F.text,final))+"</font><br/>\n";
+			}
 		er=3;
 		}
 	return !er;
@@ -1490,11 +1522,19 @@ Label* Assemble::getLabel(char*&s){
 	SCANER::noProbel(s);
 	if(*s=='>'){++s;++n;}
 	if(n<3){
-		PHTML+="<font class='red'>";
-		PHTML+="Нарушен синтаксис метки в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+=SCANER::replaceSpecSumbolHTML(". Пример: <label:10>");
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"LabelError",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Нарушен синтаксис метки в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+=SCANER::replaceSpecSumbolHTML(". Пример: <label:10>");
+			PHTML+="</font><br/>\n";
+			}
 		return NULL;
 		}
 	Label*X=new(Label);
@@ -1648,14 +1688,23 @@ int Assemble::probaVarRead(char*&s,L_AL&nabor){
 		break;
 		}
 	if(er){
-		//if(er==4){s=s2;return 0;}
-		PHTML+="<font class='red'>";
-		if(er==1)PHTML+="Нет имени переменной после описания типа ее в строке: ";
-		if(er==2)PHTML+="Нет инициализации переменной после '=' в строке: ";
-		if(er==3){PHTML+="Нет аргумента ";PHTML+=SCANER::toString(narg);PHTML+=" в конструкторе, в строке: ";}
-		if(er==4)PHTML+="Нужен разделитель ',' в описании переменных в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		const char* EE[] = {"E1","E2","E3","E4"};
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			EE[er-1],
+			SCANER::toString(narg),
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			//if(er==4){s=s2;return 0;}
+			PHTML+="<font class='red'>";
+			if(er==1)PHTML+="Нет имени переменной после описания типа ее в строке: ";
+			if(er==2)PHTML+="Нет инициализации переменной после '=' в строке: ";
+			if(er==3){PHTML+="Нет аргумента ";PHTML+=SCANER::toString(narg);PHTML+=" в конструкторе, в строке: ";}
+			if(er==4)PHTML+="Нужен разделитель ',' в описании переменных в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		return 2;
 		}
 	nabor.push_back(cvar);
@@ -1677,10 +1726,18 @@ SpecSumbol* Assemble::getSpecSumbol(char*&s,int&er){
 	SCANER::noProbel(s);
 	if(*s==';'){
 		if(i==1){
-			PHTML+="<font class='red'>";
-			PHTML+="Нужен аргумент после 'delete' в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"NeedArgDel",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Нужен аргумент после 'delete' в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			s=s2;
 			er=10;
 			return NULL;
@@ -1691,18 +1748,34 @@ SpecSumbol* Assemble::getSpecSumbol(char*&s,int&er){
 		return S;
 		}
 	if(i>5){
-		PHTML+="<font class='red'>";
-		PHTML+="Отсутствует ';' после '";PHTML+=SpecSumbol::m[i];PHTML+="' в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NeedPsetko",
+			SpecSumbol::m[i],
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Отсутствует ';' после '";PHTML+=SpecSumbol::m[i];PHTML+="' в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		return NULL;
 		}
 	Algorithm*X=Razbor(s,1);
 	if(!X){
-		PHTML+="<font class='red'>";
-		PHTML+="Нужен аргумент после '";PHTML+=SpecSumbol::m[i];PHTML+="' в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NeedArg",
+			SpecSumbol::m[i],
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Нужен аргумент после '";PHTML+=SpecSumbol::m[i];PHTML+="' в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		s=s2;
 		er=10;
 		return NULL;
@@ -1712,11 +1785,19 @@ SpecSumbol* Assemble::getSpecSumbol(char*&s,int&er){
 		if(B)if(B->type==3){if(!int(SCANER::getNumber(B->text,10)))B=NULL;}else B=NULL;
 		if(!B){
 			delete X;
-			PHTML+="<font class='red'>Spec sumbil <b>";
-			PHTML+=SpecSumbol::m[i];
-			PHTML+="</b> mast be const int, no zero, value in string: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"MastBeNumber",
+				SpecSumbol::m[i],
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>Spec sumbil <b>";
+				PHTML+=SpecSumbol::m[i];
+				PHTML+="</b> mast be const int, no zero, value in string: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			s=s2;
 			er=10;
 			return NULL;
@@ -1744,20 +1825,36 @@ IF* Assemble::getIF(char*&s,int&er){ // if
 	iif->X=Razbor(s,0);
 	if(*s!=')'){
 		delete iif;
-		PHTML+="<font class='red'>";
-		PHTML+="Требуетса скобка ')' после условия в блоке if() в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NeedBracketInIF",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Требуетса скобка ')' после условия в блоке if() в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		er=1;
 		return NULL;
 		}
 	++s;
 	if(!iif->X){
 		delete iif;
-		PHTML+="<font class='red'>";
-		PHTML+="Требуетса условие в блоке if() в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s2));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NeedCondition",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s2))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Требуетса условие в блоке if() в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s2));
+			PHTML+="</font><br/>\n";
+			}
 		er=1;
 		return NULL;
 		}
@@ -1802,10 +1899,18 @@ WHILE* Assemble::getWHILE(char*&s,int&er){
 			W->X=Razbor(s,0);
 			SCANER::noProbel(s);
 			if(*s!=')'){
-				PHTML+="<font class='red'>";
-				PHTML+="Требуетса скобка ')' в блоке 'repeat()', в строке: ";
-				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-				PHTML+="</font><br/>\n";
+				bool isOK = Main->GoErrorMessage(
+					PHTML,
+					"NeedInRepeat",
+					"",
+					SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+					);
+				if(!isOK){
+					PHTML+="<font class='red'>";
+					PHTML+="Требуетса скобка ')' в блоке 'repeat()', в строке: ";
+					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+					PHTML+="</font><br/>\n";
+					}
 				er=1;
 				return W;
 				}
@@ -1816,10 +1921,18 @@ WHILE* Assemble::getWHILE(char*&s,int&er){
 		W->A=getNabor(s,er);
 		if(!W->A)if(*s!=';'){
 			er=1;
-			PHTML+="<font class='red'>";
-			PHTML+="Требуетса ';' после блока 'repeat', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"NeedPsetkoR",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Требуетса ';' после блока 'repeat', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			}
 		return W;
 		}
@@ -1828,10 +1941,18 @@ WHILE* Assemble::getWHILE(char*&s,int&er){
 		SCANER::noProbel(s);
 		if(*s!='('){
 			er=1;
-			PHTML+="<font class='red'>";
-			PHTML+="Требуетса '(' после блоке 'while', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"NeedBracketW",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Требуетса '(' после блоке 'while', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			return NULL;
 			}
 		++s;
@@ -1842,11 +1963,19 @@ WHILE* Assemble::getWHILE(char*&s,int&er){
 		if(*s!=')')er=1;
 		if(!W->X)er=2;
 		if(er){
-			PHTML+="<font class='red'>";
-			if(er==1)PHTML+="Требуетса ')' в блоке 'while()', в строке: ";
-			if(er==2)PHTML+="Требуетса условие в блоке 'while(?)', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				((er==1)?"NeedCBracketW":"NeedConditionW"),
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				if(er==1)PHTML+="Требуетса ')' в блоке 'while()', в строке: ";
+				if(er==2)PHTML+="Требуетса условие в блоке 'while(?)', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			return W;
 			}
 		++s;
@@ -1871,12 +2000,21 @@ WHILE* Assemble::getWHILE(char*&s,int&er){
 		SCANER::noProbel(s);
 		if(*s!='(')if(!er)er=3;
 		if(er){
-			PHTML+="<font class='red'>";
-			if(er==1)PHTML+="Нужен отступ после 'do', в строке: ";
-			if(er==2)PHTML+="Нужно слово 'while' в блоке 'do{}while()', в строке: ";
-			if(er==3)PHTML+="Требуетса '(' в блоке 'do{}while()', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			const char* mer[] = {"NE01","NW02","NB03"};
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				mer[er-1],
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				if(er==1)PHTML+="Нужен отступ после 'do', в строке: ";
+				if(er==2)PHTML+="Нужно слово 'while' в блоке 'do{}while()', в строке: ";
+				if(er==3)PHTML+="Требуетса '(' в блоке 'do{}while()', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			return W;
 			}
 		++s;
@@ -1888,12 +2026,21 @@ WHILE* Assemble::getWHILE(char*&s,int&er){
 		SCANER::noProbel(s);
 		if(*s!=';')if(!er)er=3;
 		if(er){
-			PHTML+="<font class='red'>";
-			if(er==1)PHTML+="Требуетса ')' в блоке 'do{}while()', в строке: ";
-			if(er==2)PHTML+="Нужно условие в блоке 'do{}while(?)', в строке: ";
-			if(er==3)PHTML+="Требуетса ';' после блока 'do{}while()', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			const char* mer[] = {"NB04","NC05","NP0W"};
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				mer[er-1],
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				if(er==1)PHTML+="Требуетса ')' в блоке 'do{}while()', в строке: ";
+				if(er==2)PHTML+="Нужно условие в блоке 'do{}while(?)', в строке: ";
+				if(er==3)PHTML+="Требуетса ';' после блока 'do{}while()', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			}
 		++s;
 		}
@@ -1912,12 +2059,20 @@ Algorithm* Assemble::getFOR(char*&s,int&er,Sequence*S){
 	SCANER::noProbel(s);
 	if(*s!='('){
 		er=1;
-		PHTML+="<font class='red'>";
-		PHTML+="Требуетса '(' после блока '";
-		PHTML+="for";
-		PHTML+="', в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NB06",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Требуетса '(' после блока '";
+			PHTML+="for";
+			PHTML+="', в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		return NULL;
 		}
 	++s;
@@ -1947,10 +2102,18 @@ Algorithm* Assemble::getFOR(char*&s,int&er,Sequence*S){
 			}
 		if(t!=1){
 			er=1;
-			PHTML+="<font class='red'>";
-			PHTML+="Нарушен блок инициализации для 'for(<b>?</b>;;);', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"EI07",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Нарушен блок инициализации для 'for(<b>?</b>;;);', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			return NULL;
 			}
 		}else ++s;
@@ -1960,10 +2123,18 @@ Algorithm* Assemble::getFOR(char*&s,int&er,Sequence*S){
 		FF->X=Razbor(s,1);
 		if(!FF->X){
 			er=2;
-			PHTML+="<font class='red'>";
-			PHTML+="Нарушен блок условия для 'for(;<b>?</b>;);', в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"EC08",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Нарушен блок условия для 'for(;<b>?</b>;);', в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			delete FF;
 			return NULL;
 			}
@@ -1980,11 +2151,19 @@ Algorithm* Assemble::getFOR(char*&s,int&er,Sequence*S){
 			S3->nabor.push_back(U);
 			}
 		if(er){
-			PHTML+="<font class='red'>";
-			PHTML+="Нарушен список пост операций для 'for(;;<b>?</b>);'. ";
-			PHTML+="Список должен разделятса комами или быть пустым. Проблема в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"EL09",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Нарушен список пост операций для 'for(;;<b>?</b>);'. ";
+				PHTML+="Список должен разделятса комами или быть пустым. Проблема в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			delete FF;
 			delete S3;
 			return NULL;
@@ -2000,10 +2179,18 @@ Algorithm* Assemble::getFOR(char*&s,int&er,Sequence*S){
 		
 	if(*s!=')'){
 		er=1;
-		PHTML+="<font class='red'>";
-		PHTML+="Требуетса скобка ')' для 'for(;;<b>)</b>;' в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NB10",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Требуетса скобка ')' для 'for(;;<b>)</b>;' в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		delete FF;
 		return NULL;
 		}
@@ -2107,10 +2294,18 @@ Sequence* Assemble::getNabor(char*&s,int&er){ //{}
 	if(*s=='}')++s; else{
 		delete S;
 		S=NULL;
-		PHTML+="<font class='red'>";
-		PHTML+="Неправильно организованы операторные скобки. Проблема в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"EX11",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,s))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Неправильно организованы операторные скобки. Проблема в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,s));
+			PHTML+="</font><br/>\n";
+			}
 		er=1;
 		}
 	return S;
@@ -2162,23 +2357,33 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 					}
 				if(pos->term!=")")if(!er)er=4;
 				if(er){
-					PHTML+="<font class='red'>";
-					if(er<=4){
-						char*m[]={"<",">","(",")"};
-						PHTML+="Требуетса скобка '";
-						PHTML+=SCANER::replaceSpecSumbolHTML(m[er-1]);
-						PHTML+=SCANER::replaceSpecSumbolHTML("' в блоке 'dynamic_cast<>()' в строке: ");
+					const char*m[]={"<",">","(",")"};
+					const char*pm = "";
+					if(er<=4)pm = m[er-1];
+					bool isOK = Main->GoErrorMessage(
+						PHTML,
+						((er<=4)?"NB12":((er==5)?"ET13":"NA13")),
+						pm,
+						SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+						);
+					if(!isOK){
+						PHTML+="<font class='red'>";
+						if(er<=4){
+							PHTML+="Требуетса скобка '";
+							PHTML+=SCANER::replaceSpecSumbolHTML(m[er-1]);
+							PHTML+=SCANER::replaceSpecSumbolHTML("' в блоке 'dynamic_cast<>()' в строке: ");
+							}
+						if(er==5){
+							PHTML+="Неверно заданый тип в блоке ";
+							PHTML+=SCANER::replaceSpecSumbolHTML("'dynamic_cast<?>()' в строке: ");
+							}
+						if(er==6){
+							PHTML+="Требуетса выражение в блоке ";
+							PHTML+=SCANER::replaceSpecSumbolHTML("'dynamic_cast<>(?)' в строке: ");
+							}
+						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+						PHTML+="</font><br/>\n";
 						}
-					if(er==5){
-						PHTML+="Неверно заданый тип в блоке ";
-						PHTML+=SCANER::replaceSpecSumbolHTML("'dynamic_cast<?>()' в строке: ");
-						}
-					if(er==6){
-						PHTML+="Требуетса выражение в блоке ";
-						PHTML+=SCANER::replaceSpecSumbolHTML("'dynamic_cast<>(?)' в строке: ");
-						}
-					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-					PHTML+="</font><br/>\n";
 					if(x)delete x;
 					if(A)delete A;
 					delete R;
@@ -2249,16 +2454,32 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 				X=NULL;
 				if(!I){
 					if(pos->term==","){
-						PHTML+="<font class='red'>Не должно быть ком в скобках в строке: ";
-						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-						PHTML+="</font><br/>\n";
+						bool isOK = Main->GoErrorMessage(
+							PHTML,
+							"EK14",
+							"",
+							SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+							);
+						if(!isOK){
+							PHTML+="<font class='red'>Не должно быть ком в скобках в строке: ";
+							PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+							PHTML+="</font><br/>\n";
+							}
 						break;
 						}
 					bool krugli2=pos->term==")";
 					if(!krugli || !krugli2){
-						PHTML+="<font class='red'>Скобки должны быть круглые в строке: ";
-						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-						PHTML+="</font><br/>\n";
+						bool isOK = Main->GoErrorMessage(
+							PHTML,
+							"EB15",
+							"",
+							SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+							);
+						if(!isOK){
+							PHTML+="<font class='red'>Скобки должны быть круглые в строке: ";
+							PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+							PHTML+="</font><br/>\n";
+							}
 						break;
 						}
 					}
@@ -2304,13 +2525,22 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 						if(pos->term==";" || pos->term==",")++pos; else {nok=1;break;}
 						}
 					if(nok){
-						PHTML+="<font class='red'>";
-						if(nok==1)PHTML+="Отсутствует разделитель ';' или ',' внутри композиции в строке: ";
-						if(nok==2)PHTML+="Некорректно задан параметр внутри композиции в строке: ";
-						if(nok==3)PHTML+="Требуетса имя поля внутри композиции в строке: ";
-						if(nok==4)PHTML+="Пропущен разделитель ':' между именем поля и значением его в строке: ";
-						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-						PHTML+="</font><br/>\n";
+						const char* mer[] = {"NP16","EP17","NN18","NP19"};
+						bool isOK = Main->GoErrorMessage(
+							PHTML,
+							mer[nok-1],
+							"",
+							SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+							);
+						if(!isOK){
+							PHTML+="<font class='red'>";
+							if(nok==1)PHTML+="Отсутствует разделитель ';' или ',' внутри композиции в строке: ";
+							if(nok==2)PHTML+="Некорректно задан параметр внутри композиции в строке: ";
+							if(nok==3)PHTML+="Требуетса имя поля внутри композиции в строке: ";
+							if(nok==4)PHTML+="Пропущен разделитель ':' между именем поля и значением его в строке: ";
+							PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+							PHTML+="</font><br/>\n";
+							}
 						break;
 						}
 					}
@@ -2318,9 +2548,17 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 				n=2;
 				continue;
 				}
-			PHTML+="<font class='red'>Отсутствует аргумент в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"NA20",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>Отсутствует аргумент в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+				PHTML+="</font><br/>\n";
+				}
 			delete R;
 			R=NULL;
 			break;
@@ -2350,17 +2588,33 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 					if(A)cf->params.push_back(A); else {nok=2;break;}
 					}
 				if(nok==1){
-					PHTML+="<font class='red'>";
-					PHTML+="Параметры функции должны быть в круглых скобках разделены комой в строке: ";
-					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-					PHTML+="</font><br/>\n";
+					bool isOK = Main->GoErrorMessage(
+						PHTML,
+						"EB21",
+						"",
+						SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+						);
+					if(!isOK){
+						PHTML+="<font class='red'>";
+						PHTML+="Параметры функции должны быть в круглых скобках разделены комой в строке: ";
+						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+						PHTML+="</font><br/>\n";
+						}
 					break;
 					}
 				if(nok==2){
-					PHTML+="<font class='red'>";
-					PHTML+="Параметр некорректный или отсутствует в строке: ";
-					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-					PHTML+="</font><br/>\n";
+					bool isOK = Main->GoErrorMessage(
+						PHTML,
+						"NP22",
+						"",
+						SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+						);
+					if(!isOK){
+						PHTML+="<font class='red'>";
+						PHTML+="Параметр некорректный или отсутствует в строке: ";
+						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+						PHTML+="</font><br/>\n";
+						}
 					break;
 					}
 				continue;
@@ -2374,18 +2628,29 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 				am->P=Assemble::gather(lot,pos);
 				bool ok;
 				ok=pos->term==(i==3?"]":"}");
-				if(!ok){
-					PHTML+="<font class='red'>";
-					PHTML+="Несоответствие скобок при доступе к масиву в строке: ";
-					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-					PHTML+="</font><br/>\n";
-					break;
-					}
-				if(!am->P){
-					PHTML+="<font class='red'>";
-					PHTML+="Некорректный индекс масива в строке: ";
-					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-					PHTML+="</font><br/>\n";
+				if(!ok || !am->P){
+					bool isOK = Main->GoErrorMessage(
+						PHTML,
+						((!ok)?"EB23":"EI24"),
+						"",
+						SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+						);
+					if(!isOK){
+						if(!ok){
+							PHTML+="<font class='red'>";
+							PHTML+="Несоответствие скобок при доступе к масиву в строке: ";
+							PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+							PHTML+="</font><br/>\n";
+							break;
+							}
+						if(!am->P){
+							PHTML+="<font class='red'>";
+							PHTML+="Некорректный индекс масива в строке: ";
+							PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+							PHTML+="</font><br/>\n";
+							break;
+							}
+						}
 					break;
 					}
 				continue;
@@ -2408,10 +2673,18 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 					B3->V=NULL;
 					}
 				if(!B3->V){
-					PHTML+="<font class='red'>";
-					PHTML+="Некорректо задан тренарный оператор (_?_:_) в строке: ";
-					PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-					PHTML+="</font><br/>\n";
+					bool isOK = Main->GoErrorMessage(
+						PHTML,
+						"ET25",
+						"",
+						SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+						);
+					if(!isOK){
+						PHTML+="<font class='red'>";
+						PHTML+="Некорректо задан тренарный оператор (_?_:_) в строке: ";
+						PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+						PHTML+="</font><br/>\n";
+						}
 					delete R;
 					R=NULL;
 					break;
@@ -2453,9 +2726,17 @@ Algorithm* Assemble::gather(L_OT&lot,L_OT::iterator&pos){
 		delete R;
 		R=NULL;
 		--pos;
-		PHTML+="<font class='red'>Отсутствует ожидаемый аргумент в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"NA26",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>Отсутствует ожидаемый аргумент в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,pos->c));
+			PHTML+="</font><br/>\n";
+			}
 		}
 	return R;
 }

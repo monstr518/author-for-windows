@@ -657,7 +657,7 @@ BaseFinder* BaseFinder::ConvertRowRE(const RowRE*RRE){
 							SUBBF->text = name;
 							if(isStaticName){
 								if(name=="String")SUBBF->type = 110;
-								if(name=="Digit")SUBBF->type = 111;
+								if(name=="Number")SUBBF->type = 111;
 								if(name=="Name")SUBBF->type = 112;
 								if(SUBBF->type==101)isError = 1;
 								}
@@ -1030,7 +1030,7 @@ string BaseFinder::toString() const {
 	if(type==100)text = "$" + this->text + ":" + text;
 	if(type==101)text = "{" + this->text + "}";
 	if(type==110)text = "{:String}";
-	if(type==111)text = "{:Digit}";
+	if(type==111)text = "{:Number}";
 	if(type==112)text = "{:Name}";
 	text = "(" + text + ")";
 	return text;
@@ -1045,9 +1045,9 @@ string BaseFinder::parseName(const char*&s){
 	bool isFirst = 1;
 	while(*p){
 		char c = *p;
-		bool isDigit = (c>='0' && c<='9');
+		bool isNumber = (c>='0' && c<='9');
 		bool isLetter = ((c>='a' && c<='z') || (c>='A' && c<='Z'));
-		bool ok = (isLetter || (isDigit && !isFirst));
+		bool ok = (isLetter || (isNumber && !isFirst));
 		if(!ok)break;
 		isFirst = 0;
 		name += c;
@@ -1853,7 +1853,7 @@ bool BaseFinder::Scaner(FindersMahine*FM,CTask*task) const {
 		return ok;
 		}
 	// 110	{:String}
-	// 111	{:Digit}
+	// 111	{:Number}
 	// 112	{:Name}
 	if(type==110){ // " A \" B "
 		if(task->iterator)return 0;
@@ -1897,15 +1897,19 @@ bool BaseFinder::Scaner(FindersMahine*FM,CTask*task) const {
 			}
 		if(!oneN)return 0;
 		if(*p=='E' || *p=='e'){
+			oneN = 0;
 			++p;
 			if(*p=='-')++p;
 			while(*p){
 				char c = *p;
 				bool isD = (c>='0' && c<='9');
 				if(!isD)break;
+				oneN = 1;
 				++p;
 				}
 			}
+		if(!oneN)return 0;
+		if(*(p-1)=='.')--p;
 		const char*i = task->s;
 		for(;i<p;++i)task->text += *i;
 		task->end = p;
@@ -2079,7 +2083,7 @@ string FindersMahine::ExamplesExpression(string name){
 		string Expression;
 		Expression += "($array:\\[\\s*{JSON}?(?(3)(\\s*,\\s*{JSON})*)\\s*\\])";
 		Expression += "($table:\\{\\s*({:String}\\s*:\\s*{JSON})?(?(3)(\\s*,\\s*{:String}\\s*:\\s*{JSON})*)\\s*\\})";
-		Expression += "($JSON:({table}|{array}|{:String}|{:Digit}|null|true|false))";
+		Expression += "($JSON:({table}|{array}|{:String}|{:Number}|null|true|false))";
 		Expression += "{JSON}";
 		return Expression;
 		}

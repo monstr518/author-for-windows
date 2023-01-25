@@ -7,6 +7,7 @@ MAIN::MAIN():CDLL(this){
 	NfreeOBJ=1;
 	indexFile=1;
 	InitializeCriticalSection(&CriticalSection1);
+	Data = NULL;
 }
 
 
@@ -18,6 +19,7 @@ MAIN::~MAIN(){
 		}
 	M_ILAVER::iterator ti=tableLavers.begin();
 	for(;ti!=tableLavers.end();++ti)if(ti->second)delete ti->second;
+	if(Data)delete Data;
 }
 
 
@@ -108,6 +110,38 @@ Function* MAIN::getFunction(I*Pset,string fullnsme){
 }
 
 
+
+
+bool MAIN::GoErrorMessage(string&PHTML, const char* NameError, const char* text, const char* NumberLine){
+	if(!Data)return 0;
+	bool ok = 0;
+	JSON::ONE*EM = Data->one->getValue("ErrorMessages");
+	if(EM)EM = EM->getValue(NameError);
+	if(EM)if(EM->isType("string")){
+		string Message = EM->strVal;
+		string Replacement = "{text}";
+		int pos = Message.find(Replacement);
+		if(pos>=0){
+			Message.replace(pos,Replacement.size(),text);
+			ok = 1;
+			}
+		Replacement = "{NumberLine}";
+		pos = Message.find(Replacement);
+		if(pos>=0){
+			Message.replace(pos,Replacement.size(),NumberLine);
+			ok = 1;
+			}
+		if(ok){
+			PHTML += Message;
+			PHTML += "\n";
+			}
+		}
+	return ok;
+}
+
+
+
+
 int MAIN::IncludeFILE(const char*fulname){
 	string module=fulname;
 	int i=module.find_last_of('.');
@@ -127,23 +161,29 @@ int MAIN::IncludeFILE(const char*fulname){
 	string FN;
 	i=CompareFileTime(W.c_str(),FN);
 	if(!i){
-		PHTML+="<font class='yellow'>";
-		PHTML+="Файл <b>\"";
-		PHTML+=fulname;
-		PHTML+="\"</b> не найден. И не найден его дубликат.";
-		PHTML+="</font><br/>\n";
+		bool isOK = GoErrorMessage(PHTML,"ModuleNotFound",fulname);
+		if(!isOK){
+			PHTML+="<font class='yellow'>";
+			PHTML+="Файл <b>\"";
+			PHTML+=fulname;
+			PHTML+="\"</b> не найден. И не найден его дубликат.";
+			PHTML+="</font><br/>\n";
+			}
 		return 1;
 		}
 	if(i<0)FN=W;
 	{
-	Assemble A(PHTML,this,FN.c_str());
-	i=A.Load(FN.c_str(),A.F.text,i<0);
-	f=A.lastFile;
+		Assemble A(PHTML,this,FN.c_str());
+		i=A.Load(FN.c_str(),A.F.text,i<0);
+		f=A.lastFile;
 	}
 	if(i){
-		PHTML+="<font class='red'>";
-		PHTML+="Файл <b>\"";PHTML+=fulname;PHTML+="\"</b> содержит ошыбку.";
-		PHTML+="</font><br/>\n";
+		bool isOK = GoErrorMessage(PHTML,"SomeError",fulname);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Файл <b>\"";PHTML+=fulname;PHTML+="\"</b> содержит ошыбку.";
+			PHTML+="</font><br/>\n";
+			}
 		return 2;
 		}
 	Files[f->id]=f;
@@ -152,9 +192,12 @@ int MAIN::IncludeFILE(const char*fulname){
 	for(;it!=f->modules.end();++it){
 		int t=IncludeFILE(it->c_str());
 		if(!t)continue;
-		PHTML+="<font class='red'>";
-		PHTML+="Файл <b>\"";PHTML+=fulname;PHTML+="\"</b> содержит ошыбку.";
-		PHTML+="</font><br/>\n";
+		bool isOK = GoErrorMessage(PHTML,"SomeError",fulname);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Файл <b>\"";PHTML+=fulname;PHTML+="\"</b> содержит ошыбку.";
+			PHTML+="</font><br/>\n";
+			}
 		i=1;
 		break;
 		}

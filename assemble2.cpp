@@ -830,10 +830,18 @@ Function* Assemble::getFunction(char*&s,int&er,File*file){
 	if(*s!='('){
 		if(isop){
 			er=1;
-			PHTML+="<font class='red'>";
-			PHTML+="Обявлен недопустимый оператор в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,s));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"EZ001",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(this->F.text,s))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Обявлен недопустимый оператор в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,s));
+				PHTML+="</font><br/>\n";
+				}
 			}
 		s=ss;
 		return NULL;
@@ -870,10 +878,18 @@ Function* Assemble::getFunction(char*&s,int&er,File*file){
 		}else if(*s==';'){i=3;++s;}
 	if(i==1){
 		er=1;
-		PHTML+="<font class='red'>";
-		PHTML+="Объявление функции должно заканчиваться символом ';' в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,ss));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"EF002",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(F.text,ss))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Объявление функции должно заканчиваться символом ';' в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(F.text,ss));
+			PHTML+="</font><br/>\n";
+			}
 		return NULL;
 		}
 	Function*F=file->FindFunction(row,1);
@@ -904,11 +920,19 @@ Function* Assemble::getFunction(char*&s,int&er,File*file){
 	if(i)return F;
 	if(F->Body){
 		er=1;
-		PHTML+="<font class='red'>";
-		PHTML+="Функция \"";PHTML+=F->getHead();
-		PHTML+="\" уже задана. Не должно быть повторного обявления заданой функции в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"ER003",
+			F->getHead().c_str(),
+			SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Функция \"";PHTML+=F->getHead();
+			PHTML+="\" уже задана. Не должно быть повторного обявления заданой функции в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
+			PHTML+="</font><br/>\n";
+			}
 		return NULL;
 		}
 	SCANER::noProbel(s);
@@ -933,10 +957,18 @@ Function* Assemble::getFunction(char*&s,int&er,File*file){
 				}
 			SE.nabor.push_back(cv.copy());
 			if(er){
-				PHTML+="<font class='red'>";
-				PHTML+="Синтаксическая ошибка в заголовке функции в строке: ";
-				PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
-				PHTML+=". Пример: f(int i):a(i),p(i,i){}</font><br/>\n";
+				bool isOK = Main->GoErrorMessage(
+					PHTML,
+					"ES004",
+					"",
+					SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss))
+					);
+				if(!isOK){
+					PHTML+="<font class='red'>";
+					PHTML+="Синтаксическая ошибка в заголовке функции в строке: ";
+					PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
+					PHTML+=". Пример: f(int i):a(i),p(i,i){}</font><br/>\n";
+					}
 				return NULL;
 				}
 			++s;
@@ -949,10 +981,18 @@ Function* Assemble::getFunction(char*&s,int&er,File*file){
 		F->sxema=getSxema(s);
 		if(F->sxema)F->sxema->f=F;
 		if(!F->sxema){
-			PHTML+="<font class='red'>";
-			PHTML+="Ошибка в теле функции-схемы в строке: ";
-			PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
-			PHTML+="</font><br/>\n";
+			bool isOK = Main->GoErrorMessage(
+				PHTML,
+				"EF005",
+				"",
+				SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss))
+				);
+			if(!isOK){
+				PHTML+="<font class='red'>";
+				PHTML+="Ошибка в теле функции-схемы в строке: ";
+				PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
+				PHTML+="</font><br/>\n";
+				}
 			}
 		return F;
 		}
@@ -967,10 +1007,18 @@ Function* Assemble::getFunction(char*&s,int&er,File*file){
 		}else F->Body=SE.copy();
 	if(F->Body)F->Body->initUP(NULL);
 	if(er){
-		PHTML+="<font class='red'>";
-		PHTML+="Ошибка в теле функции в строке: ";
-		PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
-		PHTML+="</font><br/>\n";
+		bool isOK = Main->GoErrorMessage(
+			PHTML,
+			"EF006",
+			"",
+			SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss))
+			);
+		if(!isOK){
+			PHTML+="<font class='red'>";
+			PHTML+="Ошибка в теле функции в строке: ";
+			PHTML+=SCANER::toString(SCANER::findNumberStringLine(this->F.text,ss));
+			PHTML+="</font><br/>\n";
+			}
 		}
 	F->argumentsON=argumentsON;
 	return F;

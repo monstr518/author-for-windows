@@ -114,7 +114,7 @@ public:
 	// 101	{name1}
 
 	// 110	{:String}
-	// 111	{:Digit}
+	// 111	{:Number}
 	// 112	{:Name}
 
 	~BaseFinder();
