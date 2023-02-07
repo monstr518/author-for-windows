@@ -59,6 +59,7 @@ const char* CallFunc::m[]={
 	"eraseInclude",
 	"Spirit",
 	"Math",
+	"sizeof",
 
 	"readFile",
 	"saveFile",
@@ -73,6 +74,7 @@ const char* CallFunc::m[]={
 
 	"Ajax",
 	"JSON",
+	"Server",
 	0
 };
 
@@ -1382,7 +1384,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		VCV[0].TransformType("string");
 		const char*fileName = VCV[0].DATA.ps->c_str();
 		FILE *file = fopen(fileName, "r");
-		bool ok = file;
+		bool ok = (file!=NULL);
 		if(ok)fclose(file);
 		V=new(CVARIANT);
 		V->avtoSet("bool");
@@ -1395,7 +1397,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		DWORD INVALID_FILE_ATTRIBUTES = ((DWORD)-1);
 		bool ok = true;
 		if(attribs == INVALID_FILE_ATTRIBUTES)ok = false;
-		if(ok)ok=(bool)(attribs & FILE_ATTRIBUTE_DIRECTORY);
+		if(ok)ok=((attribs & FILE_ATTRIBUTE_DIRECTORY)!=0);
 		V=new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = ok;
@@ -1613,6 +1615,64 @@ void CallFunc::JSON(V_CVARIANT&VCV,CVARIANT*&V){
 
 
 
+
+void CallFunc::Server(MAIN*M,V_CVARIANT&VCV,CVARIANT*&V){
+	int sizeVCV = VCV.size();
+	if(sizeVCV<1)return;
+	VCV[0].TransformType("string");
+	string* ps = VCV[0].DATA.ps;
+	if(*ps=="Listen")if(sizeVCV>=2){
+		int port;
+		VCV[1].TransformType("int");
+		port = VCV[1].DATA.intVal;
+		if(M->p_Servac){
+			V = new CVARIANT();
+			V->avtoSet("string");
+			*V->DATA.ps = "NeedStopServer";
+			return;
+			}
+		M->p_Servac = new UPServac(port);
+		M->p_Servac->RunServer();
+		V = new CVARIANT();
+		V->avtoSet("string");
+		*V->DATA.ps = M->p_Servac->getDoclad();
+		return;
+		}
+	if(*ps=="Stop"){
+		delete M->p_Servac;
+		M->p_Servac = NULL;
+		return;
+		}
+	if(*ps=="getCountWaitUsers"){
+		int n = 0;
+		if(M->p_Servac)n = M->p_Servac->getCountWaitUsers();
+		V = new CVARIANT();
+		V->avtoSet("int");
+		V->DATA.intVal = n;
+		return;
+		}
+	if(*ps=="WaitUser"){
+		string message;
+		if(M->p_Servac){
+			M->p_Servac->WaitUser();
+			message = M->p_Servac->GetBuffer();
+			}else message = "NeedStartServer";
+		V = new CVARIANT();
+		V->avtoSet("string");
+		*V->DATA.ps = message;
+		return;
+		}
+	if(*ps=="SendAndClose")if(sizeVCV>=2){
+		VCV[1].TransformType("string");
+		const char* s = VCV[1].DATA.ps->c_str();
+		if(M->p_Servac)M->p_Servac->SendAndClose(s);
+		return;
+		}
+}
+
+
+
+
 //--------------------------------------------------------------------------------------------------
 void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(name=="help")Help(VCV,V);
@@ -1674,7 +1734,14 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 		)FileAccess(name,VCV,V);
 	if(name=="Ajax")AJAX(VCV,V);
 	if(name=="JSON")JSON(VCV,V);
-	
+	if(name=="Server")Server(M,VCV,V);
+	if(name=="sizeof"){
+		int size = 0;
+		if(VCV.size())size = VCV[0].getSizeOf();
+		V = new CVARIANT();
+		V->avtoSet("int");
+		V->DATA.intVal = size;
+		}
 }
 
 

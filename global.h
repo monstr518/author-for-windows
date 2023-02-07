@@ -291,6 +291,7 @@ public:
 	CRITICAL_SECTION CriticalSection1; // for cout
 
 	JSON* Data;
+	UPServac* p_Servac;
 
 	MAIN();
 	~MAIN();

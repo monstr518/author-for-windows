@@ -76,6 +76,8 @@ public:
 		CVARIANT* toCVARIANT();
 		static ONE* getONE(CVARIANT*);
 
+		ONE*getValue(string key);
+
 		} *one;
 
 	JSON();

@@ -8,10 +8,8 @@
 
 
 #ifdef DEF_PCONS_CLASS
-	class Methods;
 	class CVARIANT;
 	class CInterval;
-	class POS;
 	class CModule;
 #endif
 
@@ -97,7 +95,7 @@ public:
 class CVARIANT{
 	void wplus(bool);//1++ 0--
 public:
-	int Ntype;
+	char Ntype;
 	union t_DATA{
 		void*			voidVal;
 		char			bVal;
@@ -159,6 +157,7 @@ public:
 	double getDouble();
 
 	//static int getQuantum(string);
+	int getSizeOf() const;
 };
 
 #endif

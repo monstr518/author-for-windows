@@ -1846,7 +1846,7 @@ void CallFunc::forprogram(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VC
 		Algorithm*A=thisVal->DATA.programVal;
 		V=new(CVARIANT);
 		V->avtoSet("int");
-		V->DATA.intVal=A->Power(n);
+		V->DATA.intVal = A->Power(n);
 		return;
 		}
 	if(name=="isProsto"){

@@ -436,7 +436,7 @@ bool UGraf::operator == (const UGraf&t){
 				}
 		}
 	if(i2)delete i2;
-	DE_I2::iterator id=dei2.begin();
+	DE_I2::iterator id = dei2.begin();
 	for(;id!=dei2.end();++id)delete *id;
 	return ret;
 }
@@ -564,6 +564,16 @@ void UGraf::import(const char*s){
 		if(t==2)add(new NetLine(A,a,m.c_str(),b,B));
 		if(t==1)add(new MarkerLine(A,a,m.c_str(),b,mm.c_str()));
 		}
+}
+
+
+
+
+int UGraf::getSizeOf() const {
+	int size = sizeof(nfree);
+	size += lincs.size() * (sizeof(NetLine) + sizeof(NetLine*));
+	size += markers.size() * (sizeof(MarkerLine) + sizeof(MarkerLine*));
+	return size;
 }
 
 

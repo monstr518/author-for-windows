@@ -198,5 +198,9 @@ SOURCE=.\RegularExpressions.cpp
 
 SOURCE=.\String.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\UPServac.cpp
+# End Source File
 # End Target
 # End Project

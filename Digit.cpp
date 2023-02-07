@@ -726,4 +726,17 @@ void Digits::round(int n){
 
 
 
+
+
+int Digits::getSizeOf() const {
+	int size = (sizeof(znak) + sizeof(mlimit));
+	size += exponenta.size() * sizeof(char);
+	size += mantisa.size() * sizeof(char);
+	return size;
+}
+
+
+
+
+
 // Digit.cpp	:-|

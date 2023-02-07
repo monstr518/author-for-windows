@@ -49,37 +49,6 @@ string Ajax(string Host_name,int port,string method,string heads,string body){
 				}
 			}
 		}
-	/*	else {
-        printf("Function returned:\n");
-        printf("\tOfficial name: %s\n", remoteHost->h_name);
-        for (pAlias = remoteHost->h_aliases; *pAlias != 0; pAlias++) {
-            printf("\tAlternate name #%d: %s\n", ++i, *pAlias);
-			}
-        printf("\tAddress type: ");
-        switch (remoteHost->h_addrtype) {
-        case AF_INET:
-            printf("AF_INET\n");
-            break;
-        case AF_NETBIOS:
-            printf("AF_NETBIOS\n");
-            break;
-        default:
-            printf(" %d\n", remoteHost->h_addrtype);
-            break;
-        }
-        printf("\tAddress length: %d\n", remoteHost->h_length);
-        i = 0;
-        if (remoteHost->h_addrtype == AF_INET){
-            while (remoteHost->h_addr_list[i] != 0) {
-                addr.s_addr = *(u_long *) remoteHost->h_addr_list[i++];
-                printf("\tIP Address #%d: %s\n", i, inet_ntoa(addr));
-				}
-			}
-        else if (remoteHost->h_addrtype == AF_NETBIOS){   
-            printf("NETBIOS address was returned\n");
-			}
-		}
-	*/
 
 	int sockfd;
  
@@ -119,7 +88,19 @@ string Ajax(string Host_name,int port,string method,string heads,string body){
     \r\n
 	XN--80AKHBYKNJ4F
     */
-    request = method + " / HTTP/1.1\r\nHOST: www." + Host_name + "\r\n" + heads + "\r\n\r\n" + body;
+
+	if(heads.size()){
+		char c = heads[heads.size()-1];
+		if(c!='\n')heads += "\r\n";
+		}
+
+    request = method + 
+		" / HTTP/1.1\r\nHOST: www." + 
+		Host_name + 
+		"\r\n" + 
+		heads + 
+		"\r\n" + 
+		body;
  
     //printf("Send data with TCP:\n%s\n",request);
 

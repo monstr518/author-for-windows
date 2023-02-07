@@ -336,6 +336,7 @@ class CallFunc :public Sufix{
 	void FileAccess(string&,V_CVARIANT&VCV,CVARIANT*&V);
 	void AJAX(V_CVARIANT&VCV,CVARIANT*&V);
 	void JSON(V_CVARIANT&VCV,CVARIANT*&V);
+	void Server(MAIN*M,V_CVARIANT&VCV,CVARIANT*&V);
 	
 
 	void forchar(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV);

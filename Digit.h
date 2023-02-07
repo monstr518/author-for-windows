@@ -93,6 +93,7 @@ public:
 	void away(int);
 	void round(int);
 
+	int getSizeOf() const;
 };
 
 

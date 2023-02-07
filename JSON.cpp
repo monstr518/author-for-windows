@@ -347,7 +347,7 @@ string JSON::ONE::toString(int format){
 //--------------------------------------------------------------------------------------------------
 bool JSON::parse(const char*&data){
 	one = ONE::parse(data);
-	return (bool)one;
+	return (one!=NULL);
 }
 
 
@@ -358,6 +358,13 @@ string JSON::toString(int format){
 
 
 
+JSON::ONE* JSON::ONE::getValue(string key){
+	if(!isType("table"))return NULL;
+	V_S::iterator it = Keys.begin();
+	int i=0;
+	for(;it!=Keys.end();++i,++it)if(key==*it)return Values[i];
+	return NULL;
+}
 
 
 //==================================================================================================
@@ -366,7 +373,7 @@ CVARIANT* JSON::ONE::toCVARIANT(){
 	if(isType("null"))X->avtoSet("void");
 	if(isType("bool")){
 		X->avtoSet("bool");
-		X->DATA.boolVal = intVal;
+		X->DATA.boolVal = (intVal!=0);
 		}
 	if(isType("int")){
 		X->avtoSet("int");

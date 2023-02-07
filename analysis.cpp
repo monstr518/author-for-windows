@@ -658,6 +658,8 @@ int FOR::Power(int n) const{
 	return nn;
 }
 
+
+
 //--------------------------------------------------------------------------------------------------
 int Algorithm::PowerW() const {
 	if(dynamic_cast<const Base*>(this))return 1;
@@ -682,6 +684,8 @@ int Algorithm::PowerW() const {
 	if(dynamic_cast<const BaseFunction*>(this))return 20;
 	return 100;
 }
+
+
 
 //--------------------------------------------------------------------------------------------------
 bool Algorithm:: operator > (const Algorithm&) const {return 1;}
@@ -1096,5 +1100,7 @@ IF
 WHILE
 FOR
 */
+
+
 
 // analysis.cpp	:-|

@@ -8,6 +8,7 @@ MAIN::MAIN():CDLL(this){
 	indexFile=1;
 	InitializeCriticalSection(&CriticalSection1);
 	Data = NULL;
+	p_Servac = NULL;
 }
 
 
@@ -20,6 +21,7 @@ MAIN::~MAIN(){
 	M_ILAVER::iterator ti=tableLavers.begin();
 	for(;ti!=tableLavers.end();++ti)if(ti->second)delete ti->second;
 	if(Data)delete Data;
+	if(p_Servac)delete p_Servac;
 }
 
 
@@ -173,9 +175,17 @@ int MAIN::IncludeFILE(const char*fulname){
 		}
 	if(i<0)FN=W;
 	{
+		bool isNeedSavedModules = (i<0);
 		Assemble A(PHTML,this,FN.c_str());
-		i=A.Load(FN.c_str(),A.F.text,i<0);
+		i=A.Load(FN.c_str(),A.F.text,isNeedSavedModules);
 		f=A.lastFile;
+		if(f)
+		if(isNeedSavedModules)
+		if(Data){
+			JSON::ONE*EM = Data->one->getValue("isNeedSavedModules");
+			if(EM)if(EM->isType("bool"))isNeedSavedModules = (EM->intVal!=0);
+			f->NeedSave = isNeedSavedModules;
+			}
 	}
 	if(i){
 		bool isOK = GoErrorMessage(PHTML,"SomeError",fulname);

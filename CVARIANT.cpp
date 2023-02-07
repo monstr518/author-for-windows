@@ -32,12 +32,12 @@ CInterval::operator string(){
 	bool is8;
 	s+=(a==1)?"[":"(";
 	int t=A;
-	is8 = a&2;
+	is8 = ((a&2)!=0);
 	if(is8)s+="#"; else
 	if(A==(double)t)s+=SCANER::toString(t);else s+=SCANER::toString(A);
 	s+=";";
 	t=B;
-	is8 = b&2;
+	is8 = ((b&2)!=0);
 	if(is8)s+="#"; else
 	if(B==(double)t)s+=SCANER::toString(t);else s+=SCANER::toString(B);
 	s+=(b==1)?"]":")";
@@ -53,7 +53,7 @@ void CInterval::control(){
 	double D=A;
 	A=B;
 	B=D;
-	bool d=a;
+	bool d = (a!=0);
 	a=b;
 	b=d;
 }
@@ -988,6 +988,53 @@ double CVARIANT::getDouble(){
 	X.TransformType("double");
 	return X.DATA.dblVal;
 }
+
+
+
+
+
+int CVARIANT::getSizeOf() const {
+	int size = sizeof(CVARIANT);
+	if(isType("string") || isType("pointer"))size += DATA.ps->size();
+	if(isType("set")){
+		S_CVARIANT::iterator it = DATA.setVal->begin();
+		for(;it!=DATA.setVal->end();++it)size += it->getSizeOf();
+		}
+	// deque_CVARIANT*	dequeVal; - Never used
+	if(isType("vector")){
+		int i,vs = DATA.vectorVal->size();
+		size += vs;
+		for(i=0;i<vs;++i)size += (*DATA.vectorVal)[i]->getSizeOf();
+		}
+	if(isType("map")){
+		M_SV::iterator it = DATA.mapVal->begin();
+		for(;it!=DATA.mapVal->end();++it){
+			size += it->first.size();
+			size += it->second.getSizeOf();;
+			}
+		}
+	if(isType("interval")){
+		size += sizeof(CInterval);
+		}
+	if(isType("function")){
+		size += 1000;
+		}
+	if(isType("program")){
+		size += DATA.programVal->Power(0)*10;
+		}
+	if(isType("graph")){
+		size += DATA.grafVal->getSizeOf();
+		}
+	if(isType("digit")){
+		size += DATA.digitVal->getSizeOf();
+		}
+	if(isType("module")){
+		size += sizeof(CModule);
+		}
+	return size;
+}
+
+
 
 
 

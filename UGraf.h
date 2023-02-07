@@ -20,6 +20,8 @@
 
 
 
+
+
 #ifdef DEF_PCONS_CONTENT
 //--------------------------------------------------------------------------------------------------
 class BasisLine{
@@ -34,9 +36,10 @@ public:
 	BasisLine(int,char,const char*);
 	virtual ~BasisLine();
 	BasisLine(const BasisLine&);
-	virtual string toString() const =0;
-	virtual string toString2() const =0;
+	virtual string toString() const = 0;
+	virtual string toString2() const = 0;
 };
+
 
 
 class NetLine:public BasisLine{
@@ -48,6 +51,7 @@ public:
 	string toString() const;
 	string toString2() const;
 };
+
 
 
 class MarkerLine:public BasisLine{
@@ -107,6 +111,7 @@ public:
 	bool operator > (const UGraf&);
 	operator string () const;
 	void import(const char*);
+	int getSizeOf() const;
 
 };
 
