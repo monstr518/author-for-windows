@@ -112,6 +112,8 @@ public:
 	operator string () const;
 	void import(const char*);
 	int getSizeOf() const;
+	CVARIANT* ExportData() const;
+	bool ImportData(CVARIANT*);
 
 };
 

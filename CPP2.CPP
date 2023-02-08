@@ -1938,6 +1938,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 				}
 			*V->DATA.ps=UG->toString();
 			}
+		return;
 		}
 	if(name=="NET" || name=="setNet")if(VCV.size()>=5){
 		int a,b,va,vb;
@@ -1955,6 +1956,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 		NetLine*X=new NetLine(a,va,str.c_str(),vb,b);
 		UGraf*UG=thisVal->DATA.grafVal;
 		UG->add(X);
+		return;
 		}
 	if(name=="MARKER" || name=="setMarker")if(VCV.size()>=5){
 		int a,vb,va;
@@ -1972,12 +1974,14 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 		MarkerLine*X=new MarkerLine(a,va,str.c_str(),vb,m.c_str());
 		UGraf*UG=thisVal->DATA.grafVal;
 		UG->add(X);
+		return;
 		}
 	if(name=="FREE" || name=="getFree"){
 		UGraf*UG=thisVal->DATA.grafVal;
 		V=new(CVARIANT);
 		V->avtoSet("int");
 		V->DATA.intVal=UG->getnew();
+		return;
 		}
 	if(name=="getNET"){
 		V_CVARIANT D=VCV;
@@ -2078,6 +2082,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 				}
 			V->DATA.vectorVal->push_back(X);
 			}
+		return;
 		}
 	if(name=="getMARKER"){
 		V_CVARIANT D=VCV;
@@ -2140,6 +2145,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 				}
 			V->DATA.vectorVal->push_back(X);
 			}
+		return;
 		}
 	if(name=="replaceNET")if(VCV.size()>=2){
 		VCV[0].TransformType("vector");
@@ -2207,6 +2213,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 				}
 			NL->c=xx|(yy<<1);
 			}
+		return;
 		}
 	if(name=="replaceMARKER")if(VCV.size()>=2){
 		VCV[0].TransformType("vector");
@@ -2261,6 +2268,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 			if(m2)ML->marker=*m2;
 			ML->c=xx|(yy<<1);
 			}
+		return;
 		}
 	if(name=="deleteNET"){
 		V_CVARIANT D=VCV;
@@ -2280,6 +2288,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 		if(vb<0)vb=2;
 		UGraf*UG=thisVal->DATA.grafVal;
 		UG->deleteNet(a,va,str,vb,b);
+		return;
 		}
 	if(name=="deleteMARKER"){
 		V_CVARIANT D=VCV;
@@ -2299,11 +2308,13 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 		if(vb<0)vb=2;
 		UGraf*UG=thisVal->DATA.grafVal;
 		UG->deleteMarker(a,va,str,vb,m);
+		return;
 		}
 	if(name=="import")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
 		UGraf*UG=thisVal->DATA.grafVal;
 		UG->import(VCV[0].DATA.ps->c_str());
+		return;
 		}
 	if(name=="getUnits"){
 		UGraf*UG=thisVal->DATA.grafVal;
@@ -2318,6 +2329,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 			I->DATA.intVal=*it;
 			V->DATA.vectorVal->push_back(I);
 			}
+		return;
 		}
 	if(name=="getFunction" || name=="toFunction"){
 		Function*f = new Function();
@@ -2326,6 +2338,7 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 		V=new CVARIANT();
 		V->avtoSet("function");
 		V->DATA.functionVal->F = f;
+		return;
 		}
 	if(name=="addGraph")if(VCV.size()>=3){
 		if(!VCV[0].isType("graph"))return;
@@ -2376,6 +2389,20 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 			ML->a = C[i];
 			UG->add(ML);
 			}
+		return;
+		}
+	if(name=="ExportData"){
+		UGraf*UG = thisVal->DATA.grafVal;
+		V = UG->ExportData();
+		return;
+		}
+	if(name=="ImportData")if(VCV.size()>=1){
+		UGraf*UG = thisVal->DATA.grafVal;
+		bool isValid = UG->ImportData(&VCV[0]);
+		V = new CVARIANT();
+		V->avtoSet("bool");
+		V->DATA.boolVal = isValid;
+		return;
 		}
 }
 
