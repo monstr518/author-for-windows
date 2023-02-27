@@ -810,8 +810,10 @@ int Cast::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 		}
 	bool isToFunction = (cast.name=="function");
 	if(isToFunction){
-		if(!V->isType("function")){
-			V->TransformType("string");
+		//if(!V->isType("function")):
+		bool isNameFunction = V->isType("string");
+		bool isNeedNewF = V->isType("void");
+		if(isNameFunction){
 			string s=*V->DATA.ps;
 			if(b)delete V;
 			Function*F=NULL;
@@ -829,6 +831,7 @@ int Cast::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 				}
 			b=1;
 			}
+		if(isNeedNewF)V->TransformType("function");
 		}else{
 		V->TransformType(cast.name.c_str());
 		}

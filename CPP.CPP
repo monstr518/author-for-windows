@@ -60,6 +60,7 @@ const char* CallFunc::m[]={
 	"Spirit",
 	"Math",
 	"sizeof",
+	"Randomize",
 
 	"readFile",
 	"saveFile",
@@ -437,7 +438,7 @@ void CallFunc::reserve(V_CVARIANT&VCV,CVARIANT*&V){
 	V->avtoSet("vector");
 	if(VCV.size()>1)U=VCV[1];
 	for(;n>0;--n){
-		CVARIANT*W = new CVARIANT();
+		CVARIANT*W = U.copy();
 		V->DATA.vectorVal->push_back(W);
 		}
 }
@@ -1741,7 +1742,19 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 		V = new CVARIANT();
 		V->avtoSet("int");
 		V->DATA.intVal = size;
+		return;
 		}
+	if(name=="Randomize"){
+		int code;
+		if(VCV.size()){
+			VCV[0].TransformType("int");
+			code = VCV[0].DATA.intVal;
+			}else{
+			code = UPServac::gettimeofday()*1111;
+			}
+		srand(code);
+		}
+	
 }
 
 

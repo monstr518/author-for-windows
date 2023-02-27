@@ -1418,7 +1418,7 @@ bool Assemble::isCorectSkobki(L_OT&lot){
 			PHTML,
 			"NeedCloseBracket",
 			lifo.c_str(),
-			SCANER::toString(SCANER::findNumberStringLine(F.text,it->c))
+			SCANER::toString(SCANER::findNumberStringLine(F.text,final))
 			);
 		if(!isOK){
 			PHTML+="<font class='red'>Ќехватает закрытых скобок к открытым \"";

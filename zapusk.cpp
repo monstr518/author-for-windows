@@ -117,9 +117,9 @@ Laver::~Laver(){
 }
 
 
-string Laver::printVariants(FRAGMENT*F,V_FRAGMENT*VF){
+string Laver::printVariants(FRAGMENT*F,V_pFRAGMENT*VF){
 	if(!VF){
-		VF=new(V_FRAGMENT);
+		VF=new(V_pFRAGMENT);
 		string s=printVariants(F,VF);
 		delete VF;
 		return s;
@@ -355,7 +355,7 @@ void MAIN::Mahine(int activLaver){
 	while(Pset){
 		while(Pset->stop!=1 && !LL->off){
 			if(!Pset->sub->ActivF){LL->off=Pset->off=1;break;}
-			B=Pset->sub->pos;
+			B = Pset->sub->pos;
 			if(B==Pset->sub->ActivF->sxema->HeadEnd){isEndf=1;break;}
 			if(!Pset->stop && B->A){
 				CVARIANT*V=NULL;
@@ -831,7 +831,7 @@ CVARIANT* MAIN::getUnLink2(I*Pset,string&s){
 		s=s.substr(i);
 		}
 	FRAGMENT*F=Pset->Fundament;
-	V_FRAGMENT VF;
+	V_pFRAGMENT VF;
 	while(F){
 		VF.push_back(F);
 		F=F->Prev;

@@ -380,11 +380,11 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 		return;
 		}
 	if(name=="sort"){
-		V_pCVARIANT*S=thisVal->DATA.vectorVal;
+		V_pCVARIANT*S = thisVal->DATA.vectorVal;
 		V_pCVARIANT R;
 		int i,t;
 		while(S->size()){
-			for(i=1,t=0;i<S->size();++i)if((*S)[i]<(*S)[t])t=i;
+			for(i=1,t=0;i<S->size();++i)if(*(*S)[i]<*(*S)[t])t=i;
 			R.push_back((*S)[t]);
 			S->erase(S->begin()+t);
 			}
@@ -492,7 +492,8 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 				if(x>=0 && (type&4))c='0'+x;
 				s+=c;
 				}
-			for(i=0;i<thisVal->DATA.vectorVal->size();++i){
+			int size = thisVal->DATA.vectorVal->size();
+			for(i=0;i<size;++i){
 				CVARIANT*X=(*thisVal->DATA.vectorVal)[i];
 				if(!X->isType("string"))continue;
 				if(*X->DATA.ps==s){
@@ -506,6 +507,35 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 		V=new(CVARIANT);
 		V->avtoSet("string");
 		*V->DATA.ps=s;
+		return;
+		}
+	if(name=="RandomIndex"){
+		V_pCVARIANT* Row = thisVal->DATA.vectorVal;
+		int sum,i,size = Row->size();
+		sum = i = 0;
+		for(;i<size;++i){
+			CVARIANT*it = (*Row)[i];
+			if(it->isType("int"))sum += it->DATA.intVal;
+			}
+		int pos,t;
+		pos = -1;
+		if(sum>0){
+			t = ::rand()%sum;
+			sum = i = 0;
+			for(;i<size;++i){
+				CVARIANT*it = (*Row)[i];
+				if(it->isType("int")){
+					sum += it->DATA.intVal;
+					if(sum>t){
+						pos = i;
+						break;
+						}
+					}
+				}
+			}
+		V=new(CVARIANT);
+		V->avtoSet("int");
+		V->DATA.intVal = pos;
 		return;
 		}
 	if(name=="U")if(VCV.size()>0){
@@ -843,6 +873,25 @@ void CallFunc::forfunction(I*Pset,CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVA
 			delete Sxem;
 			}
 		s=F->toString();
+		*V->DATA.ps=s;
+		return;
+		}
+	if(name=="exportFunction"){
+		V=new(CVARIANT);
+		V->avtoSet("string");
+		Function*F=thisVal->DATA.functionVal->F;
+		if(!F)return;
+		string s;
+		if(!F->Body && F->sxema){
+			Sxema*Sxem=F->sxema->copy();
+			F->Body=Sxem->Coder();
+			delete Sxem;
+			}
+		s = F->getHead(0);
+		int pos = s.find("(");
+		s = s.substr(pos);
+		s += "=>";
+		if(F->Body)s += F->Body->toString();
 		*V->DATA.ps=s;
 		return;
 		}

@@ -793,10 +793,11 @@ void CVARIANT::TransformType(const char*nameType){
 	fop("quantum",intVal);
 	fop("short",iVal);
 	fop("unsigned short",uiVal);
-	fop("char",bVal);
 	fop("float",fltVal);
 	fop("double",dblVal);
 	fop("bool",boolVal);
+	fop("char",bVal);
+	//if(isType("char"))b=n=DATA.bVal;
 	if(isType("string")){
 		str=*DATA.ps;
 		sscanf(DATA.ps->c_str(),"%lf",&n);

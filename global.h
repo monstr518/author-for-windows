@@ -27,7 +27,7 @@
 	typedef deque<subI*>		D_subI;
 	typedef map<Algorithm*,TRAVERS>	M_AlgoT;
 	typedef map<Algorithm*,int>	M_AI;
-	typedef vector<FRAGMENT*>	V_FRAGMENT;
+	typedef vector<FRAGMENT*>	V_pFRAGMENT;
 	typedef map<int,Laver*>		M_ILAVER;
 	typedef map<string,Xdll*>	M_SXDLL;
 	typedef map<int,CVARIANT*>	M_ICV;
@@ -135,7 +135,7 @@ public:
 class FRAGMENT{
 public:
 	FRAGMENT*Prev;
-	V_FRAGMENT Next;
+	V_pFRAGMENT Next;
 	V_pCVARIANT Memorys;
 	M_ICV Dynamic;
 
@@ -209,7 +209,7 @@ public:
 
 //--------------------------------------------------------------------------------------------------
 class Laver{
-	static string printVariants(FRAGMENT*,V_FRAGMENT*VF=NULL);// out memory tree
+	static string printVariants(FRAGMENT*,V_pFRAGMENT*VF=NULL);// out memory tree
 public:
 	int N,R;// 0-first, 1-random, 2-end
 	int SuperN;

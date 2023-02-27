@@ -41,7 +41,7 @@ void main(int argc, char* argv[]){
 			}
 		FindClose(hFile);
 	}
-	srand(time(NULL)%172);
+	//srand(time(NULL)%172);
 	MAIN Main;
 	{
 		string NameF(s);
