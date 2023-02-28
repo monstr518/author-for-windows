@@ -321,7 +321,18 @@ bool CVARIANT::operator == (const CVARIANT&t) const{
 	#define def_compare(ss,uu)	if(isType(ss))return (*DATA.uu==*t.DATA.uu);
 	def_compare("string",ps);
 	def_compare("pointer",ps);
-	def_compare("vector",vectorVal);
+	//def_compare("vector",vectorVal);
+	if(isType("vector")){
+		int i,size = DATA.vectorVal->size();
+		bool isOK = (size == t.DATA.vectorVal->size());
+		if(!isOK)return 0;
+		i = 0;
+		for(;i<size;++i){
+			isOK = (*(*DATA.vectorVal)[i] == *(*t.DATA.vectorVal)[i]);
+			if(!isOK)break;
+			}
+		return isOK;
+		}
 	def_compare("deque",dequeVal);
 	def_compare("set",setVal);
 	def_compare("interval",intervalVal);
@@ -357,7 +368,22 @@ bool CVARIANT::operator >  (const CVARIANT&t) const{
 	def_compare("string",ps);
 	def_compare("pointer",ps);
 	def_compare("type",ps);
-	def_compare("vector",vectorVal);
+	//def_compare("vector",vectorVal);
+	if(isType("vector")){
+		int size,sizet;
+		size = DATA.vectorVal->size();
+		sizet = t.DATA.vectorVal->size();
+		bool isOK = (size==sizet);
+		if(!isOK)return (size>sizet);
+		int i = 0;
+		for(;i<size;++i){
+			isOK = (*(*DATA.vectorVal)[i] == *(*t.DATA.vectorVal)[i]);
+			if(isOK)continue;
+			isOK = (*(*DATA.vectorVal)[i] > *(*t.DATA.vectorVal)[i]);
+			return isOK;
+			}
+		return false;
+		}
 	def_compare("deque",dequeVal);
 	def_compare("set",setVal);
 	def_compare("map",mapVal);
@@ -387,7 +413,22 @@ bool CVARIANT::operator <  (const CVARIANT&t) const{
 	def_compare("string",ps);
 	def_compare("pointer",ps);
 	def_compare("type",ps);
-	def_compare("vector",vectorVal);
+	//def_compare("vector",vectorVal);
+	if(isType("vector")){
+		int size,sizet;
+		size = DATA.vectorVal->size();
+		sizet = t.DATA.vectorVal->size();
+		bool isOK = (size==sizet);
+		if(!isOK)return (size<sizet);
+		int i = 0;
+		for(;i<size;++i){
+			isOK = (*(*DATA.vectorVal)[i] == *(*t.DATA.vectorVal)[i]);
+			if(isOK)continue;
+			isOK = (*(*DATA.vectorVal)[i] < *(*t.DATA.vectorVal)[i]);
+			return isOK;
+			}
+		return false;
+		}
 	def_compare("deque",dequeVal);
 	def_compare("set",setVal);
 	def_compare("map",mapVal);
