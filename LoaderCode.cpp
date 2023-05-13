@@ -45,6 +45,7 @@ void LOADER::delete_komentary(){
 	int pp=0;// количество переносов строки (\) (нужно для вставки потом \n)
 	int ww=1,vv=1; // ww - "    vv - '
 	int i,j;
+	bool isPrevSlesh = 0;
 	for(i=0;text[i];++i){
 		j=i;
 		while(text[j]=='\\'&&text[j+1]==10){j+=2;i=j;++pp;}
@@ -72,14 +73,17 @@ void LOADER::delete_komentary(){
 			if(text[i])++i;
 			continue;
 			}
-		if(vv&&text[i]=='"') ww=1-ww;
-		if(ww&&text[i]==39 ) vv=1-vv;
+		if(!isPrevSlesh){
+			if(vv&&text[i]=='"') ww=1-ww;
+			if(ww&&text[i]==39 ) vv=1-vv;
+			}
 		if(text[i]==10){
 			ww=1;
 			vv=1;
 			while(pp){ee+="\n";--pp;}
 			}
 		ee+=text[i];
+		isPrevSlesh = (!isPrevSlesh && (!ww||!vv) && text[i]=='\\');
 		}
 	delete[] text;
 	text=copy(ee);
