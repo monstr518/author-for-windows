@@ -2383,10 +2383,12 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 	if(name=="getFunction" || name=="toFunction"){
 		Function*f = new Function();
 		f->name = "noname";
-		f->BuildMe(thisVal->DATA.grafVal,M);
-		V=new CVARIANT();
-		V->avtoSet("function");
-		V->DATA.functionVal->F = f;
+		bool ok = f->BuildMe(thisVal->DATA.grafVal,M);
+		V = new CVARIANT();
+		if(ok){
+			V->avtoSet("function");
+			V->DATA.functionVal->F = f;
+			}else delete f;
 		return;
 		}
 	if(name=="addGraph")if(VCV.size()>=3){

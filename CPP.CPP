@@ -388,6 +388,8 @@ void CallFunc::eval(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 }
 
 
+
+
 void CallFunc::getFunction(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(VCV.size()>0){
 		VCV[0].TransformType("string");
@@ -407,7 +409,14 @@ void CallFunc::getFunction(I*Pset,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 		CFunction P(F);
 		P.isOriginal=1;
 		(*V->DATA.functionVal)=P;
+		return;
 		}
+	Function*F = Pset->sub->ActivF;
+	V=new(CVARIANT);
+	V->avtoSet("function");
+	CFunction P(F);
+	P.isOriginal = 1;
+	(*V->DATA.functionVal)=P;
 }
 
 

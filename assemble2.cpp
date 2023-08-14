@@ -309,6 +309,7 @@ bool Function:: operator < (Function&t){
 bool Function::BuildMe(const UGraf*UG,MAIN*M){
 	if(sxema)delete sxema;
 	if(Body)delete Body;
+	Body = NULL;
 	sxema = new Sxema();
 	int i,a,b,Vector,BeginNumber,EndNumber;
 
@@ -394,6 +395,8 @@ bool Function::BuildMe(const UGraf*UG,MAIN*M){
 		}
 
 	sxema->HeadEnd = table[BeginNumber];
+	if(sxema->HeadEnd->A)delete sxema->HeadEnd->A;
+	sxema->HeadEnd->A = NULL;
 	if(!sxema->controlCorrectSxema()){
 		sxema->HeadEnd = NULL;
 		M_IB::iterator it = table.begin();

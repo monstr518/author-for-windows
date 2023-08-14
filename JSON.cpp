@@ -230,6 +230,10 @@ string JSON::ONE::writeString(const string&s,bool isDve){
 			R+="\\r";
 			continue;
 			}
+		if(c=='\t'){
+			R+="\\t";
+			continue;
+			}
 		if(c=='\\' || c==(isDve?'\"':'\''))R+='\\';
 		R+=c;
 		}
@@ -319,7 +323,7 @@ string JSON::ONE::toString(int format){
 			for(;it!=Values.end();++it,++jt){
 				if(!first)s+=",";
 				first = 0;
-				s+=writeString(*jt,0);
+				s+=writeString(*jt,1);
 				s+=":";
 				s+=(*it)->toString(format);
 				}
@@ -330,7 +334,7 @@ string JSON::ONE::toString(int format){
 				if(!first)s+=",\n";
 				first = 0;
 				s+="\t";
-				s+=writeString(*jt,0);
+				s+=writeString(*jt,1);
 				s+=": ";
 				string u = (*it)->toString(format);
 				poTabu(u);
