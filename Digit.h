@@ -17,7 +17,7 @@
 //--------------------------------------------------------------------------------------------------
 
 class Digits{
-	bool znak;//1+ 0-
+	bool znak; // 1+ 0-
 	void clear();
 
 	void zdvigUP1E(char c=0);
@@ -33,17 +33,17 @@ class Digits{
 	void plus1();
 	void minus1();
 	void not();
-	bool isZero();
+	
 
 	static void antiZero(V_C&);
 
-	char compareABS(Digits&);
-	void umnogenie(char);
+	char compareABS(const Digits&) const;
+	void umnogenie(const char);
 public:
 	static char*cpi;
 	static char*ce;
 
-	V_C exponenta,mantisa;
+	V_C exponenta, mantisa;
 	int mlimit;
 
 	Digits();
@@ -72,28 +72,35 @@ public:
 	operator int ();
 	operator double ();
 
-	bool operator == (Digits&);
-	bool operator > (Digits&);
-	bool operator < (Digits&);
+	bool operator == (const Digits&);
+	bool operator > (const Digits&);
+	bool operator < (const Digits&);
 
-	Digits& operator += (Digits&);
-	Digits& operator -= (Digits&);
+	Digits& operator += (const Digits&);
+	Digits& operator -= (const Digits&);
 
-	Digits& operator *= (Digits&);
-	Digits& operator /= (Digits&);
-	Digits& operator %= (Digits&);
+	Digits& operator *= (const Digits&);
+	Digits& operator /= (const Digits&);
+	Digits& operator %= (const Digits&);
 
+	void Pow(Digits&);
+
+	bool isZero() const;
 
 	string toString();
-	char compare(Digits&);
+	char compare(const Digits&);
 
-	void suma(Digits&);
-	void minus(Digits&);
+	void suma(const Digits&);
+	void minus(const Digits&);
 
 	void away(int);
 	void round(int);
 
 	int getSizeOf() const;
+
+	string toNumberSystem(char) const;
+	void ImportNumberSystem(string&,char);
+
 };
 
 

@@ -220,8 +220,8 @@ int Base::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&X){
 		if(type==1)*X->DATA.ps=text;
 		if(type==2)X->DATA.bVal=text.empty()?'_':text[0];
 		if(type==3){
-			double x=SCANER::f_digit(const_cast<char*>(text.c_str()));
-			X->DATA.dblVal=x;
+			double x = SCANER::f_digit(text.c_str());
+			*X->DATA.dblVal = x;
 			if(x==(int)x){
 				X->avtoSet("int");
 				X->DATA.intVal=x;
@@ -665,26 +665,38 @@ int Base2::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 			XA=CV;
 			xa=1;
 			}
-		CVARIANT ProblemDive=*XB;
+		CVARIANT ProblemDive = *XB;
 		bool error=0;
 		if(n==29){ // %
-			ProblemDive.TransformType("double");
-			if(ProblemDive.DATA.dblVal==0){
-				error=1;
+			bool isZero;
+			if(ProblemDive.isType("digit")){
+				isZero = ProblemDive.DATA.digitVal->isZero();
+				} else {
+				ProblemDive.TransformType("double");
+				isZero = (*ProblemDive.DATA.dblVal==0);
+				}
+			if(isZero){
+				error = 1;
 				cout<<"% by zero"<<endl;
 				}
 			if(XA->isType("void")){
 				XA->avtoSet("int");
-				XA->DATA.intVal=rand();
+				XA->DATA.intVal = rand();
 				}
 			}
 		if(n==28){// dive bu zero
-			ProblemDive.TransformType("double");
-			if(ProblemDive.DATA.dblVal==0){
-				error=1;
+			bool isZero;
+			if(ProblemDive.isType("digit")){
+				isZero = ProblemDive.DATA.digitVal->isZero();
+				} else {
+				ProblemDive.TransformType("double");
+				isZero = (*ProblemDive.DATA.dblVal==0);
+				}
+			if(isZero){
+				error = 1;
 				cout<<"divide by zero"<<endl;
 				}else{
-				ProblemDive=*XA;
+				ProblemDive = *XA;
 				ProblemDive.TransformType("double");
 				CVARIANT B2;
 				B2=*XB;
@@ -693,11 +705,11 @@ int Base2::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 				}
 			}
 		if(!error)CVARIANT::OPETATOR(XA,XB,op.c_str());
-		if(n==28){
+		if(n==28)if(!XA->isType("digit")){
 			CVARIANT B1;
-			B1=*XA;
+			B1 = *XA;
 			B1.TransformType("double");
-			if(ProblemDive!=B1)*XA=ProblemDive;
+			if(ProblemDive!=B1)*XA = ProblemDive;
 			}
 		V=XA;
 		if(xa)if(XA){
@@ -889,7 +901,7 @@ int Prefix::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 				}
 			if(s=="-" || s=="+"){
 				V->TransformType("double");
-				double x = V->DATA.dblVal;
+				double x = *V->DATA.dblVal;
 				if(x==(double)(int)x)V->TransformType("int");
 				}
 			if(isInvert)V->INVERT(m[n]);
@@ -1373,9 +1385,9 @@ int Interval::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	IA.TransformType("double");
 	IB.TransformType("double");
 	double ia,ib;
-	ia=IA.DATA.dblVal;
-	ib=IB.DATA.dblVal;
-	V=new(CVARIANT);
+	ia = *IA.DATA.dblVal;
+	ib = *IB.DATA.dblVal;
+	V = new(CVARIANT);
 	V->avtoSet("interval");
 	(*V->DATA.intervalVal)=CInterval(a+2*isa8,ia,ib,b+2*isb8);
 	V->DATA.intervalVal->control();

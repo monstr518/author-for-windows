@@ -59,20 +59,20 @@ void CallFunc::forinterval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&V
 	if(name=="contains" || name=="belongs" || name=="in")if(VCV.size()>0){
 		CInterval*X=thisVal->DATA.intervalVal;
 		VCV[0].TransformType("double");
-		double N=VCV[0].DATA.dblVal;
+		double N = *VCV[0].DATA.dblVal;
 		bool ok=(X->A<N && X->B>N);
 		if(X->A==N && X->a)ok=1;
 		if(X->B==N && X->b)ok=1;
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal=ok;
 		}
 	if(name=="A" || name=="B"){
 		CInterval*X=thisVal->DATA.intervalVal;
-		double n=(name=="A")?X->A:X->B;
-		V=new(CVARIANT);
+		double n = (name=="A")?X->A:X->B;
+		V = new(CVARIANT);
 		V->avtoSet("double");
-		V->DATA.dblVal=n;
+		*V->DATA.dblVal = n;
 		}
 	if(name=="a" || name=="b" || name=="limA" || name=="limB"){
 		CInterval*X=thisVal->DATA.intervalVal;
@@ -85,7 +85,7 @@ void CallFunc::forinterval(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&V
 		VCV[0].TransformType("double");
 		CInterval*X=thisVal->DATA.intervalVal;
 		double*n=(name=="setA")?&X->A:&X->B;
-		*n=VCV[0].DATA.dblVal;
+		*n = *VCV[0].DATA.dblVal;
 		if(is8){
 			char*x=(name=="setA")?&X->a:&X->b;
 			*x|=2;
@@ -438,7 +438,7 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 		for(;it!=thisVal->DATA.vectorVal->end();++it){
 			A=**it;
 			A.TransformType("double");
-			if(name=="sum")x+=A.DATA.dblVal; else x*=A.DATA.dblVal;
+			if(name=="sum")x += *A.DATA.dblVal; else x *= *A.DATA.dblVal;
 			}
 		V=new(CVARIANT);
 		int n=x;
@@ -448,7 +448,7 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			return;
 			}
 		V->avtoSet("double");
-		V->DATA.dblVal=x;
+		*V->DATA.dblVal = x;
 		return;
 		}
 	if(name=="newName"){
@@ -564,14 +564,39 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 	if(name=="findAll")if(VCV.size()>0){
 		V=new(CVARIANT);
 		V->avtoSet("vector");
-		int i;
-		for(i=0;i<thisVal->DATA.vectorVal->size();++i)
+		int i,n;
+		n = thisVal->DATA.vectorVal->size();
+		for(i=0;i<n;++i)
 			if(*(*thisVal->DATA.vectorVal)[i]==VCV[0]){
 				CVARIANT *X = new CVARIANT();
 				X->avtoSet("int");
 				X->DATA.intVal=i;
 				V->DATA.vectorVal->push_back(X);
 				}
+		return;
+		}
+	if(name=="join"){
+		string Result, separator;
+		if(VCV.size()>0){
+			VCV[0].TransformType("string");
+			separator = *VCV[0].DATA.ps;
+			}
+		int i,n;
+		n = thisVal->DATA.vectorVal->size();
+		CVARIANT S;
+		for(i=0;i<n;++i){
+			CVARIANT *P = (*thisVal->DATA.vectorVal)[i];
+			if(!P->isType("string")){
+				S = *P;
+				S.TransformType("string");
+				P = &S;
+				}
+			if(i)Result += separator;
+			if(P->isType("string"))Result += *P->DATA.ps;
+			}
+		V=new(CVARIANT);
+		V->avtoSet("string");
+		*V->DATA.ps = Result;
 		return;
 		}
 	int si=0;
@@ -2468,40 +2493,95 @@ void CallFunc::fordigit(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV)
 	if(name=="round")if(VCV.size()>=1){
 		VCV[0].TransformType("int");
 		thisVal->DATA.digitVal->round(VCV[0].DATA.intVal);
+		return;
 		}
 	if(name=="away")if(VCV.size()>=1){
 		VCV[0].TransformType("int");
 		thisVal->DATA.digitVal->away(VCV[0].DATA.intVal);
+		return;
 		}
 	if(name=="setPI"){
 		thisVal->DATA.digitVal->set(Digits::cpi);
+		return;
 		}
 	if(name=="setE"){
 		thisVal->DATA.digitVal->set(Digits::ce);
+		return;
 		}
 	if(name=="setAccuracy")if(VCV.size()>=1){
 		VCV[0].TransformType("int");
-		int i=VCV[0].DATA.intVal;
+		int i = VCV[0].DATA.intVal;
 		if(i<0)i=0;
 		thisVal->DATA.digitVal->mlimit=i;
+		return;
 		}
 	if(name=="exponenta"){
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("digit");
-		V->DATA.digitVal->exponenta=thisVal->DATA.digitVal->exponenta;
+		V->DATA.digitVal->exponenta = thisVal->DATA.digitVal->exponenta;
+		return;
 		}
 	if(name=="mantisa"){
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("digit");
-		V->DATA.digitVal->mantisa=thisVal->DATA.digitVal->mantisa;
+		V->DATA.digitVal->mantisa = thisVal->DATA.digitVal->mantisa;
+		return;
 		}
 	if(name=="equale")if(VCV.size()>=1){
 		VCV[0].TransformType("digit");
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("char");
-		V->DATA.bVal=thisVal->DATA.digitVal->compare(*VCV[0].DATA.digitVal);
+		V->DATA.bVal = thisVal->DATA.digitVal->compare(*VCV[0].DATA.digitVal);
+		return;
 		}
-
+	if(name=="toString"){
+		V = new(CVARIANT);
+		V->avtoSet("string");
+		*V->DATA.ps = thisVal->DATA.digitVal->toString();
+		return;
+		}
+	if(name=="toNumberSystem"){
+		int n = 16;
+		if(VCV.size()>=1){
+			VCV[0].TransformType("int");
+			n = VCV[0].DATA.intVal;
+			}
+		V = new(CVARIANT);
+		V->avtoSet("string");
+		*V->DATA.ps = thisVal->DATA.digitVal->toNumberSystem(n);
+		return;
+		}
+	if(name=="ImportNumberSystem")if(VCV.size()>=1){
+		int n = 16;
+		Digits *D = thisVal->DATA.digitVal;
+		if(VCV.size()>=2){
+			VCV[1].TransformType("int");
+			n = VCV[1].DATA.intVal;
+			}
+		VCV[0].TransformType("string");
+		string *s = VCV[0].DATA.ps;
+		D->ImportNumberSystem(*s, n);
+		return;
+		}
+	if(name=="isInt"){
+		Digits *D = thisVal->DATA.digitVal;
+		int n = (int)*D;
+		Digits P;
+		P.set(n);
+		bool isInt = (P==*D);
+		V = new(CVARIANT);
+		V->avtoSet("bool");
+		V->DATA.boolVal = isInt;
+		return;
+		}
+	if(name=="Pow")if(VCV.size()>=1){
+		Digits *D = thisVal->DATA.digitVal;
+		VCV[0].TransformType("digit");
+		D->Pow(*VCV[0].DATA.digitVal);
+		V = new(CVARIANT);
+		V->avtoSet("void");
+		return;
+		}
 }
 
 

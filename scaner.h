@@ -29,7 +29,7 @@ public:
 	static bool isDigit(char,int sus,int*t=NULL);
 	static void scanDigit(const char*&,string&,int sus);
 	static unsigned long double getNumber(string&,int sus);
-	static long double f_digit(char*);
+	static long double f_digit(const char*);
 	static int scanSlovo(const char*slovo,const char*&);
 
 	static string replaceSpecSumbolHTML(const char*);

@@ -20,9 +20,11 @@ const char* JSON::types[] = {
 JSON::ONE::ONE(){type=0;}
 
 JSON::ONE::~ONE(){
-	if((string)JSON::types[type]!="table")return;
-	V_JSON::iterator it=Values.begin();
-	for(;it!=Values.end();++it)if(*it)delete *it;
+	string nametype = JSON::types[type];
+	if(nametype=="table" || nametype=="array"){
+		V_JSON::iterator it = Values.begin();
+		for(;it!=Values.end();++it)if(*it)delete *it;
+		}
 }
 
 
@@ -124,7 +126,7 @@ string JSON::ONE::readName(const char*&s){
 
 JSON::ONE* JSON::ONE::parse(const char*&data){
 	noProbel(data);
-	int n,nt=0;
+	int n, nt = 0;
 	n = scanSlovo("null",data);
 	if(n)return new ONE;
 	n = scanSlovo("false",data);
@@ -191,14 +193,23 @@ JSON::ONE* JSON::ONE::parse(const char*&data){
 			S="";
 			if(name.empty()){
 				n = scanString(data,S);
-				if(!n){nt=0;break;}
+				if(!n){
+					nt = 0;
+					break;
+					}
 				name = convertString(S);
 				}
 			noProbel(data);
-			if(*data!=':'){nt=0;break;}
+			if(*data!=':'){
+				nt = 0;
+				break;
+				}
 			++data;
 			A = parse(data);
-			if(!A){nt=0;break;}
+			if(!A){
+				nt = 0;
+				break;
+				}
 			X->Values.push_back(A);
 			X->Keys.push_back(name);
 			noProbel(data);
@@ -265,6 +276,7 @@ string JSON::ONE::toString(int format){
 	if(isType("double")){
 		char str[100];
 		sprintf(str,"%e",doubleVal);
+		//sprintf(str,"%f",doubleVal);
 		return str;
 		}
 	if(isType("string"))return writeString(strVal,1);
@@ -299,12 +311,20 @@ string JSON::ONE::toString(int format){
 					}
 				s = (s.empty()?"[]":"[ " + s + " ]");
 				}else{
+				string line;
+				int ii,sizeList = VS.size();
+				ii = 0;
 				for(;tt!=VS.end();++tt){
-					if(!first)s+=",\n";
-					first = 0;
-					string u = *tt;
-					s+=u;
+					string u;
+					u += *tt;
+					if(ii<sizeList-1)u+=",";
+					++ii;
+					if((line + u).size()<=80)line+=u; else {
+						s += line + "\n";
+						line = u;
+						}
 					}
+				s += line;
 				if(s.empty())s="[]"; else {
 					s = "[\n" + s;
 					poTabu(s);
@@ -385,7 +405,7 @@ CVARIANT* JSON::ONE::toCVARIANT(){
 		}
 	if(isType("double")){
 		X->avtoSet("double");
-		X->DATA.dblVal = doubleVal;
+		*X->DATA.dblVal = doubleVal;
 		}
 	if(isType("string")){
 		X->avtoSet("string");
@@ -430,7 +450,7 @@ JSON::ONE* JSON::ONE::getONE(CVARIANT*X){
 		}
 	if(X->isType("double")){
 		OBJONE->avtoSet("double");
-		OBJONE->doubleVal = X->DATA.dblVal;
+		OBJONE->doubleVal = *X->DATA.dblVal;
 		}
 	if(X->isType("string")){
 		OBJONE->avtoSet("string");

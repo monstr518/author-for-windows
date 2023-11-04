@@ -697,4 +697,5 @@ bool UGraf::ImportData(CVARIANT*Data){
 
 
 
+
 //	UGraf.cpp	:-|

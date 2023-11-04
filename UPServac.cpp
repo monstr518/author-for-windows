@@ -1,5 +1,6 @@
 //	UPServac.cpp
 
+#include <winsock2.h>
 #include "main.h"
 
 
@@ -28,6 +29,28 @@ double UPServac::gettimeofday(){
 
 
 
+
+//--------------------------------------------------------------------------------------------------
+UPServac::PairWait::PairWait(SOCKET ClientConn){
+	this->ClientConn = ClientConn;
+	this->timeEnd = UPServac::gettimeofday();
+}
+
+UPServac::PairWait::~PairWait(){
+	closeMe();
+}
+
+
+UPServac::PairWait::closeMe(){
+	int result = closesocket(ClientConn);
+    if (result == SOCKET_ERROR) {
+        int error_code = WSAGetLastError();
+        printf("(!) Problem SOCKET_ERROR is: %d\n", error_code);
+	    }
+}
+
+
+
 //--------------------------------------------------------------------------------------------------
 UPServac::UPServac(int port){
 	Port = port;
@@ -38,22 +61,28 @@ UPServac::UPServac(int port){
 
 
 UPServac::~UPServac(){
-	TerminateProcess(HListen,0);
 	closesocket(ServSock);
+	WaitForSingleObject(HListen, INFINITE);
+	CloseHandle(HListen);
+	//TerminateProcess(HListen,0);
 	EnterCriticalSection( &CriticalSection );
-	int i,size = AllUsers.size();
+	int i, size = AllUsers.size();
 	for(i=0;i<size;++i){
 		User*U = AllUsers[i];
-		delete U;
+		if(U){
+			PairWait* PW = new PairWait(U->ClientConn);
+			AllWaits.push_back(PW);
+			delete U;
+			}
 		}
 	LeaveCriticalSection( &CriticalSection );
 	WSACleanup();
-	DeleteCriticalSection(&CriticalSection);
+	DeleteCriticalSection( &CriticalSection );
 }
 
 
 
-UPServac::User::User(SOCKET S,CRITICAL_SECTION*pcs){
+UPServac::User::User(SOCKET S, CRITICAL_SECTION*pcs){
 	ClientConn = S;
 	isFull = 0;
 	isNeedExit = 0;
@@ -63,17 +92,25 @@ UPServac::User::User(SOCKET S,CRITICAL_SECTION*pcs){
 }
 
 
+
 UPServac::User::~User(){
 	isNeedExit = 1;
-	TerminateProcess(HRecv,0);
-	closesocket(ClientConn);
+	//GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, (HANDLE)HRecv);
+	//TerminateProcess(HRecv,0);
+	LeaveCriticalSection( pCriticalSection );
+	WaitForSingleObject(HRecv, INFINITE);
+	EnterCriticalSection( pCriticalSection );
+	CloseHandle(HRecv);
 	delete[] buffer;
+	buffer = NULL;
 }
+
 
 
 void UPServac::User::RunRecv(){
 	HRecv = CreateThread(NULL, 0, RecvStartFunction, this, 0, NULL);
 }
+
 
 
 
@@ -150,14 +187,16 @@ void UPServac::Listen(){
 	isDocladCompleate = 1;
 	while(1){
 		SOCKET ClientConn = accept(ServSock, (sockaddr*)&clientInfo, &clientInfo_size);
-		if (ClientConn == INVALID_SOCKET) {
+		if(ClientConn == INVALID_SOCKET) {
+			/*
 			EnterCriticalSection( &CriticalSection );
 				Doclad += "Client detected, but can't connect to a client. Error #";
 				LastError = WSAGetLastError();
 				sprintf(sLastError,"%d",LastError);
 				Doclad += sLastError;
 			LeaveCriticalSection( &CriticalSection );
-			closesocket(ServSock);
+			*/
+			//closesocket(ServSock);
 			closesocket(ClientConn);
 			WSACleanup();
 			isON = 0;
@@ -175,7 +214,7 @@ void UPServac::Listen(){
 			continue;
 			}
 		EnterCriticalSection( &CriticalSection );
-		User*U = new User(ClientConn,&CriticalSection);
+		User*U = new User(ClientConn, &CriticalSection);
 		U->RunRecv();
 		AllUsers.push_back(U);
 		LeaveCriticalSection( &CriticalSection );
@@ -193,7 +232,8 @@ void UPServac::RunServer(){
 
 
 DWORD WINAPI UPServac::StartServer(void* Param){
-	((UPServac*)Param)->Listen();
+	UPServac *UPS = (UPServac*)Param;
+	UPS->Listen();
 	return 0;
 }
 
@@ -211,14 +251,15 @@ void UPServac::User::Recv(){
 	int k = 0;
 	bool isFirst = 1;
 	while(k>=0){
-		if(!buffer)break;
+		if(!buffer || isNeedExit)break;
+		EnterCriticalSection( pCriticalSection ); //
 		ZeroMemory(buffer, sizeofbuffer);
-		//EnterCriticalSection( pCriticalSection );
 		timeEnd = gettimeofday();
 		if(!isFirst)isFull = 1;
-		//LeaveCriticalSection( pCriticalSection );
+		LeaveCriticalSection( pCriticalSection ); //
 		isFirst = 0;
 		k = recv(ClientConn, buffer, sizeofbuffer-1, 0);
+		if(!buffer || isNeedExit)break;
 		isFull = 0;
         if(k>0){
 			EnterCriticalSection( pCriticalSection );
@@ -233,8 +274,20 @@ void UPServac::User::Recv(){
 
 
 void UPServac::User::Send(const char*msg){
-	int msg_len = strlen(msg);
-	int result = send(ClientConn, msg, msg_len, 0);
+/*
+    int timeout = 15000;
+    setsockopt(ClientConn, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+*/
+	int dataLength = strlen(msg);
+	int result = send(ClientConn, msg, dataLength, 0);
+	//Sleep(1); // 100
+	if(result==dataLength)return;
+	if(result<0){
+		int E = WSAGetLastError();
+		cout<<"WSAGetLastError(): "<<E<<endl;
+		return;
+		}
+	cout<<"UPServac::User::Send: "<<result<<" from: "<<dataLength<<endl;
 }
 
 
@@ -250,7 +303,7 @@ int UPServac::getCountWaitUsers(){
 UPServac::User* UPServac::FindActualUser(){
 	User* ActualUser = NULL;
 	EnterCriticalSection( &CriticalSection );
-	int i,size = AllUsers.size();
+	int i, size = AllUsers.size();
 	//if(size)cout<<size<<endl; //
 	for(i=0;i<size;++i){
 		User*U = AllUsers[i];
@@ -306,7 +359,7 @@ string UPServac::GetBuffer(){
 void UPServac::KillDutyUser(){
 	if(!DutyUser)return;
 	EnterCriticalSection( &CriticalSection );
-	V_pUser::iterator it = find(AllUsers.begin(),AllUsers.end(),DutyUser);
+	V_pUser::iterator it = find(AllUsers.begin(), AllUsers.end(), DutyUser);
 	//*it = NULL;
 	AllUsers.erase(it);
 	delete DutyUser;
@@ -326,6 +379,27 @@ string UPServac::getDoclad(){
 
 
 
+
+
+//--------------------------------------------------------------------------------------------------
+void UPServac::ControlCloseWaits(){
+	while(!AllWaits.empty()){
+		double realTime = gettimeofday();
+		PairWait* PW = AllWaits[0];
+		bool isNeedClosed = (realTime - PW->timeEnd) > 60; // seconds
+		//isNeedClosed = 1;
+		if(isNeedClosed){
+			delete PW;
+			AllWaits.erase(AllWaits.begin());
+			continue;
+			}
+		WSACleanup();
+		return;
+		}
+}
+
+
+
 //--------------------------------------------------------------------------------------------------
 void UPServac::SendAndClose(const char*Response){
 	if(!DutyUser)return;
@@ -333,6 +407,7 @@ void UPServac::SendAndClose(const char*Response){
 	DutyUser->Send(Response);
 	Sleep(20);
 	KillDutyUser();
+	ControlCloseWaits();
 	EnterCriticalSection( &CriticalSection );
 }
 

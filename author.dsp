@@ -84,6 +84,10 @@ LINK32=link.exe
 # Name "author - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\Ajax.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\algorithm.cpp
 # End Source File
 # Begin Source File
@@ -148,7 +152,15 @@ SOURCE=.\global.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\JSON.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\LoaderCode.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\RegularExpressions.cpp
 # End Source File
 # Begin Source File
 
@@ -157,6 +169,10 @@ SOURCE=.\scaner.cpp
 # Begin Source File
 
 SOURCE=.\service.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\String.cpp
 # End Source File
 # Begin Source File
 
@@ -176,31 +192,15 @@ SOURCE=.\UGraf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\UPServac.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\zapusk.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Ajax.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\zapusk2.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\JSON.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RegularExpressions.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\String.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\UPServac.cpp
 # End Source File
 # End Target
 # End Project

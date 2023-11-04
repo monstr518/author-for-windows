@@ -392,6 +392,12 @@ void MAIN::Mahine(int activLaver){
 				break;
 				}
 			if(si==1)Pset->sub->pos=B->down[0];else{
+				bool isNeedWarningIF = true;
+				if(Data){
+					JSON::ONE *JV = Data->one->getValue("isNeedWarningIF#");
+					if(JV)isNeedWarningIF = (bool)JV->intVal;
+					}
+				if(isNeedWarningIF)cout<<B->toString().c_str()<<endl;
 				Pset->sub->pos=B->down[0];
 				int t;
 				for(t=1;t<si;++t){

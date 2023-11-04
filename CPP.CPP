@@ -67,6 +67,7 @@ const char* CallFunc::m[]={
 	"addInFile",
 	"existFile",
 	"existDir",
+	"createDir",
 	"deleteFile",
 	"deleteDir",
 	"FindFiles",
@@ -603,7 +604,7 @@ void CallFunc::rand(V_CVARIANT&VCV,CVARIANT*&V){
 		double x;
 		bool isP=0;
 		if(VCV[0].isType("float")){x=VCV[0].DATA.fltVal;isP=1;}
-		if(VCV[0].isType("double")){x=VCV[0].DATA.dblVal;isP=1;}
+		if(VCV[0].isType("double")){x=*VCV[0].DATA.dblVal;isP=1;}
 		if(isP && x<=1){
 			double y=(double)(::rand()%10000)/10000;
 			V->avtoSet("bool");
@@ -617,7 +618,7 @@ void CallFunc::rand(V_CVARIANT&VCV,CVARIANT*&V){
 			for(;i<VCV[0].DATA.vectorVal->size();++i){
 				CVARIANT*X=(*VCV[0].DATA.vectorVal)[i];
 				X->TransformType("double");
-				x=X->DATA.dblVal;
+				x = *X->DATA.dblVal;
 				if(x<0)x=0;
 				fragments.push_back(x);
 				sum+=x;
@@ -857,38 +858,21 @@ void CallFunc::setPrioritetProcess(I*Pset,V_CVARIANT&VCV,MAIN*M){
 
 
 
-void gettimeofday(struct timeval *tv){
-	FILETIME ft;
-	unsigned __int64 tmpres = 0;
-	static int tzflag;
-	if (NULL != tv){
-		GetSystemTimeAsFileTime(&ft);
-		tmpres |= ft.dwHighDateTime;
-		tmpres <<= 32;
-		tmpres |= ft.dwLowDateTime;
-		/*converting file time to unix epoch*/
-		tmpres -= DELTA_EPOCH_IN_MICROSECS;
-		tmpres /= 10; /*convert into microseconds*/
-		tv->tv_sec = (long)(tmpres / 1000000UL);
-		tv->tv_usec = (long)(tmpres % 1000000UL);
-		}
-}
 
 
 void CallFunc::getTime(CVARIANT*&V){
-	struct timeval tv;
-	gettimeofday(&tv);
-	int tt=time(NULL);
-	V=new(CVARIANT);
+	V = new(CVARIANT);
 	V->avtoSet("double");
-	V->DATA.dblVal=(double)tt+tv.tv_usec/(1000000.0);
+	*V->DATA.dblVal = UPServac::gettimeofday();
 }
+
+
 
 
 void CallFunc::timeFormat(V_CVARIANT&VCV,CVARIANT*&V){
 	if(VCV.size()>0){
 		VCV[0].TransformType("double");
-		double tx=VCV[0].DATA.dblVal;
+		double tx = *VCV[0].DATA.dblVal;
 		VCV[0].TransformType("int");
 		int n=VCV[0].DATA.intVal,p;
 		tx-=n;
@@ -1308,36 +1292,36 @@ void CallFunc::Match(V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 	string comand=*VCV[0].DATA.ps;
 	V=new(CVARIANT);
 	V->avtoSet("double");
-	V->DATA.dblVal=0;
+	*V->DATA.dblVal = 0;
 	if(VCV.size()==1){
-		if(comand=="pi" || comand=="PI")V->DATA.dblVal=3.1415926535897932384626433;
-		if(comand=="e" || comand=="E")V->DATA.dblVal=2.7182818284590452353602874;
+		if(comand=="pi" || comand=="PI")*V->DATA.dblVal = 3.1415926535897932384626433;
+		if(comand=="e" || comand=="E")*V->DATA.dblVal = 2.7182818284590452353602874;
 		return;
 		}
 	double a;
 	VCV[1].TransformType("double");
-	a=VCV[1].DATA.dblVal;
+	a = *VCV[1].DATA.dblVal;
 	if(VCV.size()>=3){
 		double b;
 		VCV[2].TransformType("double");
-		b=VCV[2].DATA.dblVal;
-		if(comand=="pow" || comand=="Pow")V->DATA.dblVal=pow(a,b);
-		if(comand=="fmod" || comand=="mod")V->DATA.dblVal=fmod(a,b);
+		b = *VCV[2].DATA.dblVal;
+		if(comand=="pow" || comand=="Pow")*V->DATA.dblVal = pow(a,b);
+		if(comand=="fmod" || comand=="mod")*V->DATA.dblVal = fmod(a,b);
 		return;
 		}
-	if(comand=="abs" || comand=="fabs")V->DATA.dblVal=fabs(a);
-	if(comand=="cos")V->DATA.dblVal=cos(a);
-	if(comand=="sin")V->DATA.dblVal=sin(a);
-	if(comand=="tan")V->DATA.dblVal=tan(a);
-	if(comand=="acos")V->DATA.dblVal=acos(a);
-	if(comand=="asin")V->DATA.dblVal=asin(a);
-	if(comand=="atan")V->DATA.dblVal=atan(a);
-	if(comand=="sqrt")V->DATA.dblVal=sqrt(a);
-	if(comand=="ceil")V->DATA.dblVal=ceil(a);
-	if(comand=="exp")V->DATA.dblVal=exp(a);
-	if(comand=="floor")V->DATA.dblVal=floor(a);
-	if(comand=="ln")V->DATA.dblVal=log(a);
-	if(comand=="log10")V->DATA.dblVal=log10(a);
+	if(comand=="abs" || comand=="fabs")*V->DATA.dblVal = fabs(a);
+	if(comand=="cos")*V->DATA.dblVal = cos(a);
+	if(comand=="sin")*V->DATA.dblVal = sin(a);
+	if(comand=="tan")*V->DATA.dblVal = tan(a);
+	if(comand=="acos")*V->DATA.dblVal = acos(a);
+	if(comand=="asin")*V->DATA.dblVal = asin(a);
+	if(comand=="atan")*V->DATA.dblVal = atan(a);
+	if(comand=="sqrt")*V->DATA.dblVal = sqrt(a);
+	if(comand=="ceil")*V->DATA.dblVal = ceil(a);
+	if(comand=="exp")*V->DATA.dblVal = exp(a);
+	if(comand=="floor")*V->DATA.dblVal = floor(a);
+	if(comand=="ln")*V->DATA.dblVal = log(a);
+	if(comand=="log10")*V->DATA.dblVal = log10(a);
 }
 
 
@@ -1399,6 +1383,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		V=new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = ok;
+		return;
 		}
 	if(name=="existDir")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
@@ -1411,6 +1396,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		V=new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = ok;
+		return;
 		}
 	if(name=="readFile")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
@@ -1421,14 +1407,15 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		t.seekg(0, ios::end);    // go to the end
 		length = t.tellg();           // report location (this is the length)
 		t.seekg(0, ios::beg);    // go back to the beginning
-		char*buffer = new char[length];    // allocate memory for a buffer of appropriate dimension
-		::memset(buffer,0,length);
+		char*buffer = new char[length+1];    // allocate memory for a buffer of appropriate dimension
+		::memset(buffer,0,length+1);
 		t.read(buffer, length);       // read the whole file into the buffer
 		t.close();                    // close file handle
 		V=new(CVARIANT);
 		V->avtoSet("string");
 		*V->DATA.ps = buffer;
 		delete[] buffer;
+		return;
 		}
 	if(name=="saveFile")if(VCV.size()>=2){
 		VCV[0].TransformType("string");
@@ -1437,6 +1424,13 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		::ofstream out(fileName);
 		out << VCV[1].DATA.ps->c_str();
 		out.close();
+		return;
+		}
+	if(name=="createDir")if(VCV.size()>=1){
+		VCV[0].TransformType("string");
+		const char *DirName = VCV[0].DATA.ps->c_str();
+		mkdir(DirName);
+		return;
 		}
 	if(name=="addInFile")if(VCV.size()>=2){
 		VCV[0].TransformType("string");
@@ -1445,6 +1439,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		::ofstream out(fileName, ios::app);
 		out << VCV[1].DATA.ps->c_str();
 		out.close();
+		return;
 		}
 	if(name=="FindFiles")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
@@ -1481,12 +1476,13 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 				}while(FindNextFile(hf,&FindFileData) != 0);
 			FindClose(hf);
 			}
-
+		return;
 		}
 	if(name=="deleteFile")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
 		const char*fileName = VCV[0].DATA.ps->c_str();
 		remove(fileName);
+		return;
 		}
 	if(name=="deleteDir")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
@@ -1496,6 +1492,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		V=new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = (result == 0);//ok
+		return;
 		}
 	if(name=="renameFile" || name=="renameDir")if(VCV.size()>=2){
 		VCV[0].TransformType("string");
@@ -1507,6 +1504,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		V=new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = (result == 0);//ok
+		return;
 		}
 }
 
@@ -1566,12 +1564,26 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 		headers = *Value->DATA.ps;
 		}
 
-	string text = Ajax(host_name,port,method,headers,context);
-	//printf("%s", text.c_str());
-
+	string text;
+	bool isOK = Ajax(host_name,port,method,headers,context,text);
 	V = new CVARIANT();
+	if(!isOK){
+		//printf("%s", text.c_str());
+		V->avtoSet("vector");
+		CVARIANT *S;
+		S = new CVARIANT();
+		S->avtoSet("string");
+		*S->DATA.ps = "Error:";
+		V->DATA.vectorVal->push_back(S);
+		S = new CVARIANT();
+		S->avtoSet("string");
+		*S->DATA.ps = text;
+		V->DATA.vectorVal->push_back(S);
+		return;
+		}
+
 	V->avtoSet("string");
-	*V->DATA.ps=text;
+	*V->DATA.ps = text;
 	int pos = text.find("\r\n\r\n");
 	if(pos<0)return;
 	string body = text.substr(pos+4);
@@ -1583,15 +1595,15 @@ void CallFunc::AJAX(V_CVARIANT&VCV,CVARIANT*&V){
 	CVARIANT *S;
 	S = new CVARIANT();
 	S->avtoSet("string");
-	*S->DATA.ps=fstr;
+	*S->DATA.ps = fstr;
 	V->DATA.vectorVal->push_back(S);
 	S = new CVARIANT();
 	S->avtoSet("string");
-	*S->DATA.ps=heads;
+	*S->DATA.ps = heads;
 	V->DATA.vectorVal->push_back(S);
 	S = new CVARIANT();
 	S->avtoSet("string");
-	*S->DATA.ps=body;
+	*S->DATA.ps = body;
 	V->DATA.vectorVal->push_back(S);
 }
 
@@ -1740,7 +1752,7 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 		name=="readFile" || name=="saveFile" || name=="addInFile" || 
 		name=="existFile" || name=="existDir" || 
 		name=="deleteFile" || name=="deleteDir" || name=="FindFiles" ||
-		name=="renameFile" || name=="renameDir"
+		name=="renameFile" || name=="renameDir" || name=="createDir"
 		)FileAccess(name,VCV,V);
 	if(name=="Ajax")AJAX(VCV,V);
 	if(name=="JSON")JSON(VCV,V);

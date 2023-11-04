@@ -98,15 +98,15 @@ public:
 	char Ntype;
 	union t_DATA{
 		void*			voidVal;
+		bool			boolVal;
 		char			bVal;
 		short			iVal;
 		unsigned short	uiVal;
+		int				intVal;
 		long			lVal;
 		unsigned long	ulVal;
 		float			fltVal;
-		double			dblVal;
-		bool			boolVal;
-		int				intVal;
+		double*			dblVal;
 		string*			ps;
 		S_CVARIANT*		setVal;  // унікальна множина
 		deque_CVARIANT*	dequeVal;// двостороння черга
@@ -118,8 +118,8 @@ public:
 		UGraf*			grafVal;
 		Digits*			digitVal;
 		CModule*		moduleVal;
-		}DATA;
-	static char*name[];
+		} DATA;
+	const static char*name[];
 	//static char*Quantums[];
 	CVARIANT();
 	CVARIANT(const CVARIANT&);

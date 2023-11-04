@@ -139,7 +139,7 @@ unsigned long double SCANER::getNumber(string&s,int sus){
 
 
 
-long double SCANER::f_digit(char*s){
+long double SCANER::f_digit(const char*s){
 	noProbel(s);
 	long double A=0,B=0;
 	int ST=0,i=0;

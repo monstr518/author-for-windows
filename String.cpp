@@ -38,7 +38,13 @@ void CallFunc::forstring(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 	if(name=="length"||name=="size"){
 		V=new(CVARIANT);
 		V->avtoSet("int");
-		V->DATA.intVal=thisVal->DATA.ps->size();
+		V->DATA.intVal = thisVal->DATA.ps->size();
+		return;
+		}
+	if(name=="empty"){
+		V=new(CVARIANT);
+		V->avtoSet("bool");
+		V->DATA.boolVal = thisVal->DATA.ps->empty();
 		return;
 		}
 	if(name=="substr")if(VCV.size()>0){
@@ -99,23 +105,25 @@ void CallFunc::forstring(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 		}
 	if(name=="split")if(VCV.size()>0){// "1|2".split("|") => {"1","2"}
 		VCV[0].TransformType("string");
-		string*a=VCV[0].DATA.ps,*b=thisVal->DATA.ps;
+		string *a, b;
+		a = VCV[0].DATA.ps;
+		b = *thisVal->DATA.ps;
 		int u;
 		CVARIANT *S;
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("vector");
 		while(1){
-			u=b->find(a->c_str());
+			u = b.find(a->c_str());
 			if(u<0)break;
 			S = new CVARIANT();
 			S->avtoSet("string");
-			*S->DATA.ps=b->substr(0,u);
+			*S->DATA.ps = b.substr(0,u);
 			V->DATA.vectorVal->push_back(S);
-			*b=b->substr(u+a->length());
+			b = b.substr(u + a->length());
 			}
 		S = new CVARIANT();
 		S->avtoSet("string");
-		*S->DATA.ps=*b;
+		*S->DATA.ps = b;
 		V->DATA.vectorVal->push_back(S);
 		return;
 		}
@@ -189,9 +197,54 @@ void CallFunc::forstring(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			delete RRE;
 			return;
 			}
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("string");
 		*V->DATA.ps = "First arg mast be: Example, isValid, Details, ErrorMessage or Parse.";
+		return;
+		}
+	if(name=="Reserve"){
+		int nArgs = VCV.size();
+		if(!nArgs)return;
+		int size;
+		VCV[0].TransformType("int");
+		size = VCV[0].DATA.intVal;
+		if(size<0)return;
+		++size;
+		char c = '0';
+		if(nArgs>=2){
+			VCV[1].TransformType("char");
+			c = VCV[1].DATA.bVal;
+			}
+		char *text = new char[size];
+		//ZeroMemory(text,size);
+		memset(text,c,--size);
+		text[size] = 0;
+		V = new(CVARIANT);
+		V->avtoSet("string");
+		*V->DATA.ps = text;
+		delete[] text;
+		return;
+		}
+	if(name=="isValide")if(VCV.size()>=1){
+		VCV[0].TransformType("string");
+		const char *S = thisVal->DATA.ps->c_str();
+		const char *VS = VCV[0].DATA.ps->c_str();
+		int sizeS, sizeVS;
+		sizeS = strlen(S);
+		sizeVS = strlen(VS);
+		char c;
+		int is, ivs;
+		is = 0;
+		for(;is<sizeS;++is){
+			c = S[is];
+			ivs = 0;
+			for(;ivs<sizeVS;++ivs)if(c==VS[ivs])break;
+			if(ivs==sizeVS)break;
+			}
+		bool isValid = !(is<sizeS);
+		V = new(CVARIANT);
+		V->avtoSet("bool");
+		V->DATA.boolVal = isValid;
 		return;
 		}
 }

@@ -46,7 +46,7 @@ using namespace std;
 
 //--------------------------------------------------------------------------------------------------
 
-string Ajax(string Host_name,int port,string method,string heads,string body);
+bool Ajax(string Host_name,int port,string method,string heads,string body,string& Response);
 V_pCVARIANT::iterator find_pointer(V_pCVARIANT::iterator A,const V_pCVARIANT::iterator B,const CVARIANT&V);
 
 //	main.h	:-|

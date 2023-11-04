@@ -1,17 +1,11 @@
 //	UPServac.h
+
 #pragma comment(lib, "Ws2_32.lib")
 //add WSOCK32.LIB in Progect\Setings...\Link   // Not need.
-/*
-#include <winsock.h>
-//#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <time.h>
 
 
-using namespace std;
-*/
+
+
 
 #ifdef DEF_PCONS_INCLUDE
 #endif
@@ -59,6 +53,23 @@ public:
 
 	typedef vector<User*> V_pUser;
 
+
+	class PairWait {
+	public:
+		SOCKET ClientConn;
+		double timeEnd;
+
+		PairWait(SOCKET ClientConn);
+		~PairWait();
+
+		closeMe();
+
+	};
+
+	typedef vector<PairWait*> V_pPairWait;
+
+
+
 	SOCKET ServSock;
 	int Port;
 	string Doclad;
@@ -66,6 +77,7 @@ public:
 	bool isON;
 
 	V_pUser AllUsers;
+	V_pPairWait AllWaits;
 	CRITICAL_SECTION CriticalSection;
 	HANDLE HListen;
 	User* DutyUser;
@@ -84,6 +96,7 @@ public:
 	void SendAndClose(const char*);
 	string GetBuffer();
 	int getCountWaitUsers();
+	void ControlCloseWaits();
 
 	static double gettimeofday();
 };
