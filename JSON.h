@@ -74,7 +74,7 @@ public:
 		string toString(int format);
 
 		CVARIANT* toCVARIANT();
-		static ONE* getONE(CVARIANT*);
+		static ONE* getONE(CVARIANT*,bool);
 
 		ONE*getValue(string key);
 
@@ -87,7 +87,7 @@ public:
 	string toString(int format);
 
 	CVARIANT* toCVARIANT();
-	void getONE(CVARIANT*);
+	void getONE(CVARIANT*,bool);
 
 };
 

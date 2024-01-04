@@ -283,7 +283,7 @@ public:
 
 class CallFunc :public Sufix{
 	void Help(V_CVARIANT&VCV,CVARIANT*&V);
-	void trace(MAIN*M,V_CVARIANT&VCV,bool);
+	void trace(MAIN*M,V_CVARIANT&VCV,char sposob);
 	void Sleeep(V_CVARIANT&VCV,bool isSleep);
 	void implode(V_CVARIANT&VCV,CVARIANT*&V);
 	void split(V_CVARIANT&VCV,CVARIANT*&V);

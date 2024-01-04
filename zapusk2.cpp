@@ -873,8 +873,8 @@ int Prefix::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	Pset->sub->Bloki.erase(X);
 	if(s=="new"){
 		if(!b){
-			if(V)V=V->copy();else{
-				V=new(CVARIANT);
+			if(V)V = V->copy(); else{
+				V = new(CVARIANT);
 				V->avtoSet("void");
 				}
 			}
@@ -884,16 +884,19 @@ int Prefix::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 		V->avtoSet("pointer");
 		*V->DATA.ps=string("*$:")+SCANER::toString(M->NfreeOBJ)+";";
 		++M->NfreeOBJ;
-		b=1;
+		b = 1;
 		}
 	if(V){
 		bool isInvert = (s=="-" || s=="!" || s=="~");
 		if(isInvert || s=="+"){
 			if(!b){
+				V = V->copy();
+				/*
 				CVARIANT*CV=new(CVARIANT);
 				*CV=*V;
 				V=CV;
-				b=1;
+				*/
+				b = 1;
 				}
 			if(s=="!"){
 				if(V->isType("void"))return b;
@@ -1113,10 +1116,13 @@ int AccesMasiv::ZapuskTree(I*Pset,MAIN*M,CVARIANT*&V){
 	if(L->ExtraExit)return 0;
 	if(!CV)b=0;
 	if(!b){
+		if(CV)CV = CV->copy(); else CV = new(CVARIANT);
+		/*
 		CVARIANT*CV2=new(CVARIANT);
 		if(CV)*CV2=*CV;else CV2->avtoSet("void");
 		CV=CV2;
-		b=1;
+		*/
+		b = 1;
 		}
 	++L->rop;
 	a=X->ZapuskTree(Pset,M,S);

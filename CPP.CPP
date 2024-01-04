@@ -6,6 +6,8 @@ const char* CallFunc::m[]={
 	"help",
 	"trace",
 	"tracex",
+	"tracec",
+	"MessageBeep",
 	"system",
 	"Sleep",
 	"implode",
@@ -89,17 +91,52 @@ bool CallFunc::isCFunction(string s){
 
 
 //--------------------------------------------------------------------------------------------------
-void CallFunc::trace(MAIN*M,V_CVARIANT&VCV,bool ln){
+void CallFunc::trace(MAIN*M, V_CVARIANT&VCV, char sposob){ // sposob: 2-color 1-ln 0-...
 	EnterCriticalSection(&M->CriticalSection1);
 	int i;
-	for(i=0;i<VCV.size();++i){
-		VCV[i].TransformType("string");
-		char*str=new(char[VCV[i].DATA.ps->size()+1]);
-		CharToOem(VCV[i].DATA.ps->c_str(),str);
-		cout<<str;
-		delete[] str;
+	if(sposob==2){
+		int size = VCV.size();
+		if(size){
+			int color = 15;
+			bool isSetOneColor = true;
+			CVARIANT *CharColors = NULL;
+			if(size>=2)CharColors = &VCV[1];
+			VCV[0].TransformType("string");
+			size = VCV[0].DATA.ps->size();
+			char*str = new(char[size+1]);
+			CharToOem(VCV[0].DATA.ps->c_str(),str);
+			if(CharColors){
+				isSetOneColor = CharColors->isType("int");
+				if(isSetOneColor)color = CharColors->DATA.intVal;
+				if(!CharColors->isType("vector"))CharColors = NULL;
+				}
+			int sizec = 0;
+			if(CharColors)sizec = CharColors->DATA.vectorVal->size();
+			i = 0;
+			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+			for(;i<size;++i){
+				if(!isSetOneColor){
+					if(i<sizec){
+						CVARIANT *CC = *(CharColors->DATA.vectorVal->begin()+i);
+						if(CC->isType("int"))color = CC->DATA.intVal;
+						}else color = 15;
+					}
+				SetConsoleTextAttribute(hConsole, color);
+				cout<<str[i]<<flush;
+				}
+			delete[] str;
+			SetConsoleTextAttribute(hConsole, 7);
+			}
+		}else{
+		for(i=0;i<VCV.size();++i){
+			VCV[i].TransformType("string");
+			char*str = new(char[VCV[i].DATA.ps->size()+1]);
+			CharToOem(VCV[i].DATA.ps->c_str(),str);
+			cout<<str;
+			delete[] str;
+			}
 		}
-	if(ln)cout<<endl;else cout<<flush;
+	if(sposob)cout<<endl; else cout<<flush;
 	LeaveCriticalSection(&M->CriticalSection1);
 }
 
@@ -1444,26 +1481,26 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 	if(name=="FindFiles")if(VCV.size()>=1){
 		VCV[0].TransformType("string");
 		const char*fileName = VCV[0].DATA.ps->c_str();
-		int attr=3,p;
+		int attr = 3, p;
 		if(VCV.size()>=2){
 			if(VCV[1].isType("int")){
-				p=VCV[1].DATA.intVal;
-				if(p==1 || p==2)attr=p;
+				p = VCV[1].DATA.intVal;
+				if(p==1 || p==2)attr = p;
 				}else{
 				VCV[1].TransformType("string");
-				const string*s=VCV[1].DATA.ps;
+				const string *s = VCV[1].DATA.ps;
 				if(*s=="File" || *s=="file" || *s=="Files" || *s=="files")attr=1;
 				if(*s=="Dir" || *s=="dir" || *s=="Dirs" || *s=="dirs")attr=2;
 				}
 			}
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("vector");
 		WIN32_FIND_DATA FindFileData;
 		HANDLE hf;
 		hf = FindFirstFile(fileName,&FindFileData);
 		if(hf != INVALID_HANDLE_VALUE){
 			do{
-				p=(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)?2:1;
+				p = (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)?2:1;
 				if(attr&p){
 					string ps = FindFileData.cFileName;
 					if(ps!="." && ps!=".."){
@@ -1489,7 +1526,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		const char*fileName = VCV[0].DATA.ps->c_str();
 		int result;
         result = rmdir(fileName);
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = (result == 0);//ok
 		return;
@@ -1501,7 +1538,7 @@ void CallFunc::FileAccess(string&name,V_CVARIANT&VCV,CVARIANT*&V){
 		const char*fileName2 = VCV[1].DATA.ps->c_str();
 		int result;
 		result = rename(fileName,fileName2);
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("bool");
 		V->DATA.boolVal = (result == 0);//ok
 		return;
@@ -1622,13 +1659,15 @@ void CallFunc::JSON(V_CVARIANT&VCV,CVARIANT*&V){
 		}
 	if(*VCV[0].DATA.ps=="stringify"){
 		int format = 1;
+		bool isToString = false;
 		if(VCV.size()>=3){
 			VCV[2].TransformType("int");
 			format = VCV[2].DATA.intVal;
+			isToString = (format>1);
 			if(format)format = 1;
 			}
 		::JSON objJSON;
-		objJSON.getONE(&VCV[1]);
+		objJSON.getONE(&VCV[1],isToString);
 		V = new CVARIANT;
 		V->avtoSet("string");
 		*V->DATA.ps = objJSON.toString(format);
@@ -1699,6 +1738,7 @@ void CallFunc::Server(MAIN*M,V_CVARIANT&VCV,CVARIANT*&V){
 void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(name=="help")Help(VCV,V);
 	if(name=="trace" || name=="tracex")trace(M,VCV,name=="trace");
+	if(name=="tracec")trace(M,VCV,2);
 	if(name=="Sleep" || name=="system")Sleeep(VCV,name=="Sleep");
 	if(name=="implode")implode(VCV,V);
 	if(name=="split")split(VCV,V);
@@ -1774,6 +1814,30 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 			code = UPServac::gettimeofday()*1111;
 			}
 		srand(code);
+		return;
+		}
+	if(name=="MessageBeep"){
+		int NubberBeep = 0;
+		int HZ, time = 0;
+		int si = VCV.size();
+		if(si){
+			VCV[0].TransformType("int");
+			HZ = VCV[0].DATA.intVal;
+			NubberBeep = HZ % 4;
+			if(si>=2)if(VCV[1].isType("int"))time = VCV[1].DATA.intVal;
+			}
+		if(time<10){
+			long n[] = {
+				MB_ICONASTERISK,
+				MB_ICONEXCLAMATION,
+				MB_ICONHAND,
+				MB_ICONQUESTION // none
+				};
+			MessageBeep(n[NubberBeep]);
+			return;
+			}
+		Beep(HZ, time);
+		return;
 		}
 	
 }

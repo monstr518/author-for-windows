@@ -206,12 +206,12 @@ bool CModule:: operator <  (const CModule&t) const {return id < t.id;}
 
 
 //--------------------------------------------------------------------------------------------------
-CVARIANT::CVARIANT(){Ntype=0;}
+CVARIANT::CVARIANT(){Ntype = 0;}
 CVARIANT::~CVARIANT(){clear();}
 void CVARIANT::clear(){
 	if(isType("string"))if(DATA.ps)delete DATA.ps;
 	if(isType("pointer"))if(DATA.ps)delete DATA.ps;
-	#define defdel(ss,uu)	if(isType(ss))if(DATA.uu){delete DATA.uu;return;}
+	#define defdel(ss,uu)	if(isType(ss))if(DATA.uu){delete DATA.uu;Ntype = 0;return;}
 	defdel("double",dblVal);
 	defdel("deque",dequeVal);
 	defdel("map",mapVal);
@@ -222,6 +222,7 @@ void CVARIANT::clear(){
 				if(*it)delete *it;
 			delete DATA.vectorVal;
 			}
+		Ntype = 0;
 		return;
 		}
 	defdel("set",setVal);
@@ -231,7 +232,7 @@ void CVARIANT::clear(){
 	defdel("graph",grafVal);
 	defdel("digit",digitVal);
 	defdel("module",moduleVal);
-	Ntype=0;
+	Ntype = 0;
 }
 
 

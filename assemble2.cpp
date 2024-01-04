@@ -1110,11 +1110,11 @@ CLASS* Assemble::getClass(char*&s,int&er,File*ff,CLASS*Space){
 
 // s - text program
 int Assemble::Load(const char*way,char*s,bool nedsav){
-	File*ff=lastFile=new File(Main);
-	ff->Nusers=1;
-	ff->NeedSave=nedsav;
-	char*ss;//*s=F.text,
-	int er=0;
+	File*ff = lastFile = new File(Main);
+	ff->Nusers = 1;
+	ff->NeedSave = nedsav;
+	char*ss; // *s=F.text,
+	int er = 0;
 	string sway=way;
 	int a,b;
 	a=sway.find_last_of('\\');
@@ -1144,7 +1144,7 @@ int Assemble::Load(const char*way,char*s,bool nedsav){
 				++s;
 				}
 			if(*s=='>' || *s=='"')++s;
-			str=WAY+"\\"+str;
+			str = WAY+"\\"+str;
 			ff->modules.push_back(str);
 			}
 		CLASS*S=getClass(s,er,ff);
@@ -1156,7 +1156,7 @@ int Assemble::Load(const char*way,char*s,bool nedsav){
 			continue;
 			}
 		if(er)break;
-		Function*f=getFunction(s,er,ff);
+		Function*f = getFunction(s,er,ff);
 		if(er)break;
 		if(ss==s){
 			er=1;
@@ -1165,7 +1165,7 @@ int Assemble::Load(const char*way,char*s,bool nedsav){
 		SCANER::noProbel(s);
 		}
 	//cout<<ff->toString().c_str()<<endl;//
-	if(er)ff->NeedSave=0;
+	if(er)ff->NeedSave = 0;
 	return er;
 }
 

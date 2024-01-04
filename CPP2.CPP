@@ -338,18 +338,21 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 	if(name=="mid")if(VCV.size()>0){
 		VCV[0].TransformType("int");
 		int a,b;
-		a=VCV[0].DATA.intVal;
-		b=-1;
+		a = VCV[0].DATA.intVal;
+		b = -1;
 		if(VCV.size()>1){
 			VCV[1].TransformType("int");
-			b=VCV[1].DATA.intVal;
+			b = VCV[1].DATA.intVal;
 			}
-		if(b<0 || b>thisVal->DATA.vectorVal->size())b=thisVal->DATA.vectorVal->size();
-		V=new(CVARIANT);
+		if(b<0 || b>thisVal->DATA.vectorVal->size())b = thisVal->DATA.vectorVal->size();
+		if(a<0)a = 0;
+		V = new(CVARIANT);
 		V->avtoSet("vector");
-		V_pCVARIANT::iterator it=thisVal->DATA.vectorVal->begin()+a;
-		for(;it!=thisVal->DATA.vectorVal->begin()+b;++it)
+		V_pCVARIANT::iterator it;
+		for(;a<b;++a){
+			it = thisVal->DATA.vectorVal->begin() + a;
 			V->DATA.vectorVal->push_back(new CVARIANT(**it));
+			}
 		return;
 		}
 	if(name=="insert")if(VCV.size()>1){
@@ -2588,38 +2591,45 @@ void CallFunc::fordigit(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV)
 
 
 void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,MAIN*M){
-	File*file=NULL;
+	File*file = NULL;
 	if(M->Files.find(thisVal->DATA.moduleVal->id)!=M->Files.end())
-		file=M->Files[thisVal->DATA.moduleVal->id];
+		file = M->Files[thisVal->DATA.moduleVal->id];
 	if(file){
 		if(name=="getName"){
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("string");
-			*V->DATA.ps=file->name;
+			*V->DATA.ps = file->name;
+			return;
 			}
 		if(name=="getWay"){
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("string");
-			*V->DATA.ps=file->way;
+			*V->DATA.ps = file->way;
+			return;
 			}
 		if(name=="NeedSave"){
 			if(VCV.size()>0){
 				VCV[0].TransformType("bool");
 				file->NeedSave=VCV[0].DATA.boolVal;
 				}
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("bool");
-			V->DATA.boolVal=file->NeedSave;
+			V->DATA.boolVal = file->NeedSave;
+			return;
 			}
-		if(name=="controlSave")file->controlSave();
-		if(name=="Save"){
-			file->NeedSave=1;
+		if(name=="controlSave"){
 			file->controlSave();
+			return;
+			}
+		if(name=="Save"){
+			file->NeedSave = 1;
+			file->controlSave();
+			return;
 			}
 		if(name=="FindFunction" || name=="getFunction")if(VCV.size()>0){
 			VCV[0].TransformType("string");
-			Function*f=file->FindFunction(*VCV[0].DATA.ps);
-			V=new(CVARIANT);
+			Function*f = file->FindFunction(*VCV[0].DATA.ps);
+			V = new(CVARIANT);
 			if(!f){
 				V->avtoSet("int");
 				V->DATA.intVal=0;
@@ -2627,44 +2637,48 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 				}
 			V->avtoSet("function");
 			V->DATA.functionVal->F=f;
-			V->DATA.functionVal->isOriginal=1;
+			V->DATA.functionVal->isOriginal = 1;
+			return;
 			}
 		if(name=="getAllFunctions"){
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("vector");
 			V_Func::iterator it=file->functions.begin();
 			for(;it!=file->functions.end();++it){
 				CVARIANT *X = new CVARIANT();
 				X->avtoSet("function");
 				X->DATA.functionVal->F=*it;
-				X->DATA.functionVal->isOriginal=1;
+				X->DATA.functionVal->isOriginal = 1;
 				V->DATA.vectorVal->push_back(X);
 				}
+			return;
 			}
 		if(name=="getAllFunctionNames"){
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("vector");
 			V_Func::iterator it=file->functions.begin();
 			for(;it!=file->functions.end();++it){
 				CVARIANT *X = new CVARIANT();
 				X->avtoSet("string");
-				*X->DATA.ps=(*it)->name;
+				*X->DATA.ps = (*it)->name;
 				V->DATA.vectorVal->push_back(X);
 				}
+			return;
 			}
 		if(name=="NUsers"){
 			V=new(CVARIANT);
 			V->avtoSet("int");
-			V->DATA.intVal=file->Nusers;
+			V->DATA.intVal = file->Nusers;
+			return;
 			}
 		if(name=="getAllInclude" || name=="getALLInclude"){
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("vector");
 			CVARIANT K;
 			K=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
 			K.TransformType("string");
-			int n=K.DATA.ps->size();
-			V_S::iterator it=file->modules.begin();
+			int n = K.DATA.ps->size();
+			V_S::iterator it = file->modules.begin();
 			for(;it!=file->modules.end();++it){
 				string str=*it;
 				str=str.substr(n+1);
@@ -2674,9 +2688,10 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 				if(!xf)continue;
 				CVARIANT *K = new CVARIANT();
 				K->avtoSet("module");
-				K->DATA.moduleVal->id=xf->id;
+				K->DATA.moduleVal->id = xf->id;
 				V->DATA.vectorVal->push_back(K);
 				}
+			return;
 			}
 		if(name=="getUsers"){
 			V=new(CVARIANT);
@@ -2701,7 +2716,7 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 						}
 					}
 				}
-
+			return;
 			}
 		if(name=="add")if(VCV.size()>0){
 			if(VCV[0].isType("module")){
@@ -2728,6 +2743,7 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 				V->DATA.functionVal->F=func;
 				V->DATA.functionVal->isOriginal=1;
 				}
+			return;
 			}
 		if(name=="replaceFunction")if(VCV.size()>0){
 			if(!VCV[0].isType("function"))return;
@@ -2747,7 +2763,8 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			V=new(CVARIANT);
 			V->avtoSet("function");
 			V->DATA.functionVal->F=func;
-			V->DATA.functionVal->isOriginal=1;
+			V->DATA.functionVal->isOriginal = 1;
+			return;
 			}
 		if(name=="eraseFunction")if(VCV.size()>0){
 			VCV[0].TransformType("string");
@@ -2757,7 +2774,8 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 				find(file->functions.begin(),file->functions.end(),f)
 				);
 			delete f;
-			file->NeedSave=1;
+			file->NeedSave = 1;
+			return;
 			}
 		if(name=="erase")if(VCV.size()>0){
 			if(!VCV[0].isType("module"))return;
@@ -2771,20 +2789,23 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			V_S::iterator it=find(file->modules.begin(),file->modules.end(),WAY);
 			if(it!=file->modules.end()){
 				file->modules.erase(it);
-				file->NeedSave=1;
+				file->NeedSave = 1;
 				}
+			return;
 			}
 		if(name=="toString"){
-			V=new(CVARIANT);
+			V = new(CVARIANT);
 			V->avtoSet("string");
 			*V->DATA.ps = file->toString();
+			return;
 			}
 		}
 	// file==# 
 	if(name=="Actuale" || name=="actuale"){
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("bool");
-		V->DATA.boolVal=(file!=NULL);
+		V->DATA.boolVal = (file!=NULL);
+		return;
 		}
 	if(name=="create")if(VCV.size()>0){
 		VCV[0].TransformType("string");
@@ -2792,13 +2813,14 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 		int p=str.find_last_of(".");
 		if(p>=0)str=str.substr(0,p);
 		p=str.find_last_of("\\");
-		File*ff=new File(M);
-		M->Files[ff->id]=ff;
+		File*ff = new File(M);
+		M->Files[ff->id] = ff;
 		ff->name=(p<0?str:str.substr(p+1));
 		ff->way=(p<0?"":str.substr(0,p));
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("module");
-		V->DATA.moduleVal->id=ff->id;
+		V->DATA.moduleVal->id = ff->id;
+		return;
 		}
 	if(name=="find")if(VCV.size()>0){
 		VCV[0].TransformType("string");
@@ -2806,19 +2828,20 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 		int p=str.find_last_of(".");
 		if(p>=0)str=str.substr(0,p);
 		File*xf=M->findModule(str);
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		if(!xf){
 			V->avtoSet("int");
 			V->DATA.intVal=0;
 			return;
 			}
 		V->avtoSet("module");
-		V->DATA.moduleVal->id=xf->id;
+		V->DATA.moduleVal->id = xf->id;
+		return;
 		}
 	if(name=="setCode" || name=="setProgram")if(VCV.size()>=1){
 		if(file)return;
 		VCV[0].TransformType("string");
-		string*textProgram=VCV[0].DATA.ps;
+		string*textProgram = VCV[0].DATA.ps;
 		LOADER X;
 		X.text = LOADER::copy(*textProgram);
 		X.delete_komentary();
@@ -2826,16 +2849,28 @@ void CallFunc::formodule(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			{
 			Assemble A(PHTML,M,NULL);
 			A.Load("",X.text,false);
-			file=A.lastFile;
+			file = A.lastFile;
 			}
 		if(file){
-			M->Files[file->id]=file;
-			thisVal->DATA.moduleVal->id=file->id;
+			V = new(CVARIANT);
+			V->avtoSet("vector");
+			int i, size;
+			size = file->modules.size();
+			for(i=0;i<size;++i){
+				CVARIANT*S = new (CVARIANT);
+				S->avtoSet("string");
+				*S->DATA.ps = file->modules[i];
+				V->DATA.vectorVal->push_back(S);
+				}
+			file->modules.clear();
+			M->Files[file->id] = file;
+			thisVal->DATA.moduleVal->id = file->id;
 			return;
 			}
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("string");
 		*V->DATA.ps = PHTML;
+		return;
 		}
 }
 
