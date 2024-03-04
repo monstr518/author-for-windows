@@ -420,7 +420,7 @@ bool CVARIANT::operator <  (const CVARIANT&t) const{
 	fop("char",bVal);
 	fop("float",fltVal);
 	fop("bool",boolVal);
-	fop("double",dblVal);
+	//fop("double",dblVal);
 	if(isType("double"))return *DATA.dblVal<*t.DATA.dblVal;
 	#define def_compare(ss,uu)	if(isType(ss))return (*DATA.uu<*t.DATA.uu);
 	def_compare("string",ps);
