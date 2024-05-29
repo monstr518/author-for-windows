@@ -302,11 +302,12 @@ class CallFunc :public Sufix{
 	void getThisFunctionName(I*,CVARIANT*&V,MAIN*M);
 
 	void define(I*,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V);
+
 	void LoadDLL(V_CVARIANT&VCV,MAIN*M);
 	void unLoadDLL(V_CVARIANT&VCV,MAIN*M);
-	void SendDLL(V_CVARIANT&VCV,MAIN*M);
-	void RecvDLL(string,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M);
+	void RunDLL(V_CVARIANT&VCV, CVARIANT*&V, MAIN*M);
 	void getNamesAllDll(CVARIANT*&V,MAIN*M);
+
 	void echo(V_CVARIANT&VCV,MAIN*M);
 	void rand(V_CVARIANT&,CVARIANT*&V);
 	void typeof(V_CVARIANT&VCV,CVARIANT*&V);

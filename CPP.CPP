@@ -28,12 +28,12 @@ const char* CallFunc::m[]={
 	"getThisFunctionName",
 	"getThisFileName",
 	"amputace",
+
 	"LoadDLL",
-	"unLoadDLL",
-	"SendDLL",
-	"Recv1DLL",
-	"RecvDLL",
+	"UnLoadDLL",
+	"RunDLL",
 	"getNamesAllDll",
+
 	"echo",
 	"rand",
 	"typeof",
@@ -550,10 +550,15 @@ void CallFunc::define(I*Pset,V_CVARIANT&VCV,MAIN*M,CVARIANT*&V){
 
 
 void CallFunc::LoadDLL(V_CVARIANT&VCV,MAIN*M){
-	if(VCV.size()>0){
+	if(VCV.size()>=2){
 		VCV[0].TransformType("string");
-		M->CDLL.Load(*VCV[0].DATA.ps);
-		M->CDLL.ReWriteVar();
+		VCV[1].TransformType("string");
+		string *NameDLL, *path;
+		bool isNeed;
+		NameDLL = VCV[0].DATA.ps;
+		path = VCV[1].DATA.ps;
+		isNeed = (M->CDLL.dlls.find(*NameDLL) == M->CDLL.dlls.end());
+		if(isNeed)M->CDLL.Load(*NameDLL, *path);
 		}
 }
 
@@ -562,67 +567,55 @@ void CallFunc::unLoadDLL(V_CVARIANT&VCV,MAIN*M){
 	if(VCV.size()>0){
 		VCV[0].TransformType("string");
 		M->CDLL.unLoad(*VCV[0].DATA.ps);
-		M->CDLL.ReWriteVar();
 		}
 }
 
 
-void CallFunc::SendDLL(V_CVARIANT&VCV,MAIN*M){
-	if(VCV.size()>1){
+void CallFunc::RunDLL(V_CVARIANT&VCV, CVARIANT*&V, MAIN*M){
+	if(VCV.size()>=2){
+		string *NameDLL, Data;
 		VCV[0].TransformType("string");
-		VCV[1].TransformType("string");
-		M->CDLL.Send(*VCV[0].DATA.ps,*VCV[1].DATA.ps);
-		}
-}
-
-
-void CallFunc::RecvDLL(string name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
-	if(VCV.size()>0){
-		VCV[0].TransformType("string");
-		V=new(CVARIANT);
-		if(name=="Recv1DLL"){
-			V->avtoSet("string");
-			*V->DATA.ps=M->CDLL.Recv(*VCV[0].DATA.ps);
+		NameDLL = VCV[0].DATA.ps;
+		int format = 1;
+		bool isToString = false;
+		::JSON objJSON;
+		objJSON.getONE(&VCV[1], isToString);
+		Data = objJSON.toString(format);
+		Data = M->CDLL.Run(*NameDLL, Data);
+		const char*str = Data.c_str();
+		bool isOK = objJSON.parse(str);
+		if(isOK){
+			V = objJSON.toCVARIANT();
 			return;
 			}
-		CVARIANT S;
-		S.avtoSet("string");
-		name=M->CDLL.Recv(*VCV[0].DATA.ps);
-		int n=0,i=0;
-		sscanf(name.c_str(),"%d",&n);
-		V->avtoSet("vector");
-		for(;i<n;++i){
-			*S.DATA.ps = M->CDLL.Recv(*VCV[0].DATA.ps);
-			CVARIANT*W = new CVARIANT();
-			*W = S;
-			V->DATA.vectorVal->push_back(W);
-			}
+		V = new(CVARIANT);
+		V->avtoSet("string");
+		*V->DATA.ps = Data;
 		}
 }
+
+
 
 
 void CallFunc::getNamesAllDll(CVARIANT*&V,MAIN*M){
 	CVARIANT A;
-	A=(*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
-	string t=*A.DATA.ps+"\\SYS\\DLLS\\*.dll";
+	A = (*M->GlobalSpace.Map.DATA.mapVal)["WAY"];
+	string path = *A.DATA.ps+"\\SYS\\DLLS\\*.dll";
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
-	hFind = FindFirstFile(t.c_str(),&FindFileData);
+	hFind = FindFirstFile(path.c_str(),&FindFileData);
 	if(hFind == INVALID_HANDLE_VALUE)return;
 	V=new(CVARIANT);
 	V->avtoSet("vector");
-	*A.DATA.ps=FindFileData.cFileName;
-	CVARIANT*W = new CVARIANT();
-	*W = A;
-	V->DATA.vectorVal->push_back(W);
+	*A.DATA.ps = FindFileData.cFileName;
+	V->DATA.vectorVal->push_back(A.copy());
 	while (FindNextFile(hFind,&FindFileData)){
 		*A.DATA.ps=FindFileData.cFileName;
-		W = new CVARIANT();
-		*W = A;
-		V->DATA.vectorVal->push_back(W);
+		V->DATA.vectorVal->push_back(A.copy());
 		}
 	FindClose(hFind);
 }
+
 
 
 void CallFunc::echo(V_CVARIANT&VCV,MAIN*M){
@@ -1755,11 +1748,12 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(name=="getstring")getstring(V);
 	if(name=="reserve")reserve(VCV,V);
 	if(name=="getThisFunctionName")getThisFunctionName(Pset,V,M);
+
 	if(name=="LoadDLL")LoadDLL(VCV,M);
-	if(name=="unLoadDLL")unLoadDLL(VCV,M);
-	if(name=="SendDLL")SendDLL(VCV,M);
-	if(name=="Recv1DLL" || name=="RecvDLL")RecvDLL(name,VCV,V,M);
+	if(name=="UnLoadDLL")unLoadDLL(VCV,M);
+	if(name=="RunDLL")RunDLL(VCV,V,M);
 	if(name=="getNamesAllDll")getNamesAllDll(V,M);
+
 	if(name=="echo")echo(VCV,M);
 	if(name=="rand")rand(VCV,V);
 	if(name=="typeof")typeof(VCV,V);

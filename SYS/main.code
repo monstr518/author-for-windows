@@ -5,7 +5,8 @@
 
 int Main(){
 	s="\\code\\a.txt";
-	if(count(ARGS)>1){
+	Randomize();
+	if(ARGS.size()>1){
 		s=ARGS[1];
 		s2=s.substr(0,WAY.length());
 		if(s2==WAY)s=s.substr(WAY.length());

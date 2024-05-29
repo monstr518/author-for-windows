@@ -57,5 +57,6 @@
 		"EF005": "Ошибка в теле функции-схемы в строке: {NumberLine}",
 		"EF006": "Ошибка в теле функции в строке: {NumberLine}"
 		},
-	"isNeedSavedModules": false
+	"isNeedSavedModules": false,
+	"isNeedWarningIF#": true
 }

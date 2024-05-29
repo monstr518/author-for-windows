@@ -1,6 +1,7 @@
 
 Main(){
 	s="\\sys\\sustem.txt";
+	Randomize();
 	if(ARGS.size()>1){
 		s=ARGS[1];
 		s2=s.substr(0,WAY.length());

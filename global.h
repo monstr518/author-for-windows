@@ -239,36 +239,35 @@ public:
 class Xdll{
 	HINSTANCE dll;
 public:
-	void (*SendString)(char*);
-	char* (*RecvString)();
+	const char* (*RUN)(const char*);
+
 	string name;
 
-	Xdll(char*);
+	Xdll(const char*);
 	~Xdll();
+
 	bool isCorectLoadLibrary();
 
-	void Send(char*);
-	string Recv();
-
+	const char* Run(const char*);
 };
 
 
+
 class ControlerDLL{
-	MAIN*Main;
+	MAIN* Main;
 public:
 	M_SXDLL	dlls;
 
 	ControlerDLL(MAIN*);
 	~ControlerDLL();
 
-	void Load(string);
+	void Load(string NameDLL, string path);
 	void unLoad(string);
 
-	void Send(string,string);
-	string Recv(string);
-
-	void ReWriteVar();
+	const char* Run(string, string);
 };
+
+
 
 
 //--------------------------------------------------------------------------------------------------

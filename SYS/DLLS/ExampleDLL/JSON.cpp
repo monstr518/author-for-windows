@@ -1,6 +1,5 @@
-//	JSON.cpp
-
-#include "main.h"
+#include "stdafx.h"
+#include "JSON.h"
 
 
 //--------------------------------------------------------------------------------------------------
@@ -18,6 +17,7 @@ const char* JSON::types[] = {
 
 
 JSON::ONE::ONE(){type=0;}
+
 
 JSON::ONE::~ONE(){
 	string nametype = JSON::types[type];
@@ -68,10 +68,10 @@ int JSON::ONE::scanSlovo(const char*slovo,const char*&s){
 
 
 int JSON::ONE::scanDigit(const char*&s,double&Value){
-	char *end = NULL;// =const_cast<char*>(s);
-	Value = strtod(s,&end);
-	bool ok = (end > s); // (s!=end);
-	s = end;
+	char*c=const_cast<char*>(s);
+	Value = strtod(s,&c);
+	bool ok = (s!=c);
+	s=c;
 	return ok;
 }
 
@@ -126,7 +126,7 @@ string JSON::ONE::readName(const char*&s){
 
 JSON::ONE* JSON::ONE::parse(const char*&data){
 	noProbel(data);
-	int n, nt = 0;
+	int n,nt=0;
 	n = scanSlovo("null",data);
 	if(n)return new ONE;
 	n = scanSlovo("false",data);
@@ -193,23 +193,14 @@ JSON::ONE* JSON::ONE::parse(const char*&data){
 			S="";
 			if(name.empty()){
 				n = scanString(data,S);
-				if(!n){
-					nt = 0;
-					break;
-					}
+				if(!n){nt=0;break;}
 				name = convertString(S);
 				}
 			noProbel(data);
-			if(*data!=':'){
-				nt = 0;
-				break;
-				}
+			if(*data!=':'){nt=0;break;}
 			++data;
 			A = parse(data);
-			if(!A){
-				nt = 0;
-				break;
-				}
+			if(!A){nt=0;break;}
 			X->Values.push_back(A);
 			X->Keys.push_back(name);
 			noProbel(data);
@@ -276,7 +267,6 @@ string JSON::ONE::toString(int format){
 	if(isType("double")){
 		char str[100];
 		sprintf(str,"%e",doubleVal);
-		//sprintf(str,"%f",doubleVal);
 		return str;
 		}
 	if(isType("string"))return writeString(strVal,1);
@@ -286,7 +276,7 @@ string JSON::ONE::toString(int format){
 		bool first = 1;
 		if(!format){
 			for(;it!=Values.end();++it){
-				if(!first)s+=", ";
+				if(!first)s+=",";
 				first = 0;
 				s+=(*it)->toString(format);
 				}
@@ -383,6 +373,7 @@ string JSON::toString(int format){
 
 
 
+//--------------------------------------------------------------------------------------------------
 JSON::ONE* JSON::ONE::getValue(string key){
 	if(!isType("table"))return NULL;
 	V_S::iterator it = Keys.begin();
@@ -390,121 +381,3 @@ JSON::ONE* JSON::ONE::getValue(string key){
 	for(;it!=Keys.end();++i,++it)if(key==*it)return Values[i];
 	return NULL;
 }
-
-
-//==================================================================================================
-CVARIANT* JSON::ONE::toCVARIANT(){
-	CVARIANT*X = new CVARIANT;
-	if(isType("null"))X->avtoSet("void");
-	if(isType("bool")){
-		X->avtoSet("bool");
-		X->DATA.boolVal = (intVal!=0);
-		}
-	if(isType("int")){
-		X->avtoSet("int");
-		X->DATA.intVal = intVal;
-		}
-	if(isType("double")){
-		X->avtoSet("double");
-		*X->DATA.dblVal = doubleVal;
-		}
-	if(isType("string")){
-		X->avtoSet("string");
-		*X->DATA.ps = strVal;
-		}
-	if(isType("array")){
-		X->avtoSet("vector");
-		V_JSON::iterator it = Values.begin();
-		for(;it!=Values.end();++it){
-			CVARIANT*Y = (*it)->toCVARIANT();
-			X->DATA.vectorVal->push_back(Y);
-			}
-		}
-	if(isType("table")){
-		X->avtoSet("map");
-		V_JSON::iterator it = Values.begin();
-		V_S::iterator jt = Keys.begin();
-		for(;it!=Values.end() && jt!=Keys.end();++it,++jt){
-			CVARIANT*V = (*it)->toCVARIANT();
-			(*X->DATA.mapVal)[*jt] = *V;
-			if(V)delete V;
-			}
-		}
-	return X;
-}
-
-
-
-JSON::ONE* JSON::ONE::getONE(CVARIANT*X,bool isToString){
-	ONE*OBJONE = new ONE;
-	bool ok = false;
-	if(X->isType("void"))ok = true;
-	if(X->isType("bool")){
-		OBJONE->avtoSet("bool");
-		OBJONE->intVal = X->DATA.boolVal;
-		ok = true;
-		}
-	if(X->isType("int")){
-		OBJONE->avtoSet("int");
-		OBJONE->intVal = X->DATA.intVal;
-		ok = true;
-		}
-	if(X->isType("float")){
-		OBJONE->avtoSet("double");
-		OBJONE->doubleVal = X->DATA.fltVal;
-		ok = true;
-		}
-	if(X->isType("double")){
-		OBJONE->avtoSet("double");
-		OBJONE->doubleVal = *X->DATA.dblVal;
-		ok = true;
-		}
-	if(X->isType("string")){
-		OBJONE->avtoSet("string");
-		OBJONE->strVal = *X->DATA.ps;
-		ok = true;
-		}
-	if(X->isType("vector")){
-		OBJONE->avtoSet("array");
-		V_pCVARIANT::iterator it = X->DATA.vectorVal->begin();
-		for(;it!=X->DATA.vectorVal->end();++it){
-			OBJONE->Values.push_back( getONE(*it,isToString) );
-			}
-		ok = true;
-		}
-	if(X->isType("map")){
-		OBJONE->avtoSet("table");
-		M_SV::iterator it = X->DATA.mapVal->begin();
-		for(;it!=X->DATA.mapVal->end();++it){
-			OBJONE->Keys.push_back(it->first);
-			OBJONE->Values.push_back( getONE(&it->second,isToString) );
-			}
-		ok = true;
-		}
-	if(isToString && !ok){
-		//X = X->copy();
-		X->TransformType("string");
-		OBJONE->avtoSet("string");
-		OBJONE->strVal = *X->DATA.ps;
-		//delete X;
-		}
-	return OBJONE;
-}
-
-
-
-//--------------------------------------------------------------------------------------------------
-CVARIANT* JSON::toCVARIANT(){
-	if(!one)return NULL;
-	return one->toCVARIANT();
-}
-
-
-
-void JSON::getONE(CVARIANT*X, bool isToString){
-	one = ONE::getONE(X,isToString);
-}
-
-
-
-//	JSON.cpp	:-|

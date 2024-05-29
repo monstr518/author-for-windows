@@ -294,7 +294,7 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 	if(name=="erase" || name=="eraseItem")if(VCV.size()>0){
 		VCV[0].TransformType("int");
 		//V=thisVal->copy();
-		int n=VCV[0].DATA.intVal;
+		int n = VCV[0].DATA.intVal;
 		if(n>=0 && n<thisVal->DATA.vectorVal->size())
 			thisVal->DATA.vectorVal->erase(thisVal->DATA.vectorVal->begin()+n);
 		return;
@@ -302,16 +302,16 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 	if(name=="eraseItems")if(VCV.size()>0){
 		V=new(CVARIANT);
 		V->avtoSet("bool");
-		V->DATA.boolVal=0;
+		V->DATA.boolVal = 0;
 		if(VCV[0].isType("set") || VCV[0].isType("vector")){
 			VCV[0].TransformType("set");
 			VCV[0].TransformType("vector");
 			V_I S;
-			V_pCVARIANT::iterator it=VCV[0].DATA.vectorVal->begin();
+			V_pCVARIANT::iterator it = VCV[0].DATA.vectorVal->begin();
 			for(;it!=VCV[0].DATA.vectorVal->end();++it)
 				if((*it)->isType("int"))S.push_back((*it)->DATA.intVal);
 			sort(S.begin(),S.end());
-			V_I::reverse_iterator jt=S.rbegin();
+			V_I::reverse_iterator jt = S.rbegin();
 			for(;jt!=S.rend();++jt)if(*jt>=0 && *jt<thisVal->DATA.vectorVal->size()){
 				delete *(thisVal->DATA.vectorVal->begin()+*jt);
 				thisVal->DATA.vectorVal->erase(thisVal->DATA.vectorVal->begin()+*jt);
@@ -320,19 +320,22 @@ void CallFunc::forvector(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV
 			return;
 			}
 		VCV[0].TransformType("int");
-		int a,b;
-		a=VCV[0].DATA.intVal;
-		b=-1;
+		int a, b, i;
+		a = VCV[0].DATA.intVal;
+		b = -1;
 		if(VCV.size()>1){
 			VCV[1].TransformType("int");
-			b=VCV[1].DATA.intVal;
+			b = VCV[1].DATA.intVal;
 			}
-		if(b<0 || b>thisVal->DATA.vectorVal->size())b=thisVal->DATA.vectorVal->size();
+		if(b<0 || b>thisVal->DATA.vectorVal->size())b = thisVal->DATA.vectorVal->size();
+		if(a<0 || a>=b)return;
+		i = a;
+		for(;i<b;++i)delete (*thisVal->DATA.vectorVal)[i];
 		thisVal->DATA.vectorVal->erase(
 				thisVal->DATA.vectorVal->begin()+a,
 				thisVal->DATA.vectorVal->begin()+b
 				);
-		V->DATA.boolVal=1;
+		V->DATA.boolVal = 1;
 		return;
 		}
 	if(name=="mid")if(VCV.size()>0){
