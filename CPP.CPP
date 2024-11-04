@@ -4,9 +4,12 @@
 
 const char* CallFunc::m[]={
 	"help",
+
 	"trace",
 	"tracex",
 	"tracec",
+	"convertUTF8ToANSI",
+
 	"MessageBeep",
 	"system",
 	"Sleep",
@@ -90,6 +93,46 @@ bool CallFunc::isCFunction(string s){
 }
 
 
+
+
+//--------------------------------------------------------------------------------------------------
+string convertUTF8ToANSI(const string& utf8Str) {
+    // Шаг 1: Преобразование из UTF-8 в UTF-16 (широкая строка)
+    int wideCharLen = MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, NULL, 0);
+    if (wideCharLen == 0) {
+        //throw std::runtime_error("Error converting UTF-8 to UTF-16");
+		return "Error converting UTF-8 to UTF-16";
+		}
+    vector<wchar_t> wideCharStr(wideCharLen);
+    MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, &wideCharStr[0], wideCharLen);
+
+    // Шаг 2: Преобразование из UTF-16 в Windows-1251 (ANSI)
+    int ansiLen = WideCharToMultiByte(1251, 0, &wideCharStr[0], -1, NULL, 0, NULL, NULL);
+    if (ansiLen == 0) {
+        //throw std::runtime_error("Error converting UTF-16 to ANSI");
+		return "Error converting UTF-16 to ANSI";
+		}
+    vector<char> ansiStr(ansiLen);
+    WideCharToMultiByte(1251, 0, &wideCharStr[0], -1, &ansiStr[0], ansiLen, NULL, NULL);
+
+    return std::string(&ansiStr[0]);
+}
+
+
+
+void CallFunc::ConvertUTF8ToANSI(V_CVARIANT&VCV, CVARIANT*&V){
+	V = new(CVARIANT);
+	if(VCV.size()!=1)return;
+	VCV[0].TransformType("string");
+	V->avtoSet("string");
+	*V->DATA.ps = convertUTF8ToANSI(*VCV[0].DATA.ps);
+}
+
+
+
+
+
+
 //--------------------------------------------------------------------------------------------------
 void CallFunc::trace(MAIN*M, V_CVARIANT&VCV, char sposob){ // sposob: 2-color 1-ln 0-...
 	EnterCriticalSection(&M->CriticalSection1);
@@ -141,6 +184,9 @@ void CallFunc::trace(MAIN*M, V_CVARIANT&VCV, char sposob){ // sposob: 2-color 1-
 }
 
 
+
+
+
 void CallFunc::Sleeep(V_CVARIANT&VCV,bool isSleep){
 	if(!VCV.size())return;
 	if(isSleep){
@@ -167,9 +213,9 @@ void CallFunc::implode(V_CVARIANT&VCV,CVARIANT*&V){
 			(*B->DATA.vectorVal)[i]->TransformType("string");
 			str+=*(*B->DATA.vectorVal)[i]->DATA.ps;
 			}
-		V=new(CVARIANT);
+		V = new(CVARIANT);
 		V->avtoSet("string");
-		*V->DATA.ps=str;
+		*V->DATA.ps = str;
 		}
 }
 
@@ -1732,6 +1778,7 @@ void CallFunc::fc(I*Pset,string&name,V_CVARIANT&VCV,CVARIANT*&V,MAIN*M){
 	if(name=="help")Help(VCV,V);
 	if(name=="trace" || name=="tracex")trace(M,VCV,name=="trace");
 	if(name=="tracec")trace(M,VCV,2);
+	if(name=="convertUTF8ToANSI")ConvertUTF8ToANSI(VCV,V);
 	if(name=="Sleep" || name=="system")Sleeep(VCV,name=="Sleep");
 	if(name=="implode")implode(VCV,V);
 	if(name=="split")split(VCV,V);

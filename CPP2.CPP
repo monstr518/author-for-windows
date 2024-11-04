@@ -2486,6 +2486,42 @@ void CallFunc::forgraf(CVARIANT*thisVal,string&name,CVARIANT*&V,V_CVARIANT&VCV,M
 		V->DATA.boolVal = isValid;
 		return;
 		}
+	if(name=="getWay" || name=="findWay"){
+		UGraf*UG = thisVal->DATA.grafVal;
+		int start, end, size;
+		char a = 3, b = 3;
+		string* text = NULL;
+		size = VCV.size();
+		if(size<2)return;
+		VCV[0].TransformType("int");
+		VCV[1].TransformType("int");
+		start = VCV[0].DATA.intVal;
+		end = VCV[1].DATA.intVal;
+		if(size>=3)if(VCV[2].isType("vector")){
+			size = VCV[2].DATA.vectorVal->size();
+			CVARIANT* P;
+			if(size>=1){
+				P = (*VCV[2].DATA.vectorVal)[0];
+				if(P->isType("int"))a = P->DATA.intVal;
+				}
+			if(size>=2){
+				P = (*VCV[2].DATA.vectorVal)[1];
+				if(P->isType("string"))text = P->DATA.ps;
+				}
+			if(size>=3){
+				P = (*VCV[2].DATA.vectorVal)[2];
+				if(P->isType("int"))b = P->DATA.intVal;
+				}
+			}
+		UG = UG->GetWAY(start,end,a,text,b);
+		if(!UG)return;
+		V = new CVARIANT();
+		V->avtoSet("graph");
+		if(V->DATA.grafVal)delete V->DATA.grafVal;
+		V->DATA.grafVal = UG;
+		return;
+		}
+
 }
 
 

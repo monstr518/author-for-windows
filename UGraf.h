@@ -67,8 +67,9 @@ public:
 
 
 //------------------------------------------------------------------------------------------------
-class UGraf{
-	class I2{
+class UGraf {
+
+	class I2 {
 	public:
 		int		i;//pos in program
 		int		fn;//find in this
@@ -77,7 +78,9 @@ class UGraf{
 		I2();
 	};
 	typedef deque<I2*>	DE_I2;
+
 	void getNumberLinksTable(V_I&vso,M_II&,const V_NL&);//sub ==
+
 public:
 	int nfree;
 	V_NL lincs;
@@ -97,23 +100,29 @@ public:
 
 	void findMarker(V_BL&vbl,int,char,string*,char,string*) const;
 	void findNet(V_BL&,int,char,string*,char,int) const;
-	void findNetBlizko(V_NL&,int);
+	void findNetBlizko(V_NL&,int) const;
 	void deleteMarker(int,char,string*,char,string*);
 	void deleteNet(int,char,string*,char,int);
 
 	//static void outMAP(M_II*);
 	UGraf&  operator = (const UGraf&);
+
 	int getnew();
 	static char getVector(const char);
+
 	bool operator == (const UGraf&);
 	static bool equale(UGraf*UGA,UGraf*UGB,int a,int b);
 	bool operator < (const UGraf&);
 	bool operator > (const UGraf&);
+
 	operator string () const;
 	void import(const char*);
 	int getSizeOf() const;
+
 	CVARIANT* ExportData() const;
 	bool ImportData(CVARIANT*);
+
+	UGraf* GetWAY(const int start, const int end, const char a, const string* text, const char b) const;
 
 };
 

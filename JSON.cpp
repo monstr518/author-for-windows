@@ -312,15 +312,15 @@ string JSON::ONE::toString(int format){
 				s = (s.empty()?"[]":"[ " + s + " ]");
 				}else{
 				string line;
-				int ii,sizeList = VS.size();
+				int ii, sizeList = VS.size();
 				ii = 0;
 				for(;tt!=VS.end();++tt){
 					string u;
 					u += *tt;
 					if(ii<sizeList-1)u+=", ";
 					++ii;
-					if((line + u).size()<=80)line+=u; else {
-						s += line + "\n";
+					if((line.size() + u.size())<=80)line+=u; else {
+						if(line.size())s += line + "\n";
 						line = u;
 						}
 					}

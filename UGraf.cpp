@@ -142,14 +142,16 @@ int UGraf::getnew(){return nfree++;}
 
 void UGraf::add(NetLine*n){
 	lincs.push_back(n);
-	if(n->a>=nfree)nfree=n->a+1;
-	if(n->b>=nfree)nfree=n->b+1;
+	if(n->a>=nfree)nfree = n->a+1;
+	if(n->b>=nfree)nfree = n->b+1;
 }
+
 
 void UGraf::add(MarkerLine*m){
 	markers.push_back(m);
-	if(m->a>=nfree)nfree=m->a+1;
+	if(m->a>=nfree)nfree = m->a+1;
 }
+
 
 
 // 0- 1<
@@ -193,14 +195,15 @@ string UGraf::toString(string name) const{
 
 
 
+
 int UGraf::getUnits(S_I&si) const{
-	V_NL::const_iterator it=lincs.begin();
+	V_NL::const_iterator it = lincs.begin();
 	for(;it!=lincs.end();++it){
 		NetLine*nl=*it;
 		si.insert(nl->a);
 		si.insert(nl->b);
 		}
-	V_ML::const_iterator jt=markers.begin();
+	V_ML::const_iterator jt = markers.begin();
 	for(;jt!=markers.end();++jt)si.insert((*jt)->a);
 	return si.size();
 }
@@ -231,7 +234,7 @@ void UGraf::findMarker(V_BL&vbl,int a,char x,string*n,char y,string*m) const {
 void UGraf::findNet(V_BL&vbl,int a,char x,string*n,char y,int b) const {
 	bool revers=0;
 	char xx,yy;
-	V_NL::const_iterator it=lincs.begin();
+	V_NL::const_iterator it = lincs.begin();
 	for(;it!=lincs.end();++it){
 		NetLine*nl=*it;
 		if(a>=0 && b>=0){
@@ -313,13 +316,15 @@ void UGraf::deleteNet(int a,char x,string*n,char y,int b){
 
 
 
-void UGraf::findNetBlizko(V_NL&vnl,int i){
-	V_NL::iterator it=lincs.begin();
+
+void UGraf::findNetBlizko(V_NL&vnl, int i) const {
+	V_NL::const_iterator it = lincs.begin();
 	for(;it!=lincs.end();++it){
-		NetLine*nl=*it;
+		NetLine *nl = *it;
 		if(nl->a==i || nl->b==i)vnl.push_back(nl);
 		}
 }
+
 
 
 
@@ -504,9 +509,11 @@ bool UGraf:: operator > (const UGraf&t){
 
 
 
+
 UGraf:: operator  string () const {
 	return toString();
 }
+
 
 
 
@@ -569,12 +576,14 @@ void UGraf::import(const char*s){
 
 
 
+
 int UGraf::getSizeOf() const {
 	int size = sizeof(nfree);
 	size += lincs.size() * (sizeof(NetLine) + sizeof(NetLine*));
 	size += markers.size() * (sizeof(MarkerLine) + sizeof(MarkerLine*));
 	return size;
 }
+
 
 
 
@@ -693,6 +702,130 @@ bool UGraf::ImportData(CVARIANT*Data){
 		}
 	return isValid;
 }
+
+
+
+
+
+
+
+//--------------------------------------------------------------------------------------------------
+UGraf* UGraf::GetWAY(const int start, const int end, const char a, const string* text, const char b) const {
+	UGraf* Result = new UGraf();
+	if(start==end)return Result;
+	S_I SI;
+	int size;
+	size = getUnits(SI);
+	bool isOKA, isOKB;
+	isOKA = (SI.find(start)!=SI.end());
+	isOKB = (SI.find(end)!=SI.end());
+	if(!(isOKA && isOKB))return Result;
+	int *cover = new int[size];
+	memset(cover, 0, size*sizeof(int));
+	int *Units = new int[size];
+	int i = 0;
+	S_I::iterator it = SI.begin();
+	for(;it!=SI.end();++it,++i)Units[i] = *it;
+	int EndPos, pos, level;
+	level = 1;
+	pos = distance(SI.begin(), SI.find(start));
+	cover[pos] = level;
+	EndPos = distance(SI.begin(), SI.find(end));
+	bool isFilterVectorON, isFilterA, isFilterB;
+	isFilterA = (!a || a==1);
+	isFilterB = (!b || b==1);
+	isFilterVectorON = (isFilterA || isFilterB);
+	bool isNeedExit;
+	int UnitN, UnitPos, CountNew;
+	do{
+		UnitPos = 0;
+		CountNew = 0;
+		for(;UnitPos<size;++UnitPos){
+			if(cover[UnitPos]!=level)continue;
+			UnitN = Units[UnitPos];
+			V_NL Lines;
+			findNetBlizko(Lines, UnitN);
+			int sizeLines = Lines.size();
+			for(i = 0;i<sizeLines;++i){
+				NetLine *NL = Lines[i];
+				bool isRevers = (NL->b==UnitN);
+				if(isFilterVectorON){
+					char A, B; // 0< 1>
+					A = (NL->c & 1);
+					B = ((NL->c>>1) & 1);
+					if(isRevers){
+						char X = A;
+						A = B;
+						B = X;
+						}
+					if(isFilterA)if(A!=a)continue;
+					if(isFilterB)if(B!=b)continue;
+					}
+				if(text)if(NL->name != *text)continue;
+				int NextUnitN = NL->b;
+				if(isRevers)NextUnitN = NL->a;
+				pos = distance(SI.begin(), SI.find(NextUnitN));
+				if(!cover[pos]){
+					cover[pos] = level + 1;
+					++CountNew;
+					}
+				}
+			}
+		isNeedExit = (cover[EndPos] || !CountNew);
+		++level;
+		}while(!isNeedExit);
+	if(!cover[EndPos]){
+		delete[] Units;
+		delete[] cover;
+		return Result;
+		}
+	char *ReversCover = new char[size];
+	memset(ReversCover, 0, size);
+	ReversCover[EndPos] = 1;
+	bool ok;
+	//for(i = 0;i<size;++i)printf("%d : %d\n",cover[i],ReversCover[i]);
+	while(level){
+		UnitPos = 0;
+		for(;UnitPos<size;++UnitPos){
+			ok = (ReversCover[UnitPos] && cover[UnitPos]==level);
+			if(!ok)continue;
+			UnitN = Units[UnitPos];
+			V_NL Lines;
+			findNetBlizko(Lines, UnitN);
+			int sizeLines = Lines.size();
+			for(i = 0;i<sizeLines;++i){
+				NetLine *NL = Lines[i];
+				bool isRevers = (NL->a==UnitN);
+				if(isFilterVectorON){
+					char A, B; // 0< 1>
+					A = (NL->c & 1);
+					B = ((NL->c>>1) & 1);
+					if(isRevers){
+						char X = A;
+						A = B;
+						B = X;
+						}
+					if(isFilterA)if(A!=a)continue;
+					if(isFilterB)if(B!=b)continue;
+					}
+				if(text)if(NL->name != *text)continue;
+				int NextUnitN = NL->a;
+				if(isRevers)NextUnitN = NL->b;
+				pos = distance(SI.begin(), SI.find(NextUnitN));
+				if(cover[pos]==level-1){
+					ReversCover[pos] = 1;
+					Result->add(new NetLine(*NL));
+					}
+				}
+			}
+		--level;
+		}
+	delete[] Units;
+	delete[] cover;
+	delete[] ReversCover;
+	return Result;
+}
+
 
 
 

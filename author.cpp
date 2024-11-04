@@ -17,6 +17,8 @@ void PrintMessage(const char*text){
 
 
 void main(int argc, char* argv[]){
+	//SetConsoleOutputCP(1251);
+	SetConsoleOutputCP(GetOEMCP());
 	string s;
 	{
 		TCHAR buffer[MAX_PATH];
